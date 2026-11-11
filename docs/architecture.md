@@ -175,6 +175,25 @@ Findings:
 
 Spike R2 is now: IMAP and SMTP from a Worker over TCP sockets on the free plan (feasibility, polling cost, draft and label operations); the exact app-password steps and where they fail; whether an unverified app published to production keeps refresh tokens alive; whether end users can hold their own free Composio account; current CASA cost and effort for our own app.
 
+## 4f. Installing and updating (added 2026-11-11, from `docs/spikes/installer.md`)
+
+Findings: Cloudflare's API sends no CORS headers, so a web page cannot install into a user's account [verified by a live request]. The "Deploy to Cloudflare" button needs a GitHub or GitLab account [V]. Free accounts need a verified email and reportedly no card [S]. Cloudflare OAuth for third-party apps exists, but whether it can grant script upload is unproven and one open issue suggests it may not [S]. Durable Object changes deploy atomically and cannot be rolled back across a migration [V]. Cloudflare Access requires payment details, so it cannot protect the endpoint for free [V].
+
+**D22. Install paths, in build order.**
+1. **Command-line installer** using a user-created API token from a pre-filled link. First to ship; fits the early technical audience.
+2. **Desktop app installer** doing the same natively, with OAuth if it proves able to upload scripts. This is the path for non-developers and makes the desktop app a v1.5 deliverable, ahead of native mobile.
+3. The deploy button stays for developers who want a fork.
+
+**D23. The backend updates itself, only with a signed release and a user yes.**
+- The installed backend can fetch a release and upload it through the Cloudflare API from inside the Worker, where CORS does not apply.
+- Releases are signed; the public key is pinned in the running code and the signature is checked before upload. Applying an update is an `irreversible` action under D6 and needs explicit approval.
+- The deploy-capable token is stored separately from agent-reachable secrets and is never exposed to any agent tool or model context.
+- Durable Object schema changes are additive only, with the schema version stored inside each object.
+
+**D24. Pairing.** The installer shows a QR code carrying the backend URL and a one-time code; each device registers its own key. Authentication is ours, not Cloudflare Access.
+
+This amends D10: the web app is still the first client, but it is served by the user's backend after install; it cannot perform the install itself.
+
 ## 5. Open risks and the spikes that close them
 
 | # | Risk | Spike (owner) |

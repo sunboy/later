@@ -1228,6 +1228,13 @@ input.sw:checked::after{transform:translateX(20px)}
 .ins-creator{display:flex;gap:10px;align-items:center;margin-top:12px;padding:10px 12px;border-radius:var(--r-lg);text-align:left;width:100%}
 .ins-creator .tt{flex:1;min-width:0;display:grid}
 .ins-creator small{font-size:12px;color:var(--ink-3)}
+.rmx-src{display:flex;gap:12px;align-items:center;padding:14px;border-radius:var(--r-lg)}
+.rmx-src .tt{display:grid;gap:2px;min-width:0}.rmx-src b{font-family:var(--f-display);font-size:18px}.rmx-src small{font-size:13px;color:var(--ink-2)}
+.rmx-keep{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.rmx-keep div{padding:12px 10px;border-radius:var(--r-md);display:grid;gap:2px}.rmx-keep b{font-family:var(--f-display);font-size:22px}.rmx-keep small{font-size:12px;color:var(--ink-2)}
+.rmx-sel{margin-top:6px;height:40px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:var(--g-fx);padding:0 10px;font-size:14px;max-width:100%}
+.rmx-row .tt{gap:2px}.rmx-row.off-r b{color:var(--ink-3)}
+.rmx-diff s{color:var(--ink-3)}
 .remix-b{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:var(--r-lg);background:var(--accent-bg);color:var(--accent);font-size:13px;font-weight:500;margin-top:14px}
 .sh-steps{display:flex;gap:6px;margin:0 0 16px}
 .sh-steps i{flex:1;height:4px;border-radius:var(--r-xs);background:var(--line-2)}
@@ -1838,7 +1845,7 @@ function scrSpace(ph){
    <p class="st">${esc(s.status)}</p><div class="asof">${amark(s.agents[0],11)} ${AG[s.agents[0]].name} · as of ${esc(s.asof)}</div>
    <div class="hfacts">${facts.map(f=>`<span>${esc(f)}</span>`).join("")}</div>
    ${s.ms?`<div class="hms">${s.ms.map(([n,v])=>`<div class="${v>=1?"on":v>0?"cur":""}"><i></i><span>${n}</span></div>`).join("")}</div>`:""}</header>`;
-  const paused=s.paused?`<div class="pause-b">${ic("pause",18)}<span class="tt"><b>Paused. Nothing runs yet.</b>Turn it on to start the fare check at 07:00 tomorrow. Each change asks first.</span><button class="btn pri sm" data-act="toast:Turned on. First run tomorrow at 07:00">Turn on</button></div>`:"";
+  const paused=s.paused?`<div class="pause-b">${ic("pause",18)}<span class="tt"><b>Paused. Nothing runs yet.</b>${esc(s.fromTpl?tplManifest(TPL.find(x=>x.id===s.fromTpl)).first:"Turn it on to start its routines.")} Each change asks first.</span><button class="btn pri sm" data-act="toast:Turned on. Routines start on their next scheduled time">Turn on</button></div>`:"";
   const lenses=`<div class="seg" role="group" aria-label="Lens">${[["stack","Stack"],["board","Board"],["timeline","Timeline"]].map(([k,l])=>`<button data-lens="${k}" aria-pressed="${S.lens===k}">${l}</button>`).join("")}</div>`;
   const people=`<div class="sec-h"><h3>People</h3><span class="faint" style="font-size:13px">${ppl.length} in memory</span></div><div class="people">${ppl.map(k=>`<button class="person" data-act="toast:${esc(P[k].n)}: ${esc(P[k].mem||P[k].role)}">${pf(k,56)}<b>${P[k].n.split(" ")[0]}</b><small>${P[k].role}</small></button>`).join("")}</div>`;
   const files=isH?[["house-move/timeline.md","by you · Nov 2"],["house-move/decisions.md","by Juno · yesterday"],["people/jess-patel.md","by Wren · Nov 7"]]:[[`${s.id}/notes.md`,"by Wren · "+s.asof]];
@@ -2192,34 +2199,85 @@ function scrShare(ph){
   return `<div class="ins">${head}<div class="ph-pad" style="padding-top:0;padding-bottom:120px;${ph?"":"max-width:820px;margin:0 auto;width:100%"}">${body}</div><div class="ins-foot" style="${ph?"":"justify-content:center"}">${foot}</div></div>`;
 }
 
-function tplManifest(t){
-  if(t.id==="t-yt")return {
-   agents:[["wren","Inbox","Haiku","Sorts comments and sponsor emails"],["juno","Research","Sonnet","Compares each video with your channel average"]],
-   conns:[["YouTube","play",[["read","Read comments and video stats on your channel"],["rev","Mark comments as reviewed in Later (not on YouTube)"]]],["Gmail","mail",[["read","Read emails from brands and agencies"],["rev","Create drafts. It never sends."]]],["Web","globe",[["read","Fetch your public channel page"]],"Outside content. Comments and web pages can never trigger anything that sends, pays or deletes."]],
-   sched:[["Comment sweep","Every 3 hours while a video is under 7 days old"],["Upload checklist","When you schedule a video"],["Performance card","48 hours after each upload"],["Weekly review card","Sundays at 18:00"]],
-   none:"This template never posts, replies publicly, pays or deletes. Replies wait as drafts."};
-  const base={
-   agents:[["juno","Research","Sonnet","Compares options and watches pages"],["wren","Inbox","Haiku","Files emails and writes drafts"]],
-   conns:[["Gmail","mail",[["read","Read emails from 14 travel sender domains"],["rev","Add the label “Trip” to those emails"],["rev","Create drafts. It never sends."]]],["Google Calendar","cal",[["read","Read your events between the trip dates"],["rev","Add holds for flights and check-in"]]],["Web","globe",[["read","Fetch fare pages from skyfare.example, railpass.example and hotelpick.example"]],"Outside content. Pages from the web can never trigger anything that sends, pays or deletes."]],
-   sched:[["Fare check","Daily at 07:00"],["Itinerary update","When a booking email arrives"],["Check-in reminder","24 hours before each flight"],["Weekly review card","Sundays at 18:00"]],
-   none:"This template never sends, posts, pays or deletes. Drafts wait for you."
-  };
-  return base;
-}
+/* ---------- every template's reviewed manifest ---------- */
+const UNTR="Outside content. It can never trigger anything that sends, posts, pays or deletes.";
+const MANI={
+ "t-yt":{prev:"Workshop channel",first:"Comment sweep runs within 3 hours of your next upload.",
+  agents:[["wren","Inbox","Haiku","Sorts comments and sponsor emails"],["juno","Research","Sonnet","Compares each video with your channel average"]],
+  conns:[["YouTube","play",[["read","Read comments and video stats on your channel"],["rev","Mark comments as reviewed in Later (not on YouTube)"]]],["Gmail","mail",[["read","Read emails from brands and agencies"],["rev","Create drafts. It never sends."]]],["Web","globe",[["read","Fetch your public channel page"]],UNTR]],
+  sched:[["Comment sweep","Every 3 hours while a video is under 7 days old",["Every hour","Every 3 hours while a video is under 7 days old","Twice a day"]],["Upload checklist","When you schedule a video",["When you schedule a video","Day before upload"]],["Performance card","48 hours after each upload",["24 hours after each upload","48 hours after each upload","7 days after each upload"]],["Weekly review card","Sundays at 18:00",["Sundays at 18:00","Mondays at 08:00"]]],
+  none:"Never posts, replies publicly, pays or deletes. Replies wait as drafts.",
+  cards:{"Needs reply":"12 comments asked a question","Monitor":"Ep 14 is 38% above your average","Task":"Upload checklist: 2 of 6 left","Digest":"What viewers said this week"}},
+ "t-ig":{prev:"Roastery posts",first:"Your first post plan builds the morning after you turn it on.",
+  agents:[["wren","Inbox","Haiku","Watches comments and customer DMs"],["juno","Research","Sonnet","Drafts captions from your voice notes"]],
+  conns:[["Instagram (Business)","hash",[["read","Read comments, DMs and post insights on your account"],["rev","Save caption drafts to Later. It can't publish."]]],["Google Drive","file",[["read","Read photos in one folder you choose"]]],["Web","globe",[["read","Fetch trending audio lists from two public pages"]],UNTR]],
+  sched:[["Monthly post plan","1st of the month at 09:00",["1st of the month at 09:00","Every Sunday at 09:00"]],["Comment and DM check","Every 2 hours, 08:00–20:00",["Every hour, 08:00–20:00","Every 2 hours, 08:00–20:00","Twice a day"]],["Best time reminder","30 minutes before your best slot",["30 minutes before your best slot","1 hour before your best slot"]]],
+  none:"Never publishes, replies or pays. Every caption stays a draft until you post it yourself.",
+  cards:{"Draft":"Caption for Friday: the new Ethiopia roast","Needs reply":"3 customers asked about wholesale","Task":"Shoot the pour-over for Tuesday"}},
+ "t-news":{prev:"Product notes",first:"Link collection starts now; the first outline arrives Thursday.",
+  agents:[["juno","Research","Sonnet","Clusters saved links and drafts the outline"],["wren","Inbox","Haiku","Summarises reader replies"]],
+  conns:[["Gmail","mail",[["read","Read replies to your newsletter address only"],["rev","Create a draft of each issue. It never sends."]]],["Read-later list","book",[["read","Read links you save with the tag #issue"]]],["Web","globe",[["read","Fetch the pages behind saved links"]],UNTR]],
+  sched:[["Issue outline","Thursdays at 07:00",["Thursdays at 07:00","Wednesdays at 07:00","Every other Thursday"]],["Reader replies digest","Mondays at 08:00",["Mondays at 08:00","Daily at 18:00"]]],
+  none:"Never sends an issue or emails a reader. The issue is a draft in your newsletter tool.",
+  cards:{"Digest":"9 saved links, 3 themes","Draft":"Issue 112 outline is ready","FYI":"41 readers replied to issue 111"}},
+ "t-launch":{prev:"Launch week",first:"Day 1 of the checklist starts on the launch date you set.",
+  agents:[["juno","Research","Sonnet","Drafts announcements per channel"],["otto","Monitor","Haiku","Watches waitlist sign-ups and mentions"]],
+  conns:[["Waitlist form","users",[["read","Read sign-up counts and sources"]]],["Gmail","mail",[["read","Read replies to your launch email"],["rev","Create drafts for each channel. It never sends."]]],["Web","globe",[["read","Check two community sites for mentions of your product name"]],UNTR]],
+  sched:[["Daily launch card","08:00 for 7 days from launch",["08:00 for 7 days from launch","10:00 for 7 days from launch"]],["Waitlist check","Every 4 hours",["Every hour","Every 4 hours","Daily"]],["Mention watch","Twice a day",["Twice a day","Hourly on launch day"]]],
+  none:"Never posts to any channel or emails your list. Each announcement is a draft for you to post.",
+  cards:{"Task":"Day 3: reply to early users","Monitor":"Waitlist passed 100 sign-ups","Draft":"Launch post for the community forum"}},
+ "t-trip":{prev:"Lisbon in May",first:"Fare check runs at 07:00 the next morning.",
+  agents:[["juno","Research","Sonnet","Watches fares and compares hotels"],["wren","Inbox","Haiku","Files bookings into one itinerary"]],
+  conns:[["Gmail","mail",[["read","Read emails from 14 travel sender domains"],["rev","Add the label “Trip” to those emails"],["rev","Create drafts. It never sends."]]],["Google Calendar","cal",[["read","Read your events between the trip dates"],["rev","Add holds for flights and check-in"]]],["Web","globe",[["read","Fetch fare pages from skyfare.example, railpass.example and hotelpick.example"]],UNTR]],
+  sched:[["Fare check","Daily at 07:00",["Daily at 07:00","Weekdays at 07:00","Twice a week"]],["Itinerary update","When a booking email arrives",["When a booking email arrives","Daily at 20:00"]],["Check-in reminder","24 hours before each flight",["24 hours before each flight","36 hours before each flight"]],["Weekly review card","Sundays at 18:00",["Sundays at 18:00","Mondays at 08:00"]]],
+  none:"Never books, pays, sends or deletes. Bookings stay drafts until you confirm them.",
+  cards:{"Monitor":"Lisbon return fare dropped to £96","Brief":"Your itinerary, 4 bookings","Task":"Check in for TP1351","Decision":"Pick a hotel for May 9–12"}},
+ "t-move":{prev:"Flat move",first:"The solicitor chase card appears the first Thursday after you turn it on.",
+  agents:[["wren","Inbox","Haiku","Files solicitor, agent and removals emails"],["juno","Research","Sonnet","Compares removals and insurance quotes"]],
+  conns:[["Gmail","mail",[["read","Read emails labelled Move, plus your solicitor and agent"],["rev","Create chase drafts. It never sends."]]],["Google Calendar","cal",[["read","Read events from exchange to move day"],["rev","Add holds for calls and move day"]]],["Council site","building",[["read","Read the parking suspension form for your borough"]],UNTR]],
+  sched:[["Solicitor chase","Thursdays at 10:00 if 5 days quiet",["Thursdays at 10:00 if 5 days quiet","Mondays and Thursdays at 10:00"]],["Quote comparison","When a new quote arrives",["When a new quote arrives","Daily at 18:00"]],["Move-day countdown","Daily from 14 days out",["Daily from 14 days out","Daily from 7 days out"]]],
+  none:"Never sends, signs, pays deposits or books a van. Bookings are drafts until you confirm.",
+  cards:{"Meeting":"Call with your solicitor at 10:30","Decision":"Choose a removals firm","Task":"Book van parking for move day"}},
+ "t-bills":{prev:"Bills",first:"First scan of 12 months of receipts runs tonight, capped at $1.",
+  agents:[["wren","Inbox","Haiku","Finds receipts and renewal notices"]],
+  conns:[["Gmail","mail",[["read","Read receipts and invoices (receipt, invoice or renewal in the subject)"],["rev","Add the label “Bills”"]]],["Google Calendar","cal",[["rev","Add a hold 7 days before each renewal"]]]],
+  sched:[["Receipt scan","Nightly at 02:00",["Nightly at 02:00","Sundays at 02:00"]],["Renewal warning","7 days before each renewal",["3 days before each renewal","7 days before each renewal","14 days before each renewal"]],["Monthly summary","1st of the month at 08:00",["1st of the month at 08:00","15th of the month at 08:00"]]],
+  none:"Never cancels, pays or changes a subscription. Cancellation emails are drafts.",
+  cards:{"Monitor":"Streaming plan went up £2 a month","FYI":"Car insurance renews in 7 days","Decision":"Keep or cancel the gym (£42/mo)"}},
+ "t-ops":{prev:"Ops report",first:"First report drafts on Monday at 08:00 and waits for your approval.",
+  agents:[["otto","Monitor","Haiku","Pulls uptime, incidents and support numbers"],["juno","Research","Sonnet","Writes the summary in your format"]],
+  conns:[["Grafana","sparkline",[["read","Read 4 dashboards you choose (export only)"]]],["Stripe","coin",[["read","Read dispute counts. No customer details."]]],["Slack","hash",[["irr","Post one message to the channel you pick, after you approve it"]]]],
+  sched:[["Weekly report","Mondays at 08:00",["Mondays at 08:00","Fridays at 16:00"]],["Incident roll-up","When an incident closes",["When an incident closes","Daily at 17:00"]]],
+  none:"Posting to Slack can't be undone, so every post asks you first. Always allow is never offered for it.",
+  cards:{"Approval":"Post the week 45 ops report","Brief":"Uptime 99.97%, 2 incidents"}},
+ "t-job":{prev:"Job search",first:"Applications from the last 60 days are pulled in tonight.",
+  agents:[["wren","Inbox","Haiku","Tracks recruiter and application emails"],["juno","Research","Sonnet","Preps you before each interview"]],
+  conns:[["Gmail","mail",[["read","Read emails from recruiters and applicant systems"],["rev","Create follow-up drafts. It never sends."]]],["Google Calendar","cal",[["read","Read interview events"],["rev","Add 30-minute prep holds"]]],["Web","globe",[["read","Fetch the job pages and company sites you save"]],UNTR]],
+  sched:[["Quiet application check","Mondays at 09:00",["Mondays at 09:00","Every weekday at 09:00"]],["Interview prep","Evening before each interview",["Evening before each interview","2 hours before each interview"]],["Follow-up nudge","After 10 quiet days",["After 7 quiet days","After 10 quiet days","After 14 quiet days"]]],
+  none:"Never applies, sends or accepts anything. Follow-ups and replies are drafts.",
+  cards:{"Needs reply":"Recruiter asked about your notice period","Meeting":"Interview with Halcyon at 15:00","Task":"Follow up on the Northstar application"}},
+ "t-sponsor":{prev:"Sponsor inbox",first:"Brand emails from the last 90 days are sorted tonight.",
+  agents:[["wren","Inbox","Haiku","Pulls brand deal emails together"],["juno","Research","Sonnet","Compares offers with your rate sheet"]],
+  conns:[["Gmail","mail",[["read","Read emails that mention sponsorship, partnership or rates"],["rev","Create reply drafts. It never sends."]]],["Google Sheets","file",[["read","Read one rate sheet you choose"]]]],
+  sched:[["Deal sort","Every 6 hours",["Every 2 hours","Every 6 hours","Daily at 08:00"]],["Rate check","When an offer arrives",["When an offer arrives","Daily at 18:00"]]],
+  none:"Never signs, accepts, invoices or replies. Counter-offers are drafts.",
+  cards:{"Needs reply":"A tool brand offered $1,200 for a mid-roll","Decision":"Counter at your $1,800 rate?"}}
+};
+function tplManifest(t){return MANI[t.id]||MANI["t-trip"];}
 function scrInstall(ph){
-  const t=TPL.find(x=>x.id===S.tpl.sel)||TPL[0],m=tplManifest(t),cap=S.tpl.cap[t.id]??t.cost,nm=S.tpl.name[t.id]??(t.id==="t-trip"?"Lisbon in May":t.name);
+  const t=TPL.find(x=>x.id===S.tpl.sel)||TPL[0],m=tplManifest(t),cap=S.tpl.cap[t.id]??t.cost,nm=S.tpl.name[t.id]??m.prev;
   const prev={id:"prev",name:nm,kind:t.kind,icon:t.icon,c:t.c,motif:t.motif,st:"paused",needs:0,status:"Paused. Nothing runs until you turn it on.",asof:"now",next:""};
   const clsLbl={read:["Read","read"],rev:["Undoable change","rev"],irr:["Can't be undone","irr"]};
   const sec=(t2,inner,sub)=>`<section class="ins-sec"><div class="sec-h" style="margin:0 0 10px"><h3>${t2}</h3>${sub?`<span class="faint" style="font-size:12px">${sub}</span>`:""}</div>${inner}</section>`;
-  const head=`<div class="ins-head"><button class="round" data-act="tpl-back" aria-label="All templates">${ic("chevL")}</button><span class="cap">Template · v${esc(t.ver)}</span><span class="sp"></span><button class="btn sec sm" data-act="tpl-remix" aria-pressed="${!!S.tpl.remix}">${ic("edit",14)} Remix</button><button class="round" aria-label="Share template" data-act="toast:Copied later.app/t/${esc(t.repo)}">${ic("ext",18)}</button></div>`;
-  const hero=`<div class="ins-hero" style="${scv(t)}"><div class="ins-prev">${ftile(prev).replace('<button class="ftile"','<div class="ftile"').replace(/<\/button>$/,"</div>")}</div><div class="ins-tt"><span class="cap">Creates a ${t.kind.toLowerCase()} Space</span><h1>${esc(t.name)}</h1><p class="muted">${esc(t.desc)}</p><button class="ins-creator conn" data-creator="${t.by}">${cav(t.by,36)}<span class="tt"><b>${esc(CREATORS[t.by].n)} ${CREATORS[t.by].ver?`<span class="ver">${ic("check",12,2.6)}</span>`:""}</b><small>${esc(t.installs)} installs · <span class="rv">${ic("shield",11,2.2)} Reviewed by Later</span></small></span>${ic("chevR",16)}</button>${S.tpl.remix?`<div class="remix-b">${ic("edit",16)}<span>Remixing. You're editing your own copy; ${esc(CREATORS[t.by].n)}'s template doesn't change. Turn schedules off, change the cap or the name before you create it.</span></div>`:""}<label class="ins-name"><span class="cap">Name</span><input id="tpl-name" data-tplname="${t.id}" value="${esc(nm)}"></label></div></div>`;
-  const when=`<ol class="rail">${[["Now","Space created and paused. Nothing runs and nothing is read."],["When you turn it on","Fare check runs at 07:00 the next morning. Each change below asks first unless you allow it."],[`At $${(cap*.8).toFixed(2)}`,"You get a warning card in Today."],[`At $${cap.toFixed(2)}`,"Every agent in this Space pauses until Dec 1."]].map(([a,b],i)=>`<li class="${i===0?"on":""}"><b>${a}</b><span>${b}</span></li>`).join("")}</ol>`;
+  const head=`<div class="ins-head"><button class="round" data-act="tpl-back" aria-label="All templates">${ic("chevL")}</button><span class="cap">Template · v${esc(t.ver)}</span><span class="sp"></span><button class="btn sec sm" data-act="tpl-remix">${ic("edit",14)} Remix</button><button class="round" aria-label="Share template" data-act="toast:Copied later.app/t/${esc(t.repo)}">${ic("ext",18)}</button></div>`;
+  const hero=`<div class="ins-hero" style="${scv(t)}"><div class="ins-prev">${ftile(prev).replace('<button class="ftile"','<div class="ftile"').replace(/<\/button>$/,"</div>")}</div><div class="ins-tt"><span class="cap">Creates a ${t.kind.toLowerCase()} Space</span><h1>${esc(t.name)}</h1><p class="muted">${esc(t.desc)}</p><button class="ins-creator conn" data-creator="${t.by}">${cav(t.by,36)}<span class="tt"><b>${esc(CREATORS[t.by].n)} ${CREATORS[t.by].ver?`<span class="ver">${ic("check",12,2.6)}</span>`:""}</b><small>${esc(t.installs)} installs · <span class="rv">${ic("shield",11,2.2)} Reviewed by Later</span></small></span>${ic("chevR",16)}</button><label class="ins-name"><span class="cap">Name</span><input id="tpl-name" data-tplname="${t.id}" value="${esc(nm)}"></label></div></div>`;
+  const when=`<ol class="rail">${[["Now","Space created and paused. Nothing runs and nothing is read."],["When you turn it on",m.first+" Each change below asks first unless you allow it."],[`At $${(cap*.8).toFixed(2)}`,"You get a warning card in Today."],[`At $${cap.toFixed(2)}`,"Every agent in this Space pauses until Dec 1."]].map(([a,b],i)=>`<li class="${i===0?"on":""}"><b>${a}</b><span>${b}</span></li>`).join("")}</ol>`;
   const conns=m.conns.map(([n,icn,sc,warn])=>`<div class="ins-conn"><div class="ins-ch">${ic(icn,18)}<b>${n}</b></div>${sc.map(([k,x])=>`<div class="ins-sc"><span class="lg-k ${clsLbl[k][1]}">${clsLbl[k][0]}</span><span>${esc(x)}</span></div>`).join("")}${warn?`<div class="untr-n">${ic("globe",14)}<span>${esc(warn)}</span></div>`:""}</div>`).join("");
   const perms=`<div class="perm3"><div class="pm read"><b>Read</b><span>Runs without asking</span></div><div class="pm rev"><b>Undoable changes</b><span>Asks first. You can choose Always allow later.</span></div><div class="pm irr"><b>Can't be undone</b><span>${esc(m.none)}</span></div></div>`;
   const agents=m.agents.map(([a,role,model,what])=>`<div class="ins-row"><span class="am lg">${amark(a,14)}</span><span class="tt"><b>${AG[a].name} · ${role}</b><small>${esc(what)}</small></span><span class="chip sm">${model}</span></div>`).join("");
-  const sched=m.sched.map(([a,b],i)=>`<div class="ins-row">${ic("clock",16)}<span class="tt"><b>${a}</b><small>${b}</small></span>${S.tpl.remix?`<input type="checkbox" class="sw" checked aria-label="Include ${a}">`:`<span class="chip sm paused">${ic("pause",12)} Paused</span>`}</div>`).join("");
+  const sched=m.sched.map(([a,b],i)=>`<div class="ins-row">${ic("clock",16)}<span class="tt"><b>${a}</b><small>${b}</small></span><span class="chip sm paused">${ic("pause",12)} Paused</span></div>`).join("");
   const budget=`<div class="ins-budget"><div class="stepper" style="margin:0"><button data-tplcap="-1" aria-label="Lower monthly cap"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><output class="num">$${cap}</output><button data-tplcap="1" aria-label="Raise monthly cap">${ic("plus",18,2)}</button></div><span class="muted" style="font-size:13px">a month, on your Anthropic key. Typical use is ${esc(t.typ)}. Shown on the Spend screen.</span></div>`;
-  const cards=`<div class="ins-cards">${t.cards.map(k=>`<div class="mini-c" style="${scv(t)}"><span class="cap">${esc(k)}</span><b>${esc({Monitor:"Lisbon return fare dropped to £96",Brief:"Your itinerary, 4 bookings",Task:"Check in for TP1351",Decision:"Pick a hotel for May 9–12",Meeting:"Call with the agent",FYI:"Renewal in 7 days","Needs reply":"Recruiter asked a question",Digest:"5 things worth reading"}[k]||k)}</b></div>`).join("")}</div>`;
+  const cards=`<div class="ins-cards">${t.cards.map(k=>`<div class="mini-c" style="${scv(t)}"><span class="cap">${esc(k)}</span><b>${esc(m.cards[k]||k)}</b></div>`).join("")}</div>`;
   const src=`<div class="ins-src">${ic("shield",16)}<span>github.com/${esc(t.repo)} · v${esc(t.ver)} · manifest only, no code · reviewed by Later on Oct 30 · ${esc(t.installs)} installs</span></div>`;
   const body=`${hero}
    ${sec("What happens when",when)}
@@ -2235,11 +2293,45 @@ function scrInstall(ph){
   return `<div class="ins ins-d">${head.replace('class="ins-head"','class="ins-head" style="padding:24px 36px 0"')}<div class="ins-dbody">${body}</div>${foot}</div>`;
 }
 function tplInstall(){
-  const t=TPL.find(x=>x.id===S.tpl.sel),nm=S.tpl.name[t.id]??(t.id==="t-trip"?"Lisbon in May":t.name),id="n"+Date.now().toString(36);
-  SPACES.splice(6,0,{id,name:nm,kind:t.kind,icon:t.icon,c:t.c,motif:t.motif,st:"paused",paused:true,needs:0,status:"Paused. Nothing runs until you turn it on.",asof:"just now",next:"",agents:["juno","wren"],budget:[0,S.tpl.cap[t.id]??t.cost],fromTpl:t.id});
+  const t=TPL.find(x=>x.id===S.tpl.sel),m=tplManifest(t),nm=S.tpl.name[t.id]??m.prev,id="n"+Date.now().toString(36);
+  SPACES.splice(6,0,{id,name:nm,kind:t.kind,icon:t.icon,c:t.c,motif:t.motif,st:"paused",paused:true,needs:0,status:"Paused. Nothing runs until you turn it on.",asof:"just now",next:"",agents:m.agents.map(a=>a[0]),budget:[0,S.tpl.cap[t.id]??t.cost],fromTpl:t.id});
   S.spaceId=id;S.lens="stack";go("space");toast(`Created ${nm}. It's paused`);
 }
 
+/* ---------- Remix: copy, rename, change routines and budget, save as your own Space ---------- */
+function rmxDiff(t,m){const R=S.rmx,out=[];if(R.name.trim()!==m.prev)out.push(["Name",m.prev,R.name.trim()||"(blank)"]);
+  m.sched.forEach(([a,b],i)=>{if(R.off[i])out.push([a,b,"Off"]);else if(R.sched[i]&&R.sched[i]!==b)out.push([a,b,R.sched[i]]);});
+  if(R.cap!==t.cost)out.push(["Monthly cap","$"+t.cost,"$"+R.cap]);return out;}
+function scrRemix(ph){
+  const R=S.rmx||{id:"t-trip",step:0,name:"My trip",sched:{},off:{},cap:4};S.rmx=R;
+  const t=TPL.find(x=>x.id===R.id)||TPL[0],m=tplManifest(t),c=CREATORS[t.by],st=R.step,diff=rmxDiff(t,m);
+  const titles=["Your copy","Name it","Change the routines","Set the budget"];
+  const head=`<div class="ph-head"><button class="round" data-act="rmx-back" aria-label="${st?"Back":"Back to the template"}">${ic("chevL")}</button><div style="flex:1;min-width:0"><div class="cap">Remix · step ${st+1} of 4</div><h1 style="font-size:28px;margin-top:4px">${titles[st]}</h1></div></div>`;
+  const steps=`<div class="sh-steps">${[0,1,2,3].map(i=>`<i class="${i<=st?"on":""}"></i>`).join("")}</div>`;
+  const src=`<div class="rmx-src panel" style="${scv(t)}">${emb(t,40)}<span class="tt"><span class="cap">Copied from</span><b>${esc(t.name)} v${esc(t.ver)}</b><small>${esc(c.n)} · ${esc(t.installs)} installs. Their template never changes.</small></span></div>`;
+  let body="",foot="";
+  if(st===0){body=`${steps}${src}
+   <div class="rmx-keep"><div class="panel"><b class="num">${m.agents.length}</b><small>agents</small></div><div class="panel"><b class="num">${m.sched.length}</b><small>routines</small></div><div class="panel"><b class="num">${m.conns.reduce((a,x)=>a+x[2].length,0)}</b><small>scopes</small></div><div class="panel"><b class="num">${t.cards.length}</b><small>card types</small></div></div>
+   <p class="muted" style="font-size:14px;margin:14px 2px 0">Your copy keeps every permission exactly as reviewed. You can change the name, which routines run and when, and the monthly cap. Adding a new scope makes it a new template that needs its own review.</p>`;
+   foot=`<button class="btn pri wide" data-act="rmx-next">Start remixing</button>`;}
+  if(st===1){body=`${steps}<label class="fld"><span class="cap">Name of your Space</span><input id="rmx-name" data-rmxname="1" value="${esc(R.name)}"></label>
+   <div class="ins-prev" style="margin-top:6px">${ftile({id:"rmx",name:R.name||m.prev,kind:t.kind,icon:t.icon,c:t.c,motif:t.motif,st:"paused",needs:0,status:"Your remix. Paused until you turn it on.",asof:"now",next:""}).replace('<button class="ftile"','<div class="ftile"').replace(/<\/button>$/,"</div>")}</div>`;
+   foot=`<button class="btn sec" data-act="rmx-back">Back</button><button class="btn pri" style="flex:1" data-act="rmx-next" ${R.name.trim()?"":"disabled"}>Continue</button>`;}
+  if(st===2){body=`${steps}<p class="muted" style="font-size:14px;margin:0 2px 12px">Change when each routine runs, or turn one off. They all start paused either way.</p>
+   <div class="panel" style="padding:4px 16px">${m.sched.map(([a,b,opts],i)=>`<div class="ins-row rmx-row ${R.off[i]?"off-r":""}">${ic("clock",16)}<span class="tt"><b>${esc(a)}</b>${R.off[i]?`<small>Turned off in your copy</small>`:`<label class="vh" for="rmx-s${i}">When ${esc(a)} runs</label><select id="rmx-s${i}" class="rmx-sel" data-rmxsched="${i}">${(opts||[b]).map(o=>`<option ${o===(R.sched[i]||b)?"selected":""}>${esc(o)}</option>`).join("")}</select>`}</span><input type="checkbox" class="sw" data-rmxoff="${i}" ${R.off[i]?"":"checked"} aria-label="Run ${esc(a)}"></div>`).join("")}</div>`;
+   foot=`<button class="btn sec" data-act="rmx-back">Back</button><button class="btn pri" style="flex:1" data-act="rmx-next">Continue</button>`;}
+  if(st===3){body=`${steps}<div class="panel" style="display:grid;gap:10px;justify-items:center;text-align:center"><span class="cap">Monthly cap on your key</span><div class="stepper" style="margin:0"><button data-rmxcap="-1" aria-label="Lower monthly cap"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><output class="num">$${R.cap}</output><button data-rmxcap="1" aria-label="Raise monthly cap">${ic("plus",18,2)}</button></div><span class="muted" style="font-size:13px">The original is $${t.cost}. Typical use is ${esc(t.typ)}. Warns at $${(R.cap*.8).toFixed(2)}, pauses at $${R.cap}.</span></div>
+   <div class="sec-h"><h3>What you changed</h3><span class="faint" style="font-size:12px">${diff.length} ${diff.length===1?"change":"changes"}</span></div>
+   <div class="panel rmx-diff" style="padding:4px 16px">${diff.length?diff.map(([k,a,b])=>`<div class="ins-row"><span class="tt"><b>${esc(k)}</b><small><s>${esc(a)}</s> → ${esc(b)}</small></span></div>`).join(""):`<div class="ins-row"><span class="tt"><b>Nothing yet</b><small>Your copy matches the original.</small></span></div>`}</div>
+   <div class="src" style="margin-top:12px">${ic("shield",14)} Same reviewed permissions. Your Space starts paused.</div>`;
+   foot=`<button class="btn sec" data-act="rmx-back">Back</button><button class="btn pri" style="flex:1" data-act="rmx-save">${ic("pause",16)} Save as my Space</button>`;}
+  return `<div class="ins">${head}<div class="ph-pad" style="padding-top:0;padding-bottom:120px;${ph?"":"max-width:720px;margin:0 auto;width:100%"}">${body}</div><div class="ins-foot" style="${ph?"":"justify-content:center"}">${foot}</div></div>`;
+}
+function rmxSave(){
+  const R=S.rmx,t=TPL.find(x=>x.id===R.id),m=tplManifest(t),id="r"+Date.now().toString(36),nm=R.name.trim()||m.prev,n=rmxDiff(t,m).length;
+  SPACES.splice(6,0,{id,name:nm,kind:t.kind,icon:t.icon,c:t.c,motif:t.motif,st:"paused",paused:true,needs:0,status:`Your remix of ${t.name}. Paused until you turn it on.`,asof:"just now",next:"",agents:m.agents.map(a=>a[0]),budget:[0,R.cap],fromTpl:t.id,remixOf:t.id});
+  S.spaceId=id;S.lens="stack";go("space");toast(`Saved ${nm} with ${n} ${n===1?"change":"changes"}. It's paused`);
+}
 /* ================= designed states (empty / loading / error) ================= */
 const STATES={
  today:{title:"Today",empty:["today","Nothing needs you today.","The 07:00 deck found nothing worth a card. The next deck builds tomorrow at 07:00.",[["Capture something","go:capture"],["Start a weekly review","go:weekly"]]],error:["alert","Today's deck didn't finish.","The 07:00 run stopped at the calendar step: Google said the Calendar token has expired. Your mail cards are safe.",[["Reconnect Calendar","toast:Opens Google sign-in (prototype)"],["Build without calendar","state:normal"]]],skel:"deck"},
@@ -2270,7 +2362,7 @@ function stateView(ph){
 }
 
 /* ================= shell ================= */
-const SCREENS=[["onboarding","1 · Onboarding"],["today","2 · Today deck"],["triage","3 · Triage"],["chat","4 · Chat from a card"],["approvals","5 · Approvals"],["drafts","6 · Drafts"],["spaces","7 · Spaces"],["space","8 · Space: House move"],["weekly","9 · Weekly review"],["templates","10 · Templates"],["install","11 · Template and install"],["creator","11b · Creator profile"],["share","11c · Share as template"],["capture","12 · Capture"],["spend","13 · Spend"]];
+const SCREENS=[["onboarding","1 · Onboarding"],["today","2 · Today deck"],["triage","3 · Triage"],["chat","4 · Chat from a card"],["approvals","5 · Approvals"],["drafts","6 · Drafts"],["spaces","7 · Spaces"],["space","8 · Space: House move"],["weekly","9 · Weekly review"],["templates","10 · Templates"],["install","11 · Template and install"],["creator","11b · Creator profile"],["share","11c · Share as template"],["remix","11d · Remix a template"],["capture","12 · Capture"],["spend","13 · Spend"]];
 const TRY={
  onboarding:["Connect Gmail, then Continue","Answer the quick check mid-way","Edit a fact, toggle a routine","Open Today is a one-way door"],
  today:["Decide a card with its main button","Undo from the toast","Ask opens chat with the card pinned","Decide all nine for the end state"],
@@ -2293,10 +2385,10 @@ const isPhone=()=>innerWidth<720?"bare":S.device==="phone"?"frame":false;
 function screenHtml(ph){
   const sv=stateView(ph);if(sv)return sv;
   switch(S.screen){case"today":return scrToday(ph);case"triage":return scrTriage(ph);case"drafts":return scrDrafts(ph);case"spaces":return scrSpaces(ph);case"space":return scrSpace(ph);case"capture":return scrCapture(ph);case"onboarding":return scrOnb(ph);case"spend":return scrSpend(ph);
-   case"approvals":return scrApprovals(ph);case"chat":return scrChat(ph);case"weekly":return scrWeekly(ph);case"templates":return scrTemplates(ph);case"install":return scrInstall(ph);case"creator":return scrCreator(ph);case"share":return scrShare(ph);}
+   case"approvals":return scrApprovals(ph);case"chat":return scrChat(ph);case"weekly":return scrWeekly(ph);case"templates":return scrTemplates(ph);case"install":return scrInstall(ph);case"creator":return scrCreator(ph);case"share":return scrShare(ph);case"remix":return scrRemix(ph);}
 }
-const navOf=s=>({triage:"today",chat:"today",weekly:"today",capture:"today",approvals:"today",spend:"today",space:"spaces",install:"templates",creator:"templates",share:"spaces"}[s]||s);
-const deskNav=s=>({triage:"today",weekly:"today",capture:"today",space:"spaces",install:"templates",creator:"templates",share:"spaces"}[s]||s);
+const navOf=s=>({triage:"today",chat:"today",weekly:"today",capture:"today",approvals:"today",spend:"today",space:"spaces",install:"templates",creator:"templates",remix:"templates",share:"spaces"}[s]||s);
+const deskNav=s=>({triage:"today",weekly:"today",capture:"today",space:"spaces",install:"templates",creator:"templates",remix:"templates",share:"spaces"}[s]||s);
 const TABS=[["today","Today","today"],["spaces","Spaces","spaces"],["capture","Capture","mic"],["drafts","Drafts","drafts"],["templates","Templates","sparkline"]];
 function apCount(){return pendingAppr().length+draftList().length;}
 function tabbar(){
@@ -2305,9 +2397,9 @@ function tabbar(){
   return `<nav class="tabbar" aria-label="Main"><div class="tabs" style="--tn:${T.length}"><i class="tab-ind" data-from="${from}" data-to="${ti}" style="--ti:${from}" aria-hidden="true"></i>${T.map(([id,l,icn])=>id==="capture"?`<button class="tab-cap" data-go="capture" aria-label="Capture by voice"><span class="cb">${ic("mic",24)}</span></button>`:`<button data-go="${id}" ${cur===id?'aria-current="page"':""}>${ic(icn,20)}<span>${l}</span>${id==="drafts"&&n?`<span class="dot num">${n}</span>`:""}</button>`).join("")}</div></nav>`;
 }
 /* presentation: tabs = today/spaces/approvals/spend (+drafts as a segment); push = triage, space, install; modal with own close = chat, weekly, templates, capture; one-way door = onboarding */
-const MODAL=["capture","onboarding","triage","space","chat","weekly","install","creator","share"];
+const MODAL=["capture","onboarding","triage","space","chat","weekly","install","creator","share","remix"];
 function glowCols(){
-  const ids=S.screen==="today"?deckOrder().slice(0,3).map(c=>cs(c).id):["space","share"].includes(S.screen)?[S.spaceId,S.spaceId,S.spaceId]:S.screen==="approvals"?pendingAppr().map(a=>a.space):S.screen==="weekly"?WR.slice(S.wr.idx,S.wr.idx+3).map(w=>w.sp):["templates","install","creator"].includes(S.screen)?(S.screen==="install"?[S.tpl.sel,S.tpl.sel,"t-yt"]:["t-yt","t-ig","t-trip"]):S.screen==="triage"?TRI.slice(S.tri.idx,S.tri.idx+3).map(t=>t.space):S.screen==="chat"?[chatCard().space,chatCard().space,"japan"]:["house","japan","mum"];
+  const ids=S.screen==="today"?deckOrder().slice(0,3).map(c=>cs(c).id):["space","share"].includes(S.screen)?[S.spaceId,S.spaceId,S.spaceId]:S.screen==="approvals"?pendingAppr().map(a=>a.space):S.screen==="weekly"?WR.slice(S.wr.idx,S.wr.idx+3).map(w=>w.sp):["templates","install","creator","remix"].includes(S.screen)?(["install","remix"].includes(S.screen)?[S.tpl.sel,S.tpl.sel,"t-yt"]:["t-yt","t-ig","t-trip"]):S.screen==="triage"?TRI.slice(S.tri.idx,S.tri.idx+3).map(t=>t.space):S.screen==="chat"?[chatCard().space,chatCard().space,"japan"]:["house","japan","mum"];
   const col=id=>{const t=TPL.find(x=>x.id===id);if(t)return t.c;const s=id==="_all"?null:SP(id);return s&&s.c?s.c:"#4A4740";};
   const c=[...ids,"house","japan","mum"].slice(0,3).map(col);
   if(["space","share"].includes(S.screen))return `--g1:${c[0]};--g2:${mix(c[0],"#ffffff",.35)};--g3:${mix(c[0],"#000000",.2)}`;
@@ -2320,7 +2412,7 @@ function phoneShell(inner,mode){
   const ctl=["triage","weekly"].includes(S.screen)||S.screen==="install";
   return `<div class="phone ${noTabs?"notabs":""} ${ctl?"hasctl":""}" data-screen="${S.screen}">
    <div class="ph-status" style="${flood?`background:${s.c};color:#fff`:""}"><span>9:41</span><span class="sig">${'<svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="25" height="12" viewBox="0 0 25 12" aria-hidden="true"><rect x=".5" y=".5" width="21" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><rect x="23" y="4" width="1.5" height="4" rx=".75" fill="currentColor" opacity=".5"/></svg>'}</span></div>
-   ${glow()}<main class="ph-body ${["chat","install","share"].includes(S.screen)?"noscroll":""}" id="scroller">${inner}</main>
+   ${glow()}<main class="ph-body ${["chat","install","share","remix"].includes(S.screen)?"noscroll":""}" id="scroller">${inner}</main>
    ${noTabs?"":tabbar()}${S.screen==="space"&&S.state==="normal"?spaceChat(SP(S.spaceId)):""}${toastHtml()}${sheetHtml()}</div>`;
 }
 function deskShell(inner){
@@ -2334,7 +2426,7 @@ function deskShell(inner){
    <div class="cap side-h">Needs you</div>
    ${SPACES.filter(s=>!s.focus&&s.st==="needs").map(s=>`<button class="nav-i" data-space="${s.id}" ${S.screen==="space"&&S.spaceId===s.id?'aria-current="page"':""}>${emb(s,24)}<span>${esc(s.name)}</span><span class="n num">${s.needs}</span></button>`).join("")}
    <div class="side-foot">${ic("cloud",16)}<span>Runs in your Cloudflare account on your Anthropic key. later.sam-k.workers.dev</span></div></nav>
-   <main class="main ${["chat","install","share"].includes(S.screen)?"noscroll":""}" id="scroller">${glow()}${inner}</main>${toastHtml()}${sheetHtml()}</div>`;
+   <main class="main ${["chat","install","share","remix"].includes(S.screen)?"noscroll":""}" id="scroller">${glow()}${inner}</main>${toastHtml()}${sheetHtml()}</div>`;
 }
 let toastT=null;
 function toastHtml(){return S.toast?`<div class="toast ${S.toast.show?"show":""}" role="status"><span>${esc(S.toast.msg)}</span>${S.toast.undo?`<button data-act="toast-undo">Undo</button>`:""}</div>`:"";}
@@ -2506,6 +2598,7 @@ document.addEventListener("click",e=>{
   if(d.creator){S.tpl.creator=d.creator;return go("creator");}
   if(d.shcat){S.share.cat=d.shcat;return render();}
   if(d.tcat){S.tpl.cat=d.tcat;return render();}
+  if(d.rmxcap){S.rmx.cap=Math.max(1,S.rmx.cap+(+d.rmxcap));return render();}
   if(d.tplcap){const t=TPL.find(x=>x.id===S.tpl.sel);S.tpl.cap[t.id]=Math.max(1,(S.tpl.cap[t.id]??t.cost)+(+d.tplcap));return render();}
   if(d.stact){const [k,...r]=d.stact.split(":");const v=r.join(":");if(k==="go")return go(v);if(k==="state"){S.state=v;return render();}if(k==="toast")return toast(v);}
   const a=d.act;if(!a)return;
@@ -2516,7 +2609,10 @@ document.addEventListener("click",e=>{
   if(a==="wr-reset"){S.wr={idx:0,hist:[],res:{},pick:{}};return render();}
   if(a==="tpl-back")return go("templates");
   if(a==="tpl-install")return tplInstall();
-  if(a==="tpl-remix"){S.tpl.remix=!S.tpl.remix;render();return S.tpl.remix?toast("Your copy. Edit anything before creating it"):null;}
+  if(a==="tpl-remix"){const t=TPL.find(x=>x.id===S.tpl.sel)||TPL[0];S.rmx={id:t.id,step:0,name:"My "+tplManifest(t).prev.toLowerCase().replace(/^my /,""),sched:{},off:{},cap:Math.max(1,t.cost-2)};return go("remix");}
+  if(a==="rmx-next"){S.rmx.step=Math.min(3,S.rmx.step+1);render();const _s=document.getElementById("scroller");_s&&(_s.scrollTop=0);return;}
+  if(a==="rmx-back"){if(!S.rmx.step)return go("install");S.rmx.step--;return render();}
+  if(a==="rmx-save")return rmxSave();
   if(a==="share-start"){S.share={step:0,sp:S.screen==="space"?S.spaceId:"house"};return go("share");}
   if(a==="share-next"){S.share.step=Math.min(2,S.share.step+1);render();const _s=document.getElementById("scroller");_s&&(_s.scrollTop=0);return;}
   if(a==="share-back"){S.share.step=Math.max(0,S.share.step-1);return render();}
@@ -2540,9 +2636,9 @@ document.addEventListener("click",e=>{
   if(a==="onb-next"){S.onb.step++;if(S.onb.step===1){S.onb.prog=0;S.onb.asked=null;startOnb();}render();const _s=document.getElementById("scroller");_s&&(_s.scrollTop=0);return;}
   if(a==="onb-done"){S.onb.step=0;S.onb.conn={};S.from="today";go("today");try{history.replaceState(null,"","#today");}catch(e){}return;}
 });
-document.addEventListener("change",e=>{if(e.target.dataset.shvis){S.share.vis=e.target.dataset.shvis;return render();}const rt=e.target.dataset.onbrt;if(rt){S.onb.rt[rt]=e.target.checked;return;}const al=e.target.dataset.always;if(al){S.appr.always[al]=e.target.checked;toast(e.target.checked?"Always allowed. Turn it off in the Space any time":"Back to asking first");}});
+document.addEventListener("change",e=>{if(e.target.dataset.rmxoff){const k=+e.target.dataset.rmxoff;S.rmx.off[k]=!e.target.checked;return render();}if(e.target.dataset.rmxsched){S.rmx.sched[+e.target.dataset.rmxsched]=e.target.value;return;}if(e.target.dataset.shvis){S.share.vis=e.target.dataset.shvis;return render();}const rt=e.target.dataset.onbrt;if(rt){S.onb.rt[rt]=e.target.checked;return;}const al=e.target.dataset.always;if(al){S.appr.always[al]=e.target.checked;toast(e.target.checked?"Always allowed. Turn it off in the Space any time":"Back to asking first");}});
 document.addEventListener("submit",e=>{if(e.target.dataset.chatform){e.preventDefault();const i=document.getElementById("chat-in");const v=i&&i.value.trim();if(v)chatAsk(v);}});
-document.addEventListener("input",e=>{if(e.target.dataset.shname){S.share.name=e.target.value;return;}if(e.target.dataset.shdesc){S.share.desc=e.target.value;return;}const tn=e.target.dataset.tplname;if(tn){S.tpl.name[tn]=e.target.value;return;}const id=e.target.dataset.dbody;if(id){const d=S.drafts.find(x=>x.id===id);if(d)d.edited=e.target.value;}});
+document.addEventListener("input",e=>{if(e.target.dataset.shname){S.share.name=e.target.value;return;}if(e.target.dataset.shdesc){S.share.desc=e.target.value;return;}if(e.target.dataset.rmxname){S.rmx.name=e.target.value;const b=document.querySelector('[data-act="rmx-next"]');b&&(b.disabled=!S.rmx.name.trim());return;}const tn=e.target.dataset.tplname;if(tn){S.tpl.name[tn]=e.target.value;return;}const id=e.target.dataset.dbody;if(id){const d=S.drafts.find(x=>x.id===id);if(d)d.edited=e.target.value;}});
 document.addEventListener("keydown",e=>{
   if(e.target.matches("input,textarea,select"))return;
   if(e.key==="Escape"){if(S.sheet||S.more){S.sheet=null;S.more=null;render();}return;}
