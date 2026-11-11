@@ -100,6 +100,21 @@ Amendments:
 - **D17. Agents are named and customisable.** Personality is part of the product, kept restrained.
 - **D8 amended:** installer uses Cloudflare OAuth or an API token to deploy directly; the "Deploy to Cloudflare" button (which requires a GitHub or GitLab account) is the developer path only. OAuth deploy scope is unconfirmed and joins R3.
 
+## 4b. Card-first experience (added 2026-11-11, founder direction)
+
+**D18. The card is the primary output primitive; chat is the escape hatch.**
+Agents emit typed, structured cards, not prose, wherever a card type fits. Every card can open a chat with that card as context.
+
+- **Card protocol.** A versioned schema of card types: `brief`, `digest`, `meeting`, `needs-reply`, `triage-item`, `draft`, `monitor`, `approval`, `fyi`. Each has a fixed data shape, a provenance field (agent, run, sources) and a declared action set. Clients render from the schema; the model never emits UI markup.
+- **Today deck.** A finite, ordered deck generated on a schedule, with a real end state. Deck length is capped; overflow is summarised, not appended.
+- **Triage stack.** One decision per card. Swipe right queues a draft, left ignores; snooze and unsubscribe are explicit buttons. A swipe never performs an irreversible action. Every swipe is undoable. Buttons and keyboard shortcuts are equal citizens to gestures.
+- **Drafts queue.** Send is always a separate explicit action with the recipient shown (consistent with D6).
+- **Templates declare the card types they emit** (extends D9), which keeps third-party templates inside the reviewed visual vocabulary.
+- **Cost.** The morning deck is not latency-sensitive, so it is produced with the Batch API where the 50% discount applies, on Haiku with Sonnet for drafts.
+- **Accessibility.** Each card type has a defined reading order and non-gesture path from the first version.
+
+Risks: decision fatigue if the deck is long; binary swipes hiding nuance; visual richness tempting us to render unverified model claims as confident tiles. Digest tiles therefore always carry a source link.
+
 ## 5. Open risks and the spikes that close them
 
 | # | Risk | Spike (owner) |
