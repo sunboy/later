@@ -828,7 +828,7 @@ input.sw:checked::after{transform:translateX(20px)}
 .wr-i.ok svg{color:var(--ok);margin-top:2px}
 .wr-i.st svg{color:var(--warn);margin-top:2px}
 .wr-pace{margin:0;font-size:0.8125rem;color:var(--ink-2)}
-.wr-prop{margin:auto 12px 12px;padding:12px 14px;border-radius:var(--r-lg);background:var(--surface-2);box-shadow:var(--hl);display:grid;gap:6px}
+.wr-prop{margin:16px 12px 12px;padding:12px 14px;border-radius:var(--r-lg);background:var(--surface-2);box-shadow:var(--hl);display:grid;gap:6px}
 .wr-pt{display:flex;gap:10px;align-items:center}
 .wr-pt b{font-family:var(--f-display);font-size:1.125rem;letter-spacing:-.01em;line-height:1.15}
 .wr-pt .kicon{width:28px;height:28px;border-radius:var(--r-sm)}
@@ -2151,7 +2151,7 @@ function apLog(){
 }
 function scrApprovals(ph){
   const L=pendingAppr();
-  const head=`<div class="ph-head"${ph?"":' style="padding:28px 36px 12px"'}>${ph?`<button class="round" data-go="today" aria-label="Back to Today">${ic("chevL")}</button>`:""}<div style="flex:1"><div class="cap">${L.length?`${L.length} waiting · nothing runs until you decide`:"All decided"}</div><h1 style="margin-top:6px${ph?"":";font-size:2.5rem"}">Approvals</h1></div></div>`;
+  const head=`<div class="ph-head"${ph?"":' style="padding:28px 36px 12px"'}>${ph?`<button class="round" data-go="today" aria-label="Back to Today">${ic("chevL")}</button>`:""}<div style="flex:1"><div class="cap">${L.length?`${L.length} waiting on you`:"All decided"}</div><h1 style="margin-top:6px${ph?"":";font-size:2.5rem"}">Approvals</h1></div></div>`;
   const list=L.length?L.map(a=>apCard(a,ph)).join(""):`<div class="empty-c">${ic("shield",28)}<b>No agent is waiting on you.</b><span>Sends, posts, payments and anything that can't be undone stop here first. Changes you allowed run without asking and show in the log.</span></div>`;
   if(ph)return `${head}<div class="ph-pad" style="padding-top:0">${apSeg("approvals")}<div class="aplistw">${list}</div>${apLog()}</div>`;
   return `${head}<div class="ap-desk"><div style="min-width:0">${apSeg("approvals")}<div class="aplistw">${list}</div></div><aside class="ap-side">${apLog()}<div class="ctx-card" style="margin-top:20px"><div class="bd"><b style="font-size:1rem">How approvals work</b><span class="muted" style="font-size:0.8125rem">Each card is built from the exact tool call, not a summary. Anything that sends, posts, pays, shares or deletes always asks. A run that read email or web pages always asks too, even for changes you could undo.</span></div></div></aside></div>`;

@@ -122,14 +122,16 @@ Lengths are counted in UTF-16 code units (JavaScript `string.length`).
 
 ### `draft`
 
-| Field        | Type                                           | Notes |
-| ------------ | ---------------------------------------------- | ----- |
-| `to`         | `{ name?: Short, address: email }[]`, 1 to 100 |       |
-| `cc?`        | same shape, at most 100                        |       |
-| `subject`    | Short                                          |       |
-| `body`       | Long                                           |       |
-| `inReplyTo?` | message ref                                    |       |
-| `tone?`      | Short, at most 40                              |       |
+| Field                  | Type                                                                           | Notes                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `to`                   | `{ name?: Short, address: email, origin: thread \| known \| new }[]`, 1 to 100 | `origin` is set by the host, never the model: a thread participant, an address in people memory, or neither |
+| `cc?`                  | same shape, at most 100                                                        |                                                                                                             |
+| `subject`              | Short                                                                          |                                                                                                             |
+| `body`                 | Long                                                                           |                                                                                                             |
+| `inReplyTo?`           | message ref                                                                    |                                                                                                             |
+| `tone?`                | Short, at most 40                                                              |                                                                                                             |
+| `needsRecipientCheck?` | boolean                                                                        | must be `true` when provenance is `untrusted` and any `to` or `cc` recipient is `new`                       |
+| `recipientConfirmed?`  | boolean                                                                        | set once the user has separately confirmed the recipients                                                   |
 
 ### `monitor`
 
@@ -205,24 +207,25 @@ Lengths are counted in UTF-16 code units (JavaScript `string.length`).
 
 `CARD_ACTIONS: Record<CardType, readonly CardAction[]>` is the closed list of actions a client may offer; `CardAction` is `{ id, effect }` with effect `none`, `local`, `reversible` or `irreversible`. Action ids are bare (`send`); the qualified form `draft.send` names the same action.
 
-| Type          | Actions (effect)                                                             |
-| ------------- | ---------------------------------------------------------------------------- |
-| `brief`       | discuss (none), dismiss, snooze, undo (local)                                |
-| `digest`      | discuss (none), dismiss, snooze, file, undo (local)                          |
-| `meeting`     | discuss (none), dismiss, snooze, undo (local)                                |
-| `needs-reply` | discuss (none), dismiss, snooze, undo (local)                                |
-| `triage-item` | discuss (none), reply, ignore, snooze, mute, undo (local)                    |
-| `draft`       | discuss (none), edit, discard, snooze, undo (local), **send (irreversible)** |
-| `monitor`     | discuss (none), dismiss, snooze, mute, file, undo (local)                    |
-| `approval`    | discuss (none), deny (local), **approve (irreversible)**                     |
-| `fyi`         | discuss (none), dismiss, undo (local), revert (reversible)                   |
-| `task`        | discuss (none), start, wait, complete, reopen, snooze, move, undo (local)    |
-| `status`      | discuss (none), dismiss (local)                                              |
-| `review`      | discuss (none), keep, pause, archive, nudge, snooze, undo (local)            |
-| `filed`       | discuss (none), dismiss, move, undo (local)                                  |
+| Type          | Actions (effect)                                                                                |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| `brief`       | discuss (none), dismiss, snooze, undo (local)                                                   |
+| `digest`      | discuss (none), dismiss, snooze, file, undo (local)                                             |
+| `meeting`     | discuss (none), dismiss, snooze, undo (local)                                                   |
+| `needs-reply` | discuss (none), dismiss, snooze, undo (local)                                                   |
+| `triage-item` | discuss (none), reply, ignore, snooze, mute, undo (local)                                       |
+| `draft`       | discuss (none), edit, confirm-recipient, discard, snooze, undo (local), **send (irreversible)** |
+| `monitor`     | discuss (none), dismiss, snooze, mute, file, undo (local)                                       |
+| `approval`    | discuss (none), deny (local), **approve (irreversible)**                                        |
+| `fyi`         | discuss (none), dismiss, undo (local), revert (reversible)                                      |
+| `task`        | discuss (none), start, wait, complete, reopen, snooze, move, undo (local)                       |
+| `status`      | discuss (none), dismiss (local)                                                                 |
+| `review`      | discuss (none), keep, pause, archive, nudge, snooze, undo (local)                               |
+| `filed`       | discuss (none), dismiss, move, undo (local)                                                     |
 
 - `actionsFor(card)` returns the list for the card with effects resolved: `approve` is `irreversible` when the approval's risk is `irreversible` or `exfiltration`, and `reversible` when it is `reversible-write`, and `revert` is only offered when an `fyi` card has `data.undo`.
 - `isActionAllowed(card, actionId)` is true when the id (bare, or qualified with the card's own type) is in `actionsFor(card)`. It does not consider card state.
+- A draft with `needsRecipientCheck: true` offers `confirm-recipient` and withholds `send` until `recipientConfirmed` is true. Other drafts never offer `confirm-recipient`. Clients must show the recipient confirmation as a separate step from Send.
 - `undo` (local) reverses the last card-state change. `fyi.revert` runs the card's undo tool call and so is a reversible write that goes through the policy gate.
 - `triage-item.reply` and `review.nudge` only create a draft card; sending is a separate `draft.send`.
 
@@ -313,6 +316,13 @@ A `ToolRegistry` is an array of descriptors, a `Map` keyed by name, or a record 
 - Render every string as text, never as HTML or markup.
 - **Clients never fetch a model-supplied URL automatically**: no image loading, link previews or prefetching. Any URL in a card (source links, `joinUrl`, digest tiles) is followed only on an explicit user action. An automatic fetch would let injected content send private data out through the URL.
 - Approval cards are rendered from `argsPreview`, which the host builds from the actual tool arguments.
+
+## Known limits
+
+Accepted residual risks in protocol version 1:
+
+- A `fixed` egress tool with free-text arguments, such as a search query, can disclose private text to that fixed provider. The text does not reach an attacker, and the install screen names the provider.
+- A user-requested lookup of an arbitrary site during a run that has read mail needs one approval, because `web.fetch` has `open` egress. A per-Space domain allowlist is planned for M1.
 
 ## Fixtures
 

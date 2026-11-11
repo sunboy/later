@@ -34,7 +34,9 @@ const move = a('move', 'local');
  * `approval.approve` is listed with its worst-case effect, `irreversible`.
  * `actionsFor` narrows it to `reversible` for approvals whose tier is
  * `reversible-write`. `fyi.revert` runs the card's undo tool call and is only
- * offered by `actionsFor` when the card carries `data.undo`.
+ * offered by `actionsFor` when the card carries `data.undo`. `draft.confirm-recipient`
+ * is offered only while a draft needs a recipient check that has not been done,
+ * and `draft.send` is withheld until it has.
  */
 export const CARD_ACTIONS: Readonly<Record<CardType, readonly CardAction[]>> = Object.freeze({
   brief: list(discuss, dismiss, snooze, undo),
@@ -52,6 +54,7 @@ export const CARD_ACTIONS: Readonly<Record<CardType, readonly CardAction[]>> = O
   draft: list(
     discuss,
     a('edit', 'local'),
+    a('confirm-recipient', 'local'),
     a('send', 'irreversible'),
     a('discard', 'local'),
     snooze,

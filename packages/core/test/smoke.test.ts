@@ -59,7 +59,14 @@ describe('canonical hashing', () => {
         ),
       ) as { data: Record<string, unknown> };
     const { to, subject, body } = read('draft').data;
-    expect(await hashArgs('mail.send', { to, subject, body })).toBe(read('approval').data.argsHash);
+    // The send arguments carry name and address only; `origin` is card metadata.
+    const recipients = (to as { name: string; address: string }[]).map(({ name, address }) => ({
+      name,
+      address,
+    }));
+    expect(await hashArgs('mail.send', { to: recipients, subject, body })).toBe(
+      read('approval').data.argsHash,
+    );
   });
 });
 

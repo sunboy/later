@@ -112,9 +112,19 @@ export const TriageItemDataSchema = z.strictObject({
   messageRef: MessageRefSchema,
 });
 
-const RecipientSchema = z.strictObject({
+/**
+ * Where a draft recipient came from, set by the host, never the model:
+ * `thread` (a participant in the thread being answered), `known` (already in the
+ * user's people memory) or `new` (neither).
+ */
+export const RECIPIENT_ORIGINS = ['thread', 'known', 'new'] as const;
+export const RecipientOriginSchema = z.enum(RECIPIENT_ORIGINS);
+export type RecipientOrigin = z.infer<typeof RecipientOriginSchema>;
+
+export const RecipientSchema = z.strictObject({
   name: ShortText.optional(),
   address: EmailAddressSchema,
+  origin: RecipientOriginSchema,
 });
 
 export const DraftDataSchema = z.strictObject({
@@ -124,7 +134,19 @@ export const DraftDataSchema = z.strictObject({
   body: LongText,
   inReplyTo: MessageRefSchema.optional(),
   tone: ShortText.max(40).optional(),
+  /** Required `true` when provenance is untrusted and any recipient is `new`. */
+  needsRecipientCheck: z.boolean().optional(),
+  /** Set when the user has separately confirmed the recipients. */
+  recipientConfirmed: z.boolean().optional(),
 });
+
+/** True when the draft must have its recipients confirmed before `send` is offered. */
+export function draftNeedsRecipientCheck(
+  untrusted: boolean,
+  data: { to: { origin: RecipientOrigin }[]; cc?: { origin: RecipientOrigin }[] | undefined },
+): boolean {
+  return untrusted && [...data.to, ...(data.cc ?? [])].some((r) => r.origin === 'new');
+}
 
 export const MonitorDataSchema = z.strictObject({
   subject: ShortText.min(1),
@@ -292,6 +314,17 @@ export const CardSchema = z
     FiledCardSchema,
   ])
   .superRefine((c, ctx) => {
+    if (
+      c.type === 'draft' &&
+      draftNeedsRecipientCheck(c.provenance.untrusted, c.data) &&
+      c.data.needsRecipientCheck !== true
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['data', 'needsRecipientCheck'],
+        message: 'An untrusted draft with a new recipient must set `needsRecipientCheck: true`',
+      });
+    }
     const snoozed = c.state === 'snoozed';
     if (snoozed && c.snoozedUntil === undefined) {
       ctx.addIssue({

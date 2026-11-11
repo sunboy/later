@@ -25,7 +25,8 @@
     "to": [
       {
         "address": "sam@example.com",
-        "name": "Sam"
+        "name": "Sam",
+        "origin": "thread"
       }
     ],
     "subject": "Venue for Friday",

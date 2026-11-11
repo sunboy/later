@@ -62,6 +62,25 @@ describe('protocol smoke', () => {
     expect(actionsFor(parsed.value).some((a) => a.id === 'discuss')).toBe(true);
   });
 
+  it('gates send on a recipient check for untrusted drafts to new recipients', () => {
+    const draft = fixture('cards/draft.json') as { data: { to: object[] } };
+    const toNew = {
+      ...draft,
+      data: { ...draft.data, to: [{ address: 'x@evil.example', origin: 'new' }] },
+    };
+    expect(parseCard(toNew).ok).toBe(false);
+    const checked = parseCard({ ...toNew, data: { ...toNew.data, needsRecipientCheck: true } });
+    if (!checked.ok) throw new Error('expected valid');
+    expect(isActionAllowed(checked.value, 'send')).toBe(false);
+    expect(isActionAllowed(checked.value, 'confirm-recipient')).toBe(true);
+    const confirmed = parseCard({
+      ...toNew,
+      data: { ...toNew.data, needsRecipientCheck: true, recipientConfirmed: true },
+    });
+    if (!confirmed.ok) throw new Error('expected valid');
+    expect(isActionAllowed(confirmed.value, 'send')).toBe(true);
+  });
+
   it('accepts the valid manifest and summarises it', () => {
     const input = fixture('manifests/valid.json');
     expect(validateTemplateManifest(input, BUILTIN_TOOLS)).toEqual([]);

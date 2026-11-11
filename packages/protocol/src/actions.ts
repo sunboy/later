@@ -16,6 +16,9 @@ const REVERSIBLE_APPROVE: CardAction = Object.freeze({ id: 'approve', effect: 'r
  * - `approval.approve` is `reversible` when the approval's risk is `reversible-write`,
  *   and `irreversible` for `irreversible` and `exfiltration` risks.
  * - `fyi.revert` is offered only when the card has `data.undo`.
+ * - A draft with `needsRecipientCheck` offers `confirm-recipient` and withholds
+ *   `send` until `recipientConfirmed` is true; other drafts never offer
+ *   `confirm-recipient`.
  */
 export function actionsFor(card: Card): readonly CardAction[] {
   const base = CARD_ACTIONS[card.type];
@@ -28,6 +31,12 @@ export function actionsFor(card: Card): readonly CardAction[] {
       return card.data.undo !== undefined
         ? base
         : Object.freeze(base.filter((x) => x.id !== 'revert'));
+    case 'draft': {
+      const pending =
+        card.data.needsRecipientCheck === true && card.data.recipientConfirmed !== true;
+      const hidden = pending ? 'send' : 'confirm-recipient';
+      return Object.freeze(base.filter((x) => x.id !== hidden));
+    }
     default:
       return base;
   }
