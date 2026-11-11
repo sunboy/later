@@ -28,8 +28,10 @@ Amended by M0.1 (A1 to A4).
   - Addition: `memoryPrivacyFor(run)` returns whether that entry must be marked private (`run.touchedPrivate`). Without it, private data written to memory by an inbox run would read back as non-private in a later run.
 - `DeviceConfirmation` is `{ argsHash, deviceId, nonce, confirmedAt }`. `PolicyContext` gains `knownDevices?`, `usedNonces?` (a missing set means none) and `confirmationMaxAgeMs?` (default `DEFAULT_CONFIRMATION_MAX_AGE_MS`, 120000). A confirmation dated in the future, older than the maximum age, or with an unparseable date is ignored. **The runtime must verify the device signature before putting a confirmation in the context.** Core cannot.
 - The approval rule also requires `approval.spaceId === context.spaceId`. An approval or confirmation that does not match falls through to the later rules.
-- **Rule 3 interpretation.** A `read` tool at exfiltration risk (it has egress, and the run has both ingested untrusted content and touched private data) is not refused outright. Rules 4 and 5 still apply, so a matching approval or device confirmation allows it. Without one, the result is `require-approval` (`exfiltration-risk`). If rule 3 returned before rule 4, as the amended text reads literally, approving such a call would be impossible.
-- **Approving a read tool.** `requestApproval` rejects the `read` tier, and approval cards never carry it. Hosts request approval for an exfiltration-risk read with tier `irreversible`, since data that has left cannot be recalled. Redemption matches on tool name and hash only.
+- **Rule 3 interpretation.** A `read` tool at exfiltration risk (it has `open` egress, and the run has both ingested untrusted content and touched private data) is not refused outright. Rules 4 and 5 still apply, so a matching approval or device confirmation allows it. Without one, the result is `require-approval` (`exfiltration-risk`). If rule 3 returned before rule 4, as the amended text reads literally, approving such a call would be impossible.
+- **Approvals name their risk (A9).** `Approval.risk` is `reversible-write`, `irreversible` or `exfiltration`. An exfiltration-risk read is approved with `tier: 'read', risk: 'exfiltration'`. Redemption matches on tool name and hash only.
+- **`fixed` egress (A8)** is allowed in any run; only `open` egress triggers rule 3.
+- **`Decision.surface` (A7)** is true only for a rule 6 allow in a run with `ingestedUntrusted`. The host must emit an `fyi` card with `undo` for that action and count it in the brief. Every other decision has `surface: false`.
 - `addAlwaysAllow(set, tool): Result<ReadonlySet<string>, 'not-reversible-write'>` returns a new set.
 
 `ReasonCode` (also `REASON_CODES`):
@@ -52,7 +54,7 @@ Amended by M0.1 (A1 to A4).
 ## Approvals
 
 - `Approval` is as specified; timestamps are ISO strings.
-- `requestApproval(input, now, id)`, with `input: { spaceId, tool, argsHash, tier, ttlMs? }`. `ttlMs` defaults to `DEFAULT_APPROVAL_TTL_MS` (24 hours). Throws for a `read` tier or a non-positive TTL.
+- `requestApproval(input, now, id)`, with `input: { spaceId, tool, argsHash, tier, risk?, ttlMs? }`. `risk` defaults to the tier for reversible-write and irreversible tools. A `read` tool needs `risk: 'exfiltration'`. An `irreversible` tool cannot carry `risk: 'reversible-write'` (`isRiskConsistent` in protocol). `ttlMs` defaults to `DEFAULT_APPROVAL_TTL_MS` (24 hours). Throws for an inconsistent risk or a non-positive TTL.
 - `grant(approval, now): Approval` and `deny(approval, now): Approval` return an approval, not a `Result`. `grant` moves `pending` to `granted`, or to `expired` if past expiry. `deny` moves `pending` or `granted` to `denied` (so it also revokes), or a pending approval past expiry to `expired`. Any other status is returned unchanged.
 - `expire(approval, now)` marks a pending or granted approval `expired` once due. `isExpired(approval, now)` is true at and after `expiresAt`.
 - `redeem(approval, request, now): Result<Approval, ReasonCode>` succeeds only for a `granted`, unexpired approval whose tool name and `argsHash` both match. The result is `redeemed`, and redeeming it again fails with `approval-already-redeemed`. `approvalFailure(approval, request, now)` returns the failure reason or `null`.

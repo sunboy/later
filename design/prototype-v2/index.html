@@ -1197,7 +1197,7 @@ input.sw:checked::after{transform:translateX(20px)}
 .tab-cap:active span.cb{transform:scale(.92);transition-duration:100ms}
 .tab-cap::before{inset:-1px;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px}
 .hd-ctl{display:flex;gap:8px}
-.round .bdg{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:var(--risk);color:var(--on-risk,#fff);font-size:0.625rem;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.round .bdg{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:var(--r-pill);background:var(--risk);color:var(--on-risk,#fff);font-size:0.625rem;font-weight:700;display:grid;place-items:center;padding:0 4px}
 .round{position:relative}
 .xlink{display:flex;gap:10px;align-items:center;width:100%;min-height:48px;padding:0 14px;border-radius:var(--r-lg);margin:0 0 14px;font-size:0.875rem;font-weight:600;text-align:left}
 .xlink .sp{flex:1}
@@ -2233,7 +2233,7 @@ function scrWeekly(ph){
      <button class="btn pri" data-act="wr-close">Back to Today</button><button class="btn ghost sm" data-act="wr-reset" style="margin-top:8px">Reset review (demo)</button></div>`;}
   else{const b=WR[i+1],c=WR[i+2];stage=`<div class="tint r"></div><div class="tint l"></div><div class="reveal r">${ic("check",34,2)}<span>Accept</span></div><div class="reveal l">${ic("x",34,2)}<span>Keep as is</span></div>${c?wrCard(c,"b2"):""}${b?wrCard(b,"b1"):""}${wrCard(w,"front"+(S.settle?" settle":""))}`;}
   const k=w?(S.wr.pick[w.sp]||w.prop.k):"";
-  const ctl=w?`<div class="tri-ctrl wr-ctrl"><button class="tb" data-wract="keep"><span class="c">${ic("x",24,2)}</span>Keep as is</button><button class="tb undo" data-wract="undo" ${S.wr.hist.length?"":"disabled"} aria-label="Undo last decision"><span class="c">${ic("undo",20)}</span>Undo</button><button class="tb big" data-wract="accept"><span class="c">${ic("check",24,2.2)}</span>${WR_VERB[k]}</button></div>`:"";
+  const ctl=w?`<div class="tri-ctrl wr-ctrl"><button class="tb" data-wract="keep"><span class="c">${ic("x",24,2)}</span>Keep as is</button><button class="tb undo" data-wract="undo" ${S.wr.hist.length?"":"disabled"} aria-label="Undo last swipe"><span class="c">${ic("undo",20)}</span>Undo</button><button class="tb big" data-wract="accept"><span class="c">${ic("check",24,2.2)}</span>${WR_VERB[k]}</button></div>`:"";
   const body=`<div class="tri">${head}<div class="tri-stage" id="tri-stage">${stage}</div>${ctl}</div>`;
   if(ph)return body;
   return `<div class="tri-desk"><aside class="t-list"><h2>This week</h2>${WR.map((x,j)=>`<div class="t-row ${j<i?"is-done":""}" aria-current="${j===i}">${emb(SP(x.sp),32)}<span class="tt"><b>${esc(SP(x.sp).name)}</b><small>${j<i?WR_VERB[S.wr.res[x.sp]]:esc(x.prop.t)}</small></span></div>`).join("")}</aside>${body}<aside class="t-ctx"><div><h2 style="margin:0 0 12px;font-family:var(--f-display);font-size:1.125rem">Keys</h2><div class="keys"><div><span>Accept the proposal</span><kbd>→</kbd></div><div><span>Keep as is</span><kbd>←</kbd></div><div><span>Undo</span><kbd>Z</kbd></div></div></div><div class="ctx-card"><div class="bd"><b>What the review does</b><span class="muted" style="font-size:0.875rem">One card per Space that changed or stalled this week. Accepting a pause or archive takes effect now and can be undone from the Space. A nudge only writes a draft.</span></div></div><div class="src" style="color:var(--ink-2)">${ic("coin",14)} Built Sunday 18:00 with Haiku · $0.03</div></aside></div>`;

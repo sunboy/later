@@ -17,6 +17,7 @@ import {
   RISK_TIERS,
   ToolNameSchema,
   findTool,
+  type Egress,
   type RiskTier,
   type ToolDescriptor,
   type ToolRegistry,
@@ -285,7 +286,7 @@ export interface ToolPermission {
   connector: string;
   tier: RiskTier;
   description: string;
-  egress: boolean;
+  egress: Egress;
   readsPrivate: boolean;
   /** Agents in the template that may call this tool. */
   agentIds: string[];
@@ -296,8 +297,10 @@ export interface PermissionSummary {
   toolsByTier: Record<RiskTier, ToolPermission[]>;
   /** Every irreversible tool, by name. The install screen must show each one. */
   irreversibleTools: string[];
-  /** Every tool that can send data out of the user's account, by name. */
-  egressTools: string[];
+  /** Tools that disclose data to a fixed service (the query reaches that provider), by name. */
+  fixedEgressTools: string[];
+  /** Tools that can send data to a destination the model chooses, by name. */
+  openEgressTools: string[];
   /** Tool names not found in the registry. A manifest with any should not be installed. */
   unknownTools: string[];
   routines: {
@@ -313,6 +316,12 @@ export interface PermissionSummary {
   skills: string[];
   mcpServers: { name: string; url: string }[];
 }
+
+const egressNamed = (byTier: Record<RiskTier, ToolPermission[]>, level: Egress): string[] =>
+  RISK_TIERS.flatMap((t) => byTier[t])
+    .filter((t) => t.egress === level)
+    .map((t) => t.name)
+    .sort();
 
 /** What the install screen must show. Tools are sorted by name within each tier. */
 export function summarizePermissions(
@@ -358,10 +367,8 @@ export function summarizePermissions(
     })),
     toolsByTier,
     irreversibleTools: toolsByTier.irreversible.map((t) => t.name),
-    egressTools: RISK_TIERS.flatMap((t) => toolsByTier[t])
-      .filter((t) => t.egress)
-      .map((t) => t.name)
-      .sort(),
+    fixedEgressTools: egressNamed(toolsByTier, 'fixed'),
+    openEgressTools: egressNamed(toolsByTier, 'open'),
     unknownTools: [...unknown].sort(),
     routines: manifest.routines.map((r) => ({
       id: r.id,

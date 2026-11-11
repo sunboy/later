@@ -18,7 +18,7 @@ import {
   type Result,
   type ValidationIssue,
 } from './common.js';
-import { ToolNameSchema } from './tools.js';
+import { RiskTierSchema, ToolNameSchema, type RiskTier } from './tools.js';
 import { CARD_TYPES, CardTypeSchema, type CardType } from './card-types.js';
 import { CARD_ACTIONS } from './action-table.js';
 
@@ -135,19 +135,39 @@ export const MonitorDataSchema = z.strictObject({
   source: SourceSchema,
 });
 
-/** Tiers an approval can carry. `read` never needs approval. */
-export const ApprovalTierSchema = z.enum(['reversible-write', 'irreversible']);
+/** What an approval covers. `exfiltration`: a read tool with open egress in a risky run. */
+export const APPROVAL_RISKS = ['reversible-write', 'irreversible', 'exfiltration'] as const;
+export const ApprovalRiskSchema = z.enum(APPROVAL_RISKS);
+export type ApprovalRisk = z.infer<typeof ApprovalRiskSchema>;
 
-export const ApprovalDataSchema = z.strictObject({
-  approvalId: ApprovalIdSchema,
-  tool: ToolNameSchema,
-  argsHash: ArgsHashSchema,
-  argsPreview: z.array(z.strictObject({ label: TitleText, value: BodyText })).max(50),
-  recipient: ShortText.optional(),
-  tier: ApprovalTierSchema,
-  reason: ShortText.min(1),
-  expiresAt: TimestampSchema,
-});
+/**
+ * True when an approval's tool tier and risk agree: `read` only with
+ * `exfiltration`; `irreversible` with `irreversible` or `exfiltration`;
+ * `reversible-write` with any risk.
+ */
+export function isRiskConsistent(tier: RiskTier, risk: ApprovalRisk): boolean {
+  if (tier === 'read') return risk === 'exfiltration';
+  if (tier === 'irreversible') return risk !== 'reversible-write';
+  return true;
+}
+
+export const ApprovalDataSchema = z
+  .strictObject({
+    approvalId: ApprovalIdSchema,
+    tool: ToolNameSchema,
+    argsHash: ArgsHashSchema,
+    argsPreview: z.array(z.strictObject({ label: TitleText, value: BodyText })).max(50),
+    recipient: ShortText.optional(),
+    tier: RiskTierSchema,
+    risk: ApprovalRiskSchema,
+    reason: ShortText.min(1),
+    expiresAt: TimestampSchema,
+  })
+  .refine((a) => isRiskConsistent(a.tier, a.risk), {
+    message:
+      '`tier` may be `read` only when `risk` is `exfiltration`, and an irreversible tool cannot be approved as a reversible write',
+    path: ['risk'],
+  });
 
 export const FyiDataSchema = z.strictObject({
   summary: BodyText.min(1),

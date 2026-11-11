@@ -41,6 +41,10 @@ describe('protocol smoke', () => {
       expect(ToolDescriptorSchema.safeParse(tool).success).toBe(true);
     const send = BUILTIN_TOOLS.find((t) => t.name === 'mail.send');
     expect(ToolDescriptorSchema.safeParse({ ...send, contained: true }).success).toBe(false);
+    const approval = fixture('cards/approval.json') as { data: Record<string, unknown> };
+    const asRead = { ...approval, data: { ...approval.data, tier: 'read' } };
+    expect(parseCard(asRead).ok).toBe(false);
+    expect(parseCard({ ...asRead, data: { ...asRead.data, risk: 'exfiltration' } }).ok).toBe(true);
   });
 
   it('only draft.send and approval.approve are irreversible', () => {
@@ -65,6 +69,8 @@ describe('protocol smoke', () => {
     if (!parsed.ok) throw new Error('fixture invalid');
     const summary = summarizePermissions(parsed.value, BUILTIN_TOOLS);
     expect(summary.irreversibleTools).toEqual(['mail.send']);
+    expect(summary.openEgressTools).toEqual(['mail.send']);
+    expect(summary.fixedEgressTools).toEqual([]);
     expect(summary.models).toEqual(['haiku', 'sonnet']);
   });
 

@@ -35,7 +35,7 @@ const fresh: RunContext = { initiatedBy: 'agent', ingestedUntrusted: false, touc
 
 const context = (over: Partial<PolicyContext> = {}): PolicyContext => ({
   spaceId: 'space_home',
-  grantedConnectors: new Set(['mail', 'web']),
+  grantedConnectors: new Set(['mail', 'web', 'weather']),
   alwaysAllow: new Set(['mail.create_draft', 'mail.archive']),
   run: fresh,
   budgetStatus: 'ok',
@@ -98,9 +98,38 @@ describe('policy gate and approvals', () => {
     expect(memoryTaintFor(run)).toBe('external');
     const draft = await buildRequest(tool('mail.create_draft'), { to: 'sam@example.com' });
     const fetch = await buildRequest(tool('web.fetch'), { url: 'https://example.com/?q=secret' });
-    expect((await decide(draft, context({ run }))).outcome).toBe('allow');
+    expect(await decide(draft, context({ run }))).toMatchObject({
+      outcome: 'allow',
+      surface: true,
+    });
+    expect((await decide(draft, context())).surface).toBe(false);
+    const weather = await buildRequest(tool('weather.get'), { place: 'Leeds' });
+    expect((await decide(weather, context({ run }))).outcome).toBe('allow');
     expect(await decide(fetch, context({ run }))).toMatchObject({ reason: 'exfiltration-risk' });
     expect((await decide(fetch, context())).outcome).toBe('allow');
+
+    const approval = grant(
+      requestApproval(
+        {
+          spaceId: 'space_home',
+          tool: 'web.fetch',
+          argsHash: fetch.argsHash,
+          tier: 'read',
+          risk: 'exfiltration',
+        },
+        now,
+        'appr_2',
+      ),
+      now,
+    );
+    expect((await authorize(fetch, context({ run, approval }))).decision.reason).toBe('approved');
+    expect(() =>
+      requestApproval(
+        { spaceId: 's', tool: 'web.fetch', argsHash: fetch.argsHash, tier: 'read' },
+        now,
+        'x',
+      ),
+    ).toThrow();
   });
 
   it('accepts a fresh device confirmation once', async () => {

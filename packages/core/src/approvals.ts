@@ -1,11 +1,11 @@
-import type { Result } from '@later/protocol';
+import { isRiskConsistent, type ApprovalRisk, type Result, type RiskTier } from '@later/protocol';
 import type { ReasonCode } from './reasons.js';
 
 /** Default approval lifetime: 24 hours. */
 export const DEFAULT_APPROVAL_TTL_MS = 24 * 60 * 60 * 1000;
 
 export type ApprovalStatus = 'pending' | 'granted' | 'denied' | 'redeemed' | 'expired';
-export type ApprovalTier = 'reversible-write' | 'irreversible';
+export type { ApprovalRisk };
 
 export interface Approval {
   readonly id: string;
@@ -13,7 +13,9 @@ export interface Approval {
   /** Tool name, for example `mail.send`. */
   readonly tool: string;
   readonly argsHash: string;
-  readonly tier: ApprovalTier;
+  readonly tier: RiskTier;
+  /** What the approval covers. `read` tier only with `exfiltration`. */
+  readonly risk: ApprovalRisk;
   /** ISO 8601 UTC. */
   readonly requestedAt: string;
   /** ISO 8601 UTC. The approval is expired at and after this instant. */
@@ -25,7 +27,12 @@ export interface ApprovalInput {
   spaceId: string;
   tool: string;
   argsHash: string;
-  tier: ApprovalTier;
+  tier: RiskTier;
+  /**
+   * Defaults to the tier for `reversible-write` and `irreversible` tools.
+   * Required, and must be `exfiltration`, for a `read` tool.
+   */
+  risk?: ApprovalRisk;
   /** Lifetime in milliseconds. Defaults to `DEFAULT_APPROVAL_TTL_MS`. */
   ttlMs?: number;
 }
@@ -49,8 +56,11 @@ export function requestApproval(input: ApprovalInput, now: Date, id: string): Ap
   if (!Number.isSafeInteger(ttl) || ttl <= 0) {
     throw new RangeError('requestApproval: ttlMs must be a positive integer');
   }
-  if ((input.tier as string) === 'read') {
-    throw new RangeError('requestApproval: read tools never need approval');
+  const risk = input.risk ?? (input.tier === 'read' ? undefined : input.tier);
+  if (risk === undefined || !isRiskConsistent(input.tier, risk)) {
+    throw new RangeError(
+      `requestApproval: risk ${String(risk)} does not fit tier ${input.tier} (a read tool needs risk "exfiltration")`,
+    );
   }
   return freeze({
     id,
@@ -58,6 +68,7 @@ export function requestApproval(input: ApprovalInput, now: Date, id: string): Ap
     tool: input.tool,
     argsHash: input.argsHash,
     tier: input.tier,
+    risk,
     requestedAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + ttl).toISOString(),
     status: 'pending',

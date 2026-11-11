@@ -274,3 +274,12 @@ Replace the workaround of approving risky reads as `irreversible`. `Approval` an
 Accepted from the implementer: a risky read falls through to rules 4 and 5 before requiring approval; `memoryPrivacyFor(run)` marks memory written by a run that touched private data.
 
 Constraint recorded for the runner spec (M1), not implemented here: tool availability is fixed when a run starts. A run that can read private data is never given model-provider server-side tools with open egress, because those execute outside this gate.
+
+### A10 — Draft recipients declare where they came from
+An injected message could have an agent prepare a draft addressed to an attacker, waiting for one tap on Send. Each recipient in `draft` data (`to` and `cc`) gains `origin: 'thread' | 'known' | 'new'`: a participant in the thread being answered, an address already in the user's people memory, or neither. The host sets `origin`; the model never does. Validation: a draft whose provenance is `untrusted` and which has any `new` recipient must set `data.needsRecipientCheck: true`, and clients must then require a separate confirmation of the recipient before Send. `actionsFor` exposes `confirm-recipient` (effect `local`) on such drafts and withholds `send` until `data.recipientConfirmed` is true.
+
+Accepted residual risks, to be documented in `docs/protocol.md` under "Known limits":
+- A `fixed` egress tool with free-text arguments (a search query) can disclose private text to that fixed provider. It does not reach an attacker; the install screen discloses the provider.
+- A user-requested lookup of an arbitrary site during a run that has read mail needs one approval. A per-Space allowlist of domains is planned for M1.
+
+M0 is closed to further rule changes after A10. Further scenarios go to the M1 backlog.

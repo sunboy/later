@@ -65,6 +65,12 @@ export interface Decision {
   outcome: Outcome;
   reason: ReasonCode;
   detail: string;
+  /**
+   * True when a write is allowed without a human decision in a run that ingested
+   * untrusted content (rule 6 allow). The host must then emit an `fyi` card with
+   * an `undo` for the action and count it in the day's brief.
+   */
+  surface: boolean;
 }
 
 function deepFreeze<T>(value: T): T {
@@ -98,10 +104,11 @@ export async function verifyRequest(request: ToolRequest): Promise<boolean> {
   }
 }
 
-const d = (outcome: Outcome, reason: ReasonCode, detail: string): Decision => ({
+const d = (outcome: Outcome, reason: ReasonCode, detail: string, surface = false): Decision => ({
   outcome,
   reason,
   detail,
+  surface,
 });
 
 function approvalApplies(
@@ -142,12 +149,13 @@ function confirmationApplies(
  * 0. `argsHash` must match the arguments, else `deny` (`request-tampered`).
  * 1. Connector not granted: `deny`.
  * 2. Budget paused and tier not `read`: `deny`.
- * 3. `read`: `allow`, unless the tool has egress and the run has both ingested
+ * 3. `read`: `allow`, unless the tool has `open` egress and the run has both ingested
  *    untrusted content and touched private data. Then rules 4 and 5 may still
  *    allow it; otherwise `require-approval` (`exfiltration-risk`).
  * 4. A valid approval in this Space for this exact tool and hash: `allow`.
  * 5. A valid device confirmation for this hash in a user-initiated run: `allow`.
- * 6. `reversible-write`: needs `alwaysAllow`; an untrusted run also needs `contained`.
+ * 6. `reversible-write`: needs `alwaysAllow`; an untrusted run also needs `contained`,
+ *    and an allow in an untrusted run sets `surface`.
  * 7. `irreversible`: `require-approval`.
  */
 export async function decide(request: ToolRequest, context: PolicyContext): Promise<Decision> {
@@ -164,7 +172,7 @@ export async function decide(request: ToolRequest, context: PolicyContext): Prom
     return d('deny', 'budget-paused', 'Budget is paused; only read tools may run');
   }
   const exfiltrationRisk =
-    tool.tier === 'read' && tool.egress && run.ingestedUntrusted && run.touchedPrivate;
+    tool.tier === 'read' && tool.egress === 'open' && run.ingestedUntrusted && run.touchedPrivate;
   if (tool.tier === 'read' && !exfiltrationRisk) {
     return d('allow', 'read-only', `"${tool.name}" is a read tool`);
   }
@@ -196,7 +204,7 @@ export async function decide(request: ToolRequest, context: PolicyContext): Prom
         'This run ingested untrusted content and the tool is not contained',
       );
     }
-    return d('allow', 'always-allowed', `"${tool.name}" is always allowed`);
+    return d('allow', 'always-allowed', `"${tool.name}" is always allowed`, run.ingestedUntrusted);
   }
   return d('require-approval', 'irreversible', `"${tool.name}" is irreversible`);
 }

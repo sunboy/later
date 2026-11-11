@@ -13,14 +13,22 @@ export const ToolNameSchema = z.string().max(64).regex(TOOL_NAME_PATTERN, 'Inval
 export const CONNECTOR_ID_PATTERN = /^[a-z][a-z0-9_-]{0,39}$/;
 export const ConnectorIdSchema = z.string().regex(CONNECTOR_ID_PATTERN, 'Invalid connector id');
 
+export const EGRESS_LEVELS = ['none', 'fixed', 'open'] as const;
+export const EgressSchema = z.enum(EGRESS_LEVELS);
+export type Egress = z.infer<typeof EgressSchema>;
+
 export const ToolDescriptorSchema = z
   .strictObject({
     name: ToolNameSchema,
     connector: ConnectorIdSchema,
     tier: RiskTierSchema,
     description: BodyText.min(1),
-    /** The call can transmit data to a party the user did not choose. */
-    egress: z.boolean(),
+    /**
+     * Where the call can send data. `open`: the model chooses the destination
+     * (the exfiltration channel). `fixed`: only to a service fixed by the user or
+     * template, with constrained arguments. `none`: nowhere outside the account.
+     */
+    egress: EgressSchema,
     /** The result contains the user's private data. */
     readsPrivate: z.boolean(),
     /**
@@ -58,7 +66,7 @@ export function findTool(registry: ToolRegistry, name: string): ToolDescriptor |
 }
 
 interface ToolFlags {
-  egress?: boolean;
+  egress?: Egress;
   readsPrivate?: boolean;
   contained?: boolean;
 }
@@ -74,12 +82,13 @@ const tool = (
     connector: name.slice(0, name.indexOf('.')),
     tier,
     description,
-    egress: flags.egress ?? false,
+    egress: flags.egress ?? 'none',
     readsPrivate: flags.readsPrivate ?? false,
     contained: flags.contained ?? false,
   });
 
-const EGRESS = { egress: true } as const;
+const OPEN = { egress: 'open' } as const;
+const FIXED = { egress: 'fixed' } as const;
 const PRIVATE = { readsPrivate: true } as const;
 const CONTAINED = { contained: true } as const;
 
@@ -95,15 +104,21 @@ export const BUILTIN_TOOLS: readonly Readonly<ToolDescriptor>[] = Object.freeze(
   ),
   tool('mail.label', 'reversible-write', 'Add or remove a label on a message.', CONTAINED),
   tool('mail.archive', 'reversible-write', 'Archive a message.', CONTAINED),
-  tool('mail.send', 'irreversible', 'Send an email.', EGRESS),
+  tool('mail.send', 'irreversible', 'Send an email.', OPEN),
   tool('mail.delete', 'irreversible', 'Delete a message.'),
   tool('calendar.read', 'read', 'Read events from the connected calendar.', PRIVATE),
-  tool('web.search', 'read', 'Search the web.', EGRESS),
-  tool('web.fetch', 'read', 'Fetch a web page.', EGRESS),
+  tool('web.search', 'read', 'Search the web with the configured search provider.', FIXED),
+  tool('web.fetch', 'read', 'Fetch a web page.', OPEN),
   // Memory privacy is per entry; the host passes `privateResult` to `markToolUsed`.
   tool('memory.read', 'read', "Read the Space's memory files."),
   tool('memory.write', 'reversible-write', "Write the Space's memory files.", CONTAINED),
-  tool('browser.open', 'read', 'Open a page in the browser.', EGRESS),
+  tool('browser.open', 'read', 'Open a page in the browser.', OPEN),
   tool('browser.read', 'read', 'Read the current browser page.', PRIVATE),
-  tool('browser.submit', 'irreversible', 'Submit a form in the browser.', EGRESS),
+  tool('browser.submit', 'irreversible', 'Submit a form in the browser.', OPEN),
+  tool(
+    'weather.get',
+    'read',
+    'Get the forecast for a place from the configured weather service.',
+    FIXED,
+  ),
 ]);

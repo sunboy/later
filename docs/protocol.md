@@ -144,16 +144,17 @@ Lengths are counted in UTF-16 code units (JavaScript `string.length`).
 
 ### `approval`
 
-| Field         | Type                                          | Notes                                                          |
-| ------------- | --------------------------------------------- | -------------------------------------------------------------- |
-| `approvalId`  | ApprovalId                                    |                                                                |
-| `tool`        | tool name                                     |                                                                |
-| `argsHash`    | argsHash                                      |                                                                |
-| `argsPreview` | `{ label: Title, value: Body }[]`, at most 50 | rendered from the actual tool arguments, never a model summary |
-| `recipient?`  | Short                                         |                                                                |
-| `tier`        | `reversible-write` \| `irreversible`          | never `read`                                                   |
-| `reason`      | Short, non-empty                              |                                                                |
-| `expiresAt`   | timestamp                                     |                                                                |
+| Field         | Type                                                   | Notes                                                                            |
+| ------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `approvalId`  | ApprovalId                                             |                                                                                  |
+| `tool`        | tool name                                              |                                                                                  |
+| `argsHash`    | argsHash                                               |                                                                                  |
+| `argsPreview` | `{ label: Title, value: Body }[]`, at most 50          | rendered from the actual tool arguments, never a model summary                   |
+| `recipient?`  | Short                                                  |                                                                                  |
+| `tier`        | RiskTier                                               | the tool's tier; `read` only when `risk` is `exfiltration`                       |
+| `risk`        | `reversible-write` \| `irreversible` \| `exfiltration` | what the approval covers; an `irreversible` tier cannot carry `reversible-write` |
+| `reason`      | Short, non-empty                                       |                                                                                  |
+| `expiresAt`   | timestamp                                              |                                                                                  |
 
 ### `fyi`
 
@@ -220,7 +221,7 @@ Lengths are counted in UTF-16 code units (JavaScript `string.length`).
 | `review`      | discuss (none), keep, pause, archive, nudge, snooze, undo (local)            |
 | `filed`       | discuss (none), dismiss, move, undo (local)                                  |
 
-- `actionsFor(card)` returns the list for the card with effects resolved: `approve` becomes `reversible` when the approval's tier is `reversible-write`, and `revert` is only offered when an `fyi` card has `data.undo`.
+- `actionsFor(card)` returns the list for the card with effects resolved: `approve` is `irreversible` when the approval's risk is `irreversible` or `exfiltration`, and `reversible` when it is `reversible-write`, and `revert` is only offered when an `fyi` card has `data.undo`.
 - `isActionAllowed(card, actionId)` is true when the id (bare, or qualified with the card's own type) is in `actionsFor(card)`. It does not consider card state.
 - `undo` (local) reverses the last card-state change. `fyi.revert` runs the card's undo tool call and so is a reversible write that goes through the policy gate.
 - `triage-item.reply` and `review.nudge` only create a draft card; sending is a separate `draft.send`.
@@ -229,26 +230,27 @@ Lengths are counted in UTF-16 code units (JavaScript `string.length`).
 
 `RiskTier` is `read`, `reversible-write` or `irreversible`. `ToolDescriptor`:
 
-| Field           | Type             | Notes                                                                                              |
-| --------------- | ---------------- | -------------------------------------------------------------------------------------------------- |
-| `name`          | tool name        | for example `mail.send`                                                                            |
-| `connector`     | connector id     |                                                                                                    |
-| `tier`          | RiskTier         |                                                                                                    |
-| `description`   | Body, non-empty  |                                                                                                    |
-| `egress`        | boolean          | the call can transmit data to a party the user did not choose                                      |
-| `readsPrivate`  | boolean          | the result contains the user's private data                                                        |
-| `contained`     | boolean          | reversible-write only: the effect stays in the user's own account; must be `false` for other tiers |
-| `argsSchemaId?` | string, 1 to 128 |                                                                                                    |
+| Field           | Type                        | Notes                                                                                                                                                                                                            |
+| --------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`          | tool name                   | for example `mail.send`                                                                                                                                                                                          |
+| `connector`     | connector id                |                                                                                                                                                                                                                  |
+| `tier`          | RiskTier                    |                                                                                                                                                                                                                  |
+| `description`   | Body, non-empty             |                                                                                                                                                                                                                  |
+| `egress`        | `none` \| `fixed` \| `open` | `open`: the model chooses the destination or recipient (the exfiltration channel). `fixed`: only to a service fixed by the user or template, with constrained arguments; the query is disclosed to that provider |
+| `readsPrivate`  | boolean                     | the result contains the user's private data                                                                                                                                                                      |
+| `contained`     | boolean                     | reversible-write only: the effect stays in the user's own account; must be `false` for other tiers                                                                                                               |
+| `argsSchemaId?` | string, 1 to 128            |                                                                                                                                                                                                                  |
 
-`BUILTIN_TOOLS` is a frozen array. Each tool's connector is the part of its name before the dot (`mail`, `calendar`, `web`, `memory`, `browser`).
+`BUILTIN_TOOLS` is a frozen array. Each tool's connector is the part of its name before the dot (`mail`, `calendar`, `web`, `memory`, `browser`, `weather`). Flags not listed are `egress: 'none'`, `readsPrivate: false`, `contained: false`.
 
 | Tool                                                              | Tier             | Flags                                             |
 | ----------------------------------------------------------------- | ---------------- | ------------------------------------------------- |
 | `mail.search`, `mail.read`, `calendar.read`, `browser.read`       | read             | readsPrivate                                      |
-| `web.search`, `web.fetch`, `browser.open`                         | read             | egress                                            |
+| `web.fetch`, `browser.open`                                       | read             | egress `open`                                     |
+| `web.search`, `weather.get`                                       | read             | egress `fixed`                                    |
 | `memory.read`                                                     | read             | none (privacy is per entry, reported by the host) |
 | `mail.create_draft`, `mail.label`, `mail.archive`, `memory.write` | reversible-write | contained                                         |
-| `mail.send`, `browser.submit`                                     | irreversible     | egress                                            |
+| `mail.send`, `browser.submit`                                     | irreversible     | egress `open`                                     |
 | `mail.delete`                                                     | irreversible     | none                                              |
 
 A `ToolRegistry` is an array of descriptors, a `Map` keyed by name, or a record keyed by name. `findTool(registry, name)` looks one up.
@@ -300,7 +302,7 @@ A `ToolRegistry` is an array of descriptors, a `Map` keyed by name, or a record 
 - `connectors`: id, scopes and reason for each declared connector.
 - `toolsByTier`: `{ read, 'reversible-write', irreversible }`, each a name-sorted list of `{ name, connector, tier, description, agentIds }`.
 - `irreversibleTools`: the name of every irreversible tool any agent may call, listed explicitly.
-- `egressTools`: the name of every tool that can send data out, listed explicitly. Each `toolsByTier` entry also carries `egress` and `readsPrivate`.
+- `openEgressTools` and `fixedEgressTools`: tool names by egress level, listed separately. The install screen names the provider each fixed tool discloses queries to. Each `toolsByTier` entry also carries `egress` and `readsPrivate`.
 - `unknownTools`: tool names missing from the registry (a manifest with any should not be installed).
 - `routines`: id, name, agentId, trigger, emitted card types and `startsPaused`.
 - `models`: tiers used, in the order haiku, sonnet, opus.

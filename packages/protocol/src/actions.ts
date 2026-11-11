@@ -13,14 +13,15 @@ const REVERSIBLE_APPROVE: CardAction = Object.freeze({ id: 'approve', effect: 'r
 
 /**
  * The actions a client may offer for this card, with effects resolved for its data:
- * - `approval.approve` is `reversible` when the approval's tier is `reversible-write`.
+ * - `approval.approve` is `reversible` when the approval's risk is `reversible-write`,
+ *   and `irreversible` for `irreversible` and `exfiltration` risks.
  * - `fyi.revert` is offered only when the card has `data.undo`.
  */
 export function actionsFor(card: Card): readonly CardAction[] {
   const base = CARD_ACTIONS[card.type];
   switch (card.type) {
     case 'approval':
-      return card.data.tier === 'irreversible'
+      return card.data.risk !== 'reversible-write'
         ? base
         : Object.freeze(base.map((x) => (x.id === 'approve' ? REVERSIBLE_APPROVE : x)));
     case 'fyi':
