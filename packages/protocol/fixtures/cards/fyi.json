@@ -1,0 +1,31 @@
+{
+  "id": "card_fyi",
+  "v": 1,
+  "type": "fyi",
+  "spaceId": "space_home",
+  "title": "Archived newsletters",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "new",
+  "priority": 50,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "summary": "Archived 3 newsletters.",
+    "undo": {
+      "tool": "mail.archive",
+      "argsHash": "38fd8524046d08cd3329a4cd25b27f5bfa46db65baba8fb60b09f4b229ea8e8e",
+      "until": "2026-11-12T07:00:00Z"
+    }
+  }
+}

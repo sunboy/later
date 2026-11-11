@@ -1,5 +1,8 @@
 pnpm-lock.yaml
+LICENSE
+NOTICE
 design/
 .claude/
-docs/architecture.md
 CLAUDE.md
+docs/*
+!docs/protocol.md

@@ -1,0 +1,35 @@
+{
+  "id": "card_monitor",
+  "v": 1,
+  "type": "monitor",
+  "spaceId": "space_home",
+  "title": "Fare dropped",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "new",
+  "priority": 50,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "subject": "Train fare to Leeds",
+    "change": "Down 12%",
+    "before": "£48",
+    "after": "£42",
+    "series": [48, 47, 45, 42],
+    "source": {
+      "kind": "web",
+      "ref": "web_2",
+      "url": "https://example.com/fares"
+    }
+  }
+}

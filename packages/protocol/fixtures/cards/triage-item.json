@@ -1,0 +1,36 @@
+{
+  "id": "card_triage",
+  "v": 1,
+  "type": "triage-item",
+  "spaceId": "space_home",
+  "title": "Sam: venue for Friday",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "decided",
+  "priority": 50,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "from": {
+      "name": "Sam",
+      "address": "sam@example.com"
+    },
+    "subject": "Venue for Friday",
+    "gist": "Asks whether the hall works.",
+    "why": "Direct question to you",
+    "personNote": "Organises the Friday club",
+    "intents": ["Confirm", "Decline"],
+    "messageRef": "msg_123"
+  },
+  "decidedAction": "reply"
+}

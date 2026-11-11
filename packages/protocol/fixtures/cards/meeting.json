@@ -1,0 +1,36 @@
+{
+  "id": "card_meeting",
+  "v": 1,
+  "type": "meeting",
+  "spaceId": "space_work",
+  "title": "Design review at 9",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "new",
+  "priority": 50,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "start": "2026-11-11T09:00:00Z",
+    "end": "2026-11-11T10:00:00Z",
+    "title": "Design review",
+    "attendees": [
+      {
+        "name": "Priya",
+        "note": "Owns the prototype"
+      }
+    ],
+    "prep": ["Read the v3 notes"],
+    "joinUrl": "https://meet.example.com/abc"
+  }
+}

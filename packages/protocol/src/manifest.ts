@@ -37,15 +37,16 @@ const SKILL_SEGMENT = /^[A-Za-z0-9._-]+$/;
 /** A relative path with no `.` or `..` segments, no leading slash and no backslashes. */
 export function isSafeRelativePath(path: string): boolean {
   if (path.length === 0 || path.length > 256) return false;
-  return path
-    .split('/')
-    .every((seg) => SKILL_SEGMENT.test(seg) && seg !== '.' && seg !== '..');
+  return path.split('/').every((seg) => SKILL_SEGMENT.test(seg) && seg !== '.' && seg !== '..');
 }
 
 const positiveMicroUsd = () => z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 
 export const RoutineTriggerSchema = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('schedule'), cron: z.string().regex(CRON_PATTERN, 'Invalid cron') }),
+  z.strictObject({
+    kind: z.literal('schedule'),
+    cron: z.string().regex(CRON_PATTERN, 'Invalid cron'),
+  }),
   z.strictObject({
     kind: z.literal('event'),
     event: z.string().max(64).regex(EVENT_NAME_PATTERN, 'Invalid event name'),
@@ -104,7 +105,9 @@ export const TemplateManifestSchema = z.strictObject({
     .max(32)
     .optional(),
   mcpServers: z
-    .array(z.strictObject({ name: z.string().regex(SLUG, 'Invalid server name'), url: HttpsUrlSchema }))
+    .array(
+      z.strictObject({ name: z.string().regex(SLUG, 'Invalid server name'), url: HttpsUrlSchema }),
+    )
     .max(16)
     .optional(),
 });
@@ -126,6 +129,7 @@ export const MANIFEST_ISSUE_CODES = [
   'unknown-agent',
   'unknown-tool',
   'connector-not-declared',
+  'unsafe-skill-path',
 ] as const;
 export type ManifestIssueCode = (typeof MANIFEST_ISSUE_CODES)[number];
 
@@ -143,8 +147,15 @@ function shapeIssues(error: z.ZodError): ValidationIssue[] {
         message: '`model` must be one of haiku, sonnet, opus (a tier, never a model id)',
       };
     }
+    if (first === 'skills' && last === 'path' && issue.code === 'custom') {
+      return { ...issue, code: 'unsafe-skill-path' };
+    }
     if (first === 'budget' && issue.path.length === 2) {
-      return { ...issue, code: 'budget-invalid', message: 'Budget amounts must be positive integers' };
+      return {
+        ...issue,
+        code: 'budget-invalid',
+        message: 'Budget amounts must be positive integers',
+      };
     }
     return issue;
   });
@@ -318,10 +329,9 @@ export function summarizePermissions(
       byName.set(name, entry);
     }
   }
-  const toolsByTier = Object.fromEntries(RISK_TIERS.map((t) => [t, [] as ToolPermission[]])) as Record<
-    RiskTier,
-    ToolPermission[]
-  >;
+  const toolsByTier = Object.fromEntries(
+    RISK_TIERS.map((t) => [t, [] as ToolPermission[]]),
+  ) as Record<RiskTier, ToolPermission[]>;
   for (const { tool, agentIds } of [...byName.values()].sort((x, y) =>
     x.tool.name.localeCompare(y.tool.name),
   )) {
@@ -335,7 +345,11 @@ export function summarizePermissions(
   }
   const usedModels = new Set(manifest.agents.map((a) => a.model));
   return {
-    connectors: manifest.connectors.map((c) => ({ id: c.id, scopes: [...c.scopes], reason: c.reason })),
+    connectors: manifest.connectors.map((c) => ({
+      id: c.id,
+      scopes: [...c.scopes],
+      reason: c.reason,
+    })),
     toolsByTier,
     irreversibleTools: toolsByTier.irreversible.map((t) => t.name),
     unknownTools: [...unknown].sort(),

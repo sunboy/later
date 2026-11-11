@@ -1,0 +1,28 @@
+{
+  "id": "card_filed",
+  "v": 1,
+  "type": "filed",
+  "spaceId": "space_home",
+  "title": "Filed a note",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "new",
+  "priority": 50,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "summary": "Filed your note under Friday club",
+    "filedInto": "space_home",
+    "fromCapture": "Remember to ask Sam about chairs"
+  }
+}

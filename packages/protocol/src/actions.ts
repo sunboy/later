@@ -1,7 +1,12 @@
 import { CARD_ACTIONS, type CardAction } from './action-table.js';
 import type { Card } from './cards.js';
 
-export { ACTION_EFFECTS, ActionEffectSchema, CARD_ACTIONS, CardActionSchema } from './action-table.js';
+export {
+  ACTION_EFFECTS,
+  ActionEffectSchema,
+  CARD_ACTIONS,
+  CardActionSchema,
+} from './action-table.js';
 export type { ActionEffect, CardAction } from './action-table.js';
 
 const REVERSIBLE_APPROVE: CardAction = Object.freeze({ id: 'approve', effect: 'reversible' });

@@ -89,7 +89,9 @@ export const MeetingDataSchema = timeRange(
     start: TimestampSchema,
     end: TimestampSchema,
     title: TitleText,
-    attendees: z.array(z.strictObject({ name: ShortText.min(1), note: ShortText.optional() })).max(100),
+    attendees: z
+      .array(z.strictObject({ name: ShortText.min(1), note: ShortText.optional() }))
+      .max(100),
     prep: z.array(ShortText.min(1)).max(5),
     joinUrl: HttpsUrlSchema.optional(),
   }),
@@ -249,9 +251,9 @@ export const StatusCardSchema = card('status', StatusDataSchema, false);
 export const ReviewCardSchema = card('review', ReviewDataSchema, true);
 export const FiledCardSchema = card('filed', FiledDataSchema, false);
 
-const knownActionIds = Object.fromEntries(
-  CARD_TYPES.map((t) => [t, new Set(CARD_ACTIONS[t].map((a) => a.id))]),
-) as Record<CardType, ReadonlySet<string>>;
+const knownActionIds = new Map<CardType, ReadonlySet<string>>(
+  CARD_TYPES.map((t) => [t, new Set(CARD_ACTIONS[t].map((x) => x.id))]),
+);
 
 export const CardSchema = z
   .discriminatedUnion('type', [
@@ -285,8 +287,8 @@ export const CardSchema = z
         message: '`snoozedUntil` is only allowed when state is `snoozed`',
       });
     }
-    const ids = knownActionIds[c.type];
-    if (c.decidedAction !== undefined && !ids.has(c.decidedAction)) {
+    const ids = knownActionIds.get(c.type);
+    if (c.decidedAction !== undefined && ids?.has(c.decidedAction) !== true) {
       ctx.addIssue({
         code: 'custom',
         path: ['decidedAction'],

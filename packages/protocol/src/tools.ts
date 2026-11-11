@@ -43,11 +43,7 @@ export function findTool(registry: ToolRegistry, name: string): ToolDescriptor |
   return Object.hasOwn(record, name) ? record[name] : undefined;
 }
 
-const tool = (
-  name: string,
-  tier: RiskTier,
-  description: string,
-): Readonly<ToolDescriptor> =>
+const tool = (name: string, tier: RiskTier, description: string): Readonly<ToolDescriptor> =>
   Object.freeze({ name, connector: name.slice(0, name.indexOf('.')), tier, description });
 
 /** The v1 built-in tool registry. The connector is the part of the name before the dot. */

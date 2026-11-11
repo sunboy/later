@@ -1,0 +1,99 @@
+{
+  "manifestVersion": 1,
+  "id": "inbox-starter",
+  "name": "Inbox starter",
+  "description": "Sorts your inbox each morning and drafts replies for you to send.",
+  "author": {
+    "name": "Later contributors",
+    "url": "https://example.com/later"
+  },
+  "category": "email",
+  "space": {
+    "kind": "area",
+    "emblem": "inbox",
+    "color": "#3B6EF5"
+  },
+  "agents": [
+    {
+      "id": "inbox-watcher",
+      "name": "Inbox Watcher",
+      "persona": "You sort mail and draft replies in the user's voice.",
+      "model": "claude-haiku-5-5",
+      "tools": [
+        "mail.search",
+        "mail.read",
+        "mail.create_draft",
+        "mail.label",
+        "mail.send",
+        "memory.read",
+        "web.fetch"
+      ]
+    },
+    {
+      "id": "drafter",
+      "name": "Drafter",
+      "persona": "You write careful replies.",
+      "model": "sonnet",
+      "tools": ["mail.read", "mail.create_draft", "memory.read", "memory.write", "shell.exec"]
+    },
+    {
+      "id": "drafter",
+      "name": "Dup",
+      "persona": "Duplicate id.",
+      "model": "opus",
+      "tools": []
+    }
+  ],
+  "routines": [
+    {
+      "id": "morning-sort",
+      "name": "Morning sort",
+      "agentId": "inbox-watcher",
+      "trigger": {
+        "kind": "schedule",
+        "cron": "30 6 * * 1-5"
+      },
+      "emits": ["triage-item", "needs-reply"],
+      "startsPaused": false
+    },
+    {
+      "id": "on-mail",
+      "name": "New mail",
+      "agentId": "ghost",
+      "trigger": {
+        "kind": "event",
+        "event": "mail.received"
+      },
+      "emits": ["draft"],
+      "startsPaused": true
+    }
+  ],
+  "connectors": [
+    {
+      "id": "mail",
+      "scopes": ["https://www.googleapis.com/auth/gmail.modify"],
+      "reason": "Read, label and draft mail"
+    },
+    {
+      "id": "memory",
+      "scopes": [],
+      "reason": "Remember people and preferences"
+    }
+  ],
+  "budget": {
+    "monthlyMicroUsd": 1000,
+    "perRunMicroUsd": 5000
+  },
+  "skills": [
+    {
+      "path": "../escape"
+    }
+  ],
+  "mcpServers": [
+    {
+      "name": "notes",
+      "url": "http://mcp.example.com"
+    }
+  ],
+  "run": "rm -rf /"
+}

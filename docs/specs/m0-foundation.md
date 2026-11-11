@@ -206,3 +206,53 @@ Rules:
 - The implementer writes only smoke tests. The full test suite is written separately from this spec by another agent, so the public API must match the names above exactly; where this spec leaves a name open, choose one and list it in `docs/protocol.md` or `packages/core/README.md`.
 - No dependency beyond zod (protocol) and dev tooling.
 - Report every place where the spec was ambiguous or where you deviated, with the reason.
+
+---
+
+## Amendments after architect review (M0.1)
+
+These override the text above where they conflict.
+
+### A1 — The gate verifies the request itself
+`decide` becomes `async` and recomputes `hashArgs(tool.name, args)`. A mismatch returns `deny` with reason `request-tampered`. Correctness must not depend on callers using `buildRequest`.
+
+### A2 — Trust and privacy are properties of sources and tools, not of source kinds
+The original rule (only `email` and `web` taint a run) is too narrow, and tainting alone is too blunt: an inbox agent reads email on every run, so "tainted means ask" would produce constant approvals.
+
+The danger is the combination: **private data + untrusted content + a way to send data out**. The gate enforces that combination.
+
+Protocol changes:
+- `ToolDescriptor` gains:
+  - `egress: boolean` — the call can transmit data to a party the user did not choose (any web fetch or search, opening a URL, external MCP calls, sending).
+  - `readsPrivate: boolean` — the result contains the user's private data (mail, calendar, logged-in pages).
+  - `contained: boolean` — meaningful for `reversible-write` only: the effect stays inside the user's own account and is not visible to anyone else (create a draft, label, archive, write memory). Must be `false` for `read` and `irreversible` tools.
+- `Source` gains `trust: 'user' | 'external'`. `email`, `web` and `calendar` sources are always `external` (schema-enforced). `capture` is always `user`. `memory` and `tool` carry whichever the producer recorded.
+- Update `BUILTIN_TOOLS` accordingly: `web.search`, `web.fetch`, `browser.open`, `browser.submit`, `mail.send` are `egress`; `mail.search`, `mail.read`, `calendar.read`, `browser.read` are `readsPrivate`; `memory.read` is `readsPrivate: false` at descriptor level (see run tracking); `mail.create_draft`, `mail.label`, `mail.archive`, `memory.write` are `contained`.
+
+Run tracking in core:
+- `RunContext` becomes `{ initiatedBy; ingestedUntrusted: boolean; touchedPrivate: boolean }`. Both flags are sticky for the life of a run.
+- `markIngested(run, source)` sets `ingestedUntrusted` when `source.trust === 'external'`.
+- `markToolUsed(run, tool, opts?: { privateResult?: boolean })` sets `touchedPrivate` when `tool.readsPrivate` or `opts.privateResult` is true (the host passes `privateResult` for a memory read that returned an entry marked private).
+- `memoryTaintFor(run): 'user' | 'external'` returns the trust a memory entry written by this run must carry, so content laundered through memory keeps its taint.
+
+Revised rules (replace rules 3 and 6):
+- 3. Tier `read`: if `tool.egress && run.ingestedUntrusted && run.touchedPrivate` → `require-approval` (`exfiltration-risk`). Otherwise `allow`.
+- 6. Tier `reversible-write`: not in `alwaysAllow` → `require-approval`. In `alwaysAllow` but `run.ingestedUntrusted && !tool.contained` → `require-approval` (`untrusted-content`). Otherwise `allow`.
+- `addAlwaysAllow` is unchanged (reversible-write only).
+
+Consequences to keep true in tests: a research run that never touches private data may fetch freely; an inbox run may draft, label and archive without asking; an inbox run that has read mail and an external message cannot fetch a URL or search the web without approval; nothing is ever sent without approval or an explicit user confirmation.
+
+### A3 — User confirmation is a verified, short-lived, single-use object
+Replace `userConfirmation?: { argsHash }` with `userConfirmation?: DeviceConfirmation`:
+`{ argsHash; deviceId; nonce; confirmedAt }`. Rule 5 passes only if the hash matches, `run.initiatedBy === 'user'`, `deviceId` is in `context.knownDevices`, `nonce` is not in `context.usedNonces`, and `confirmedAt` is no more than `context.confirmationMaxAgeMs` (default 120000) before `now` and not in the future. Verifying the device's signature happens at the runtime boundary, outside core; document that requirement on the type.
+
+### A4 — One call that decides and consumes
+Add `authorize(request, context): Promise<{ decision: Decision; consumed?: { approval?: Approval /* now redeemed */; nonce?: string } }>`. When the decision is `allow` because of an approval or a user confirmation, `consumed` carries what the host must persist so it cannot be used twice. `decide` remains for read-only evaluation (previews). Hosts execute tools only on `authorize`.
+
+### A5 — Ledger operations return events explicitly
+No non-enumerable properties. Each ledger operation returns `Result<{ ledger: Ledger; events: LedgerEvent[] }, E>` (or `{ ledger, events }` directly where the spec gives no error case). `reserveBoth` returns both ledgers and both event lists.
+
+### A6 — Model-supplied URLs
+Add to the protocol docs as a client rule: clients never fetch a model-supplied URL automatically (no image loading, link previews or prefetching). URLs are followed only on an explicit user action.
+
+Keep the implementer's additions: approval must match the Space; `decidedAction` must belong to the card's type; `end ≥ start`; `done ≤ total`; `deny` may revoke a granted approval.

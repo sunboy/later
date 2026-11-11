@@ -1,0 +1,47 @@
+{
+  "id": "card_brief",
+  "v": 1,
+  "type": "brief",
+  "spaceId": null,
+  "title": "Wednesday",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "new",
+  "priority": 50,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "headline": "A light day with one decision",
+    "dayShape": [
+      {
+        "start": "2026-11-11T09:00:00Z",
+        "end": "2026-11-11T10:00:00Z",
+        "label": "Design review",
+        "spaceId": "space_work"
+      }
+    ],
+    "top": [
+      {
+        "text": "Reply to Sam about the venue",
+        "detail": "He needs an answer by noon.",
+        "cardId": "card_triage"
+      }
+    ],
+    "stats": [
+      {
+        "value": "3",
+        "label": "need you"
+      }
+    ]
+  }
+}

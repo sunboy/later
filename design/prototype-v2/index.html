@@ -867,7 +867,8 @@ input.sw:checked::after{transform:translateX(20px)}
 .ins>.ph-pad{flex:1;overflow:auto}
 .ins-head{display:flex;align-items:center;gap:12px;padding:6px 16px 12px}
 .ins-head .sp{flex:1}
-.ins-hero{display:grid;gap:16px}
+.ins-hero{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+.ins-tt{min-width:0}
 .ins-prev .ftile{box-shadow:var(--e2),var(--hl);pointer-events:none}
 .ins-tt h1{margin:4px 0 6px;font-family:var(--f-display);font-size:1.875rem;line-height:1.05;letter-spacing:-.025em}
 .ins-tt p{margin:0;font-size:0.875rem}
@@ -1120,7 +1121,7 @@ input.sw:checked::after{transform:translateX(20px)}
    radial-gradient(42% 34% at 34% 70%,color-mix(in oklab,var(--g3,#D33F7A),var(--g-lift) var(--g-liftk)) 0,transparent 100%),
    radial-gradient(34% 30% at 78% 84%,color-mix(in oklab,var(--g1,#E0603A),var(--g2,#1B7FB5)) 0,transparent 100%);
   animation:drift 40s ease-in-out infinite alternate}
-.phone:has(.dragging) .bd-glow::before,.main:has(.dragging) .bd-glow::before{animation-play-state:paused}
+.phone:has(.dragging) .bd-glow::before,.main:has(.dragging) .bd-glow::before,.phone:has(.sheet) .bd-glow::before,.mode-desk:has(.sheet) .bd-glow::before,.phone:has(.dc.leaving) .bd-glow::before,.mode-desk:has(.dc.leaving) .bd-glow::before{animation-play-state:paused}
 @keyframes drift{0%{transform:translate3d(0,0,0) rotate(0) scale(1)}50%{transform:translate3d(-5%,3%,0) rotate(7deg) scale(1.06)}100%{transform:translate3d(4%,-3%,0) rotate(-5deg) scale(1.03)}}
 /* card tier: fill with a text tint layer, gloss, floating shadow */
 .dc,.tc,.apcard,.ctx-card,.rtile,.mcard,.dr-row,.letter,.note,.xcard,.conn,.lrow,.tpl,.cpin,.cprop,.ins-conn,.mini-c,.panel,.rr,.step,.sk-card,.sk-tile,.sk-row,.quote,.memo,.act,.ftile,.pilebtn .top,.bcol,.bcard,.mem button,.always,.wr-prop,.tc-quote,.cap-alt button,.cap-ex div,.rtn,.newsp .nt,.tpl-url,.creator-h,.sh-col,.sh-link,.pub{
@@ -1273,6 +1274,56 @@ input.sw:checked::after{transform:translateX(20px)}
 .desk .tpl.big .cv{background:color-mix(in oklab,var(--sc) 22%,var(--g-tile-a))}
 /* calmer Brief body in dark: the text tint layer is denser where the list sits */
 .dc .dc-body{background:linear-gradient(180deg,transparent,color-mix(in oklab,var(--g-fx) 60%,transparent) 30%)}
+/* light fields at a fixed OKLCH lightness: full chroma, controlled lightness (vivid, not pastel) */
+:root{--g-L:.80;--g-Lb:.86;--ink-3-bd:var(--ink-2)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink-3-bd:var(--ink-3)}}
+:root[data-theme="dark"]{--ink-3-bd:var(--ink-3)}
+:root:not([data-theme="dark"]) .bd-glow::before{background:
+   radial-gradient(34% 30% at 20% 16%,oklch(from var(--g1,#E0603A) var(--g-L) calc(c*1.05) h) 0,oklch(from var(--g1,#E0603A) var(--g-L) calc(c*1.05) h) 28%,transparent 76%),
+   radial-gradient(36% 32% at 82% 36%,oklch(from var(--g2,#1B7FB5) var(--g-L) calc(c*1.05) h) 0,oklch(from var(--g2,#1B7FB5) var(--g-L) calc(c*1.05) h) 26%,transparent 76%),
+   radial-gradient(38% 30% at 30% 72%,oklch(from var(--g3,#D33F7A) var(--g-L) calc(c*1.05) h) 0,oklch(from var(--g3,#D33F7A) var(--g-L) calc(c*1.05) h) 24%,transparent 76%),
+   radial-gradient(30% 26% at 80% 86%,oklch(from color-mix(in oklab,var(--g1,#E0603A),var(--g2,#1B7FB5)) var(--g-Lb) c h) 0,transparent 74%)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bd-glow::before{background:
+   radial-gradient(34% 30% at 20% 16%,color-mix(in oklab,var(--g1,#E0603A),var(--g-lift) var(--g-liftk)) 0,color-mix(in oklab,var(--g1,#E0603A),var(--g-lift) var(--g-liftk)) 28%,transparent 76%),
+   radial-gradient(36% 32% at 82% 36%,color-mix(in oklab,var(--g2,#1B7FB5),var(--g-lift) var(--g-liftk)) 0,color-mix(in oklab,var(--g2,#1B7FB5),var(--g-lift) var(--g-liftk)) 26%,transparent 76%),
+   radial-gradient(38% 30% at 30% 72%,color-mix(in oklab,var(--g3,#D33F7A),var(--g-lift) var(--g-liftk)) 0,color-mix(in oklab,var(--g3,#D33F7A),var(--g-lift) var(--g-liftk)) 24%,transparent 76%),
+   radial-gradient(30% 26% at 80% 86%,color-mix(in oklab,color-mix(in oklab,var(--g1,#E0603A),var(--g2,#1B7FB5)),var(--g-lift) var(--g-liftk)) 0,transparent 74%)}}
+/* text on the raw backdrop: tertiary steps up to secondary; inside glass all three tiers return */
+.ph-body,.main,.onb-desk{--ink-3:var(--ink-3-bd)}
+.dc,.tc,.apcard,.ctx-card,.rtile,.mcard,.dr-row,.letter,.note,.xcard,.conn,.lrow,.tpl,.cpin,.cprop,.ins-conn,.mini-c,.panel,.rr,.step,.quote,.memo,.act,.ftile,.pilebtn .top,.bcol,.bcard,.mem button,.always,.wr-prop,.tc-quote,.cap-alt button,.cap-ex div,.rtn,.newsp .nt,.tpl-url,.creator-h,.sh-col,.sh-link,.pub,.sheet,.more-menu,.t-list,.t-ctx,.chat-l,.dr-desk .l,.side{--ink-3:var(--ink-3-g)}
+:root{--ink-3-g:#655F56}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink-3-g:#A39E93}}
+:root[data-theme="dark"]{--ink-3-g:#A39E93}
+/* desktop side lists become chrome glass so their small text sits on a surface */
+.t-list,.t-ctx,.chat-l,.dr-desk .l,.tri-desk .t-list{background:linear-gradient(180deg,color-mix(in oklab,var(--g-chrome),#fff 4%),var(--g-chrome))!important;-webkit-backdrop-filter:blur(var(--g-blur-chrome)) saturate(1.4);backdrop-filter:blur(var(--g-blur-chrome)) saturate(1.4)}
+.ph-head::before{background:linear-gradient(180deg,color-mix(in oklab,var(--g-base) 78%,transparent) 35%,transparent)}
+/* layout pass: alignment and dead space */
+.desk .grp-h{margin-left:0;margin-right:0}
+.desk .sp-grid2{grid-template-columns:repeat(3,minmax(0,1fr))}
+.desk .sp-grid2 .sugg{grid-column:span 2;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:16px}
+.desk .sp-grid2 .sugg .row{grid-column:1/3}
+.desk .sp-grid2 .sugg p{grid-column:1/3}
+.desk .sp-grid2 .sugg .acts{grid-column:3;grid-row:1/3}
+.tpl-grid-d{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.tpl-grid-d .tpl{height:100%}
+.desk .people{gap:20px}
+.desk .sec-h{margin-left:0;margin-right:0}
+/* large text (root 130%+): content reflows instead of clipping */
+.tabs button span{font-size:min(.625rem,12px)}
+.tabs button .dot{font-size:min(.625rem,11px)}
+.chrome,.chrome select,.chrome button{font-size:min(.8125rem,14px)!important}
+.ph-head{flex-wrap:wrap}
+.bigtype .tc{overflow-y:auto;touch-action:pan-y;scrollbar-width:none}
+.bigtype .tc::-webkit-scrollbar{display:none}
+.bigtype .tc-why{margin-top:12px}
+.bigtype .btn{white-space:normal;height:auto;min-height:44px;padding-block:8px;text-align:center;line-height:1.2}
+.bigtype .ins-foot,.bigtype .dc-foot{flex-wrap:wrap}
+.bigtype .ins-foot .btn.pri{flex:1 1 100%;order:-1}
+.bigtype .ins-foot .btn.sec{flex:1 1 100%}
+.bigtype .ins-head{flex-wrap:wrap}
+.bigtype .tmeta{flex-wrap:wrap}
+.bigtype .tb{font-size:min(.6875rem,13px)}
+.bigtype .grp-h{flex-wrap:wrap}
 /* fallbacks */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   :root{--g-ft:var(--surface);--g-f:var(--surface);--g-fx:var(--surface);--g-card:var(--surface);--g-chrome:var(--surface);--g-sheet:var(--surface);--g-spec:transparent} .bd-glow::before{display:none}}
@@ -2226,7 +2277,9 @@ function scrTemplates(ph){
   if(cat==="All"){
     const rails=TPL_CATS.slice(1).map(c=>{const L=TPL.filter(t=>t.cat===c&&!t.featured);return L.length?`<div class="sec-h"><h3>${c}</h3><button class="btn ghost sm" data-tcat="${c}">See all</button></div><div class="tpl-rail">${L.map(t=>tplTile(t)).join("")}</div>`:"";}).join("");
     const crs=`<div class="sec-h"><h3>Creators</h3></div><div class="people">${["ana","kemi","leo","later"].map(k=>`<button class="person" data-creator="${k}">${cav(k,56)}<b>${esc(CREATORS[k].n)}</b><small>${CREATORS[k].installs} installs</small></button>`).join("")}</div>`;
-    body=`<div class="sec-h"><h3>Featured this week</h3></div>${tplTile(f,true)}${crs}${rails}`;
+    const rest=TPL.filter(t=>!t.featured);
+    body=ph?`<div class="sec-h"><h3>Featured this week</h3></div>${tplTile(f,true)}${crs}${rails}`
+     :`<div class="sec-h"><h3>Featured this week</h3></div>${tplTile(f,true)}${crs}<div class="sec-h"><h3>All templates</h3><span class="faint" style="font-size:13px">${rest.length} · filter by category above</span></div><div class="tpl-grid tpl-grid-d">${rest.map(t=>tplTile(t)).join("")}</div>`;
   } else {const L=TPL.filter(t=>t.cat===cat);body=L.length?`<div class="tpl-grid" style="margin-top:8px">${L.map(t=>tplTile(t)).join("")}</div>`:`<div class="empty-c">${ic("search",26)}<b>No ${esc(cat)} templates yet.</b><span>Be the first: share a Space you've set up.</span></div>`;}
   const tail=`<div class="tpl-url">${ic("ext",16)}<span class="tt"><b>Install from a git URL</b><small>Templates outside the gallery show the same permission review before anything is created.</small></span><button class="btn sec sm" data-act="toast:Paste a git URL (prototype)">Paste URL</button></div>`;
   return `${head}<div class="${ph?"ph-pad":"sp-desk"}" style="padding-top:4px">${chips}${body}${tail}</div>`;
@@ -2514,7 +2567,9 @@ function sheetHtml(){
   return `<div class="sheet-bg" data-act="sheet-close"></div><div class="sheet ${tsp?"sp-tint":""}" role="dialog" aria-modal="true" style="${tsp?scv(tsp):""}"><div class="grab"></div>${inner}</div>`;
 }
 let lastScreen=null;
+const bigCheck=()=>{try{document.documentElement.classList.toggle("bigtype",parseFloat(getComputedStyle(document.documentElement).fontSize)>=19);}catch(e){}};
 function render(){
+  bigCheck();setTimeout(bigCheck,40);
   const sc=document.getElementById("scroller"),keep=sc&&lastScreen===S.screen?sc.scrollTop:0;
   const ph=isPhone();PH=!!ph;
   if(!ph&&S.screen==="onboarding"){stage.innerHTML=`<div class="mode-desk" style="background:var(--bg);position:relative">${glow()}${screenHtml(false)}${toastHtml()}${sheetHtml()}</div>`;lastScreen=S.screen;document.getElementById("scr-sel").value=S.screen;afterRender();return;}

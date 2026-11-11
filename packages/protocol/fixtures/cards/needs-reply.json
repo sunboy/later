@@ -1,0 +1,27 @@
+{
+  "id": "card_needs_reply",
+  "v": 1,
+  "type": "needs-reply",
+  "spaceId": null,
+  "title": "2 need a reply",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "new",
+  "priority": 50,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "count": 2,
+    "itemIds": ["card_triage", "card_triage_2"]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "card_status",
+  "v": 1,
+  "type": "status",
+  "spaceId": "space_home",
+  "title": "Friday club",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "new",
+  "priority": 50,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "line": "Venue nearly settled",
+    "asOf": "2026-11-11T07:00:00Z",
+    "health": "needs-you",
+    "progress": {
+      "done": 3,
+      "total": 5
+    },
+    "nextDate": "2026-11-14T17:00:00Z"
+  }
+}

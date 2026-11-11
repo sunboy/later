@@ -1,0 +1,35 @@
+{
+  "id": "card_draft",
+  "v": 1,
+  "type": "draft",
+  "spaceId": "space_home",
+  "title": "Reply to Sam",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "new",
+  "priority": 50,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "to": [
+      {
+        "address": "sam@example.com",
+        "name": "Sam"
+      }
+    ],
+    "subject": "Venue for Friday",
+    "body": "Hi Sam,\nThe hall works for us.\n\nThanks",
+    "inReplyTo": "msg_123",
+    "tone": "warm"
+  }
+}

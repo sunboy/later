@@ -1,0 +1,31 @@
+{
+  "id": "card_task",
+  "v": 1,
+  "type": "task",
+  "spaceId": "space_home",
+  "title": "Book the hall",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "snoozed",
+  "priority": 50,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "due": "2026-11-14T17:00:00Z",
+    "owner": "me",
+    "status": "waiting",
+    "waitingOn": "Sam",
+    "chaseAt": "2026-11-13T09:00:00Z"
+  },
+  "snoozedUntil": "2026-11-12T09:00:00Z"
+}

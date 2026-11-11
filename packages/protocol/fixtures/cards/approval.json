@@ -1,0 +1,46 @@
+{
+  "id": "card_approval",
+  "v": 1,
+  "type": "approval",
+  "spaceId": "space_home",
+  "title": "Send reply to Sam?",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "new",
+  "priority": 90,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "approvalId": "appr_0001",
+    "tool": "mail.send",
+    "argsHash": "d57e601416d0d0832da209ce81da371fd21d4fa6e2ff858997ba19b1ac07d770",
+    "argsPreview": [
+      {
+        "label": "To",
+        "value": "Sam <sam@example.com>"
+      },
+      {
+        "label": "Subject",
+        "value": "Venue for Friday"
+      },
+      {
+        "label": "Body",
+        "value": "Hi Sam,\nThe hall works for us.\n\nThanks"
+      }
+    ],
+    "recipient": "sam@example.com",
+    "tier": "irreversible",
+    "reason": "Sending email cannot be undone",
+    "expiresAt": "2026-11-12T07:00:00Z"
+  }
+}

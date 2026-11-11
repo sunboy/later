@@ -1,0 +1,30 @@
+{
+  "id": "card_review",
+  "v": 1,
+  "type": "review",
+  "spaceId": null,
+  "title": "Weekly review: Friday club",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "new",
+  "priority": 50,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "spaceId": "space_home",
+    "moved": ["Venue shortlisted"],
+    "stalled": ["Budget sheet"],
+    "proposal": "nudge",
+    "nudgeWho": "Sam"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "card_digest",
+  "v": 1,
+  "type": "digest",
+  "spaceId": "space_home",
+  "title": "Morning digest",
+  "provenance": {
+    "agentId": "inbox-watcher",
+    "runId": "run_0001",
+    "createdAt": "2026-11-11T07:00:00Z",
+    "sources": [
+      {
+        "kind": "email",
+        "ref": "msg_123",
+        "title": "Re: venue"
+      }
+    ],
+    "untrusted": true
+  },
+  "state": "new",
+  "priority": 50,
+  "createdAt": "2026-11-11T07:00:00Z",
+  "data": {
+    "tiles": [
+      {
+        "headline": "Rates held",
+        "summary": "The central bank kept rates unchanged.",
+        "source": {
+          "kind": "web",
+          "ref": "web_1",
+          "url": "https://example.com/news/rates"
+        }
+      }
+    ],
+    "foldedCount": 4
+  }
+}
