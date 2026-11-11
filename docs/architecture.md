@@ -86,6 +86,20 @@ Duet is free, first-party and aimed at the same subscribers. We do not win on co
 
 The credits are a launch hook, not the foundation. They are promotional and can be withdrawn. The durable assets are open source, user-owned deployment, and the template ecosystem.
 
+## 4a. Lessons from Town (added 2026-11-11)
+
+Town (town.com) is a venture-funded independent ($163M raised, closed source, hosted, credit-metered) growing alongside Duet and Muse. Figures are company-supplied [S]. Reviewers attribute its traction to experience, not capability: value inside five minutes, drafts in the user's voice, a named assistant, ready-made routines, approval before send. Its reported weak spots are unpredictable credit bills, no self-hosting and no custom skills.
+
+Amendments:
+
+- **D12. First value inside five minutes of connecting mail.** After connecting, the user gets a short "what I learned about you" summary and three to five suggested actions. Deployment and key steps must be compressed so they do not delay this.
+- **D13. Onboarding ingestion has its own hard budget.** Town reportedly spends about $100 per user building context. On a user's own key that would consume a month of credit. Ingestion is capped (default $5, Haiku, most-recent-first, resumable) and shown on the meter.
+- **D14. Three routines ship enabled-on-approval:** morning brief, inbox sort and draft, meeting briefs. Calendar therefore joins Gmail as a v1 connector.
+- **D15. Voice matching is a first-class quality target** for drafts, evaluated with a test set, not left to prompt luck.
+- **D16. Memory includes people files** (a lightweight contact memory), since briefs and drafts depend on knowing who someone is.
+- **D17. Agents are named and customisable.** Personality is part of the product, kept restrained.
+- **D8 amended:** installer uses Cloudflare OAuth or an API token to deploy directly; the "Deploy to Cloudflare" button (which requires a GitHub or GitLab account) is the developer path only. OAuth deploy scope is unconfirmed and joins R3.
+
 ## 5. Open risks and the spikes that close them
 
 | # | Risk | Spike (owner) |
