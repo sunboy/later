@@ -47,6 +47,8 @@
   --c-site-bg: #FBFAF7;
   --c-site-ink: #23211C;
   --c-site-accent: #C2542D;
+  /* Space colours: stable per Space */
+  --sc-house: #B5541C; --sc-job: #2D5DA8; --sc-yt: #B8323F; --sc-japan: #8E44A8; --sc-tax: #7A6A12; --sc-health: #2B8255; --sc-fin: #12788A; --sc-mum: #C03A78; --sc-side: #5A4FCF; --sc-read: #8A5A35; --sc-work: #4A5A6A; --sc-inbox: #6B7671; --sc-kitchen: #8A5A35; --sc-_all: #63706A;
 
   /* type */
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -89,6 +91,7 @@
     --c-device: #2A3431;
     --c-shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
     --c-site-bg: #1E1D1A; --c-site-ink: #ECE8DF; --c-site-accent: #E7895F;
+    --sc-house: #E58A55; --sc-job: #7FA6E8; --sc-yt: #EC7A84; --sc-japan: #C489DD; --sc-tax: #CDBB5A; --sc-health: #6FC898; --sc-fin: #5EC1D2; --sc-mum: #EE85B4; --sc-side: #9C93F2; --sc-read: #CFA17A; --sc-work: #9DADBE; --sc-inbox: #9AA59F; --sc-kitchen: #CFA17A; --sc-_all: #8B9893;
     color-scheme: dark;
   }
 }
@@ -107,6 +110,7 @@
   --c-device: #2A3431;
   --c-shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
   --c-site-bg: #1E1D1A; --c-site-ink: #ECE8DF; --c-site-accent: #E7895F;
+    --sc-house: #E58A55; --sc-job: #7FA6E8; --sc-yt: #EC7A84; --sc-japan: #C489DD; --sc-tax: #CDBB5A; --sc-health: #6FC898; --sc-fin: #5EC1D2; --sc-mum: #EE85B4; --sc-side: #9C93F2; --sc-read: #CFA17A; --sc-work: #9DADBE; --sc-inbox: #9AA59F; --sc-kitchen: #CFA17A; --sc-_all: #8B9893;
   color-scheme: dark;
 }
 
@@ -581,6 +585,387 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
 /* ---------- toast ---------- */
 .toast { position: absolute; left: 50%; bottom: var(--sp-5); transform: translateX(-50%) translateY(8px); background: var(--c-text); color: var(--c-surface); padding: 8px 14px; border-radius: var(--r-md); font-size: var(--fs-sm); opacity: 0; pointer-events: none; transition: opacity var(--dur-med), transform var(--dur-med); z-index: 30; max-width: calc(100% - 32px); box-shadow: var(--c-shadow); }
 .toast.show { opacity: 1; transform: translateX(-50%); }
+.toast.has-undo.show { pointer-events: auto; }
+.toast.has-undo { display: flex; gap: 12px; align-items: center; }
+.toast-undo { border: 0; background: transparent; color: var(--c-accent-soft); font-weight: 600; text-decoration: underline; padding: 0; }
+
+/* ---------- shared bits for cards, Spaces, capture ---------- */
+.linkbtn { border: 0; background: none; padding: 0; color: var(--c-accent); font-size: var(--fs-sm); text-decoration: underline; text-underline-offset: 2px; }
+.btn.icon-only { padding: 6px; min-width: 32px; }
+.badge.soft { background: var(--c-surface-2); color: var(--c-text-2); border-color: var(--c-line); }
+.seg-in { display: inline-flex; border: 1px solid var(--c-line-strong); border-radius: var(--r-md); padding: 2px; gap: 2px; background: var(--c-surface); flex: none; }
+.seg-in button { border: 0; background: transparent; padding: 4px 10px; border-radius: var(--r-sm); font-size: var(--fs-sm); color: var(--c-text-2); white-space: nowrap; display: inline-flex; gap: 6px; align-items: center; }
+.seg-in button[aria-pressed="true"] { background: var(--c-accent-soft); color: var(--c-text); font-weight: var(--fw-medium); }
+.seg-in .cnt { font-family: var(--font-mono); font-size: 11px; color: var(--c-text-3); }
+.emblem { --scol: var(--c-text-3); width: 28px; height: 28px; border-radius: 8px; display: inline-grid; place-items: center; flex: none; color: var(--scol); background: color-mix(in srgb, var(--scol) 15%, var(--c-surface)); border: 1px solid color-mix(in srgb, var(--scol) 28%, transparent); }
+.emblem.sm { width: 20px; height: 20px; border-radius: 5px; }
+.emblem.lg { width: 40px; height: 40px; border-radius: 10px; }
+.emblem.xl { width: 48px; height: 48px; border-radius: 12px; }
+.stag { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-xs); font-weight: var(--fw-medium); color: var(--c-text); white-space: nowrap; min-width: 0; }
+.schip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: var(--fw-semibold); padding: 1px 7px; border-radius: var(--r-pill); white-space: nowrap; border: 1px solid var(--c-line); color: var(--c-text-2); background: var(--c-surface); }
+.schip.needs { color: var(--c-warn); background: var(--c-warn-soft); border-color: var(--c-warn-line); }
+.schip.ok { color: var(--c-ok); background: var(--c-ok-soft); border-color: transparent; }
+.schip.wait { color: var(--c-info); background: var(--c-info-soft); border-color: transparent; }
+.schip.stalled { color: var(--c-danger); background: transparent; border-color: var(--c-danger-line); }
+.schip.quiet, .schip.paused { color: var(--c-text-3); background: transparent; }
+.avatar.person { background: var(--c-surface-3); color: var(--c-text-2); }
+.owner { display: inline-flex; align-items: center; gap: 5px; }
+.owner .avatar { width: 20px; height: 20px; font-size: 8px; border-radius: 5px; }
+.msdots { display: inline-flex; gap: 3px; align-items: center; }
+.msdots i { width: 14px; height: 4px; border-radius: 2px; background: var(--c-surface-3); }
+.msdots i.on { background: var(--scol, var(--c-accent)); }
+.menu { position: absolute; right: 0; bottom: calc(100% + 4px); z-index: 15; min-width: 220px; background: var(--c-surface); border: 1px solid var(--c-line-strong); border-radius: var(--r-md); box-shadow: var(--c-shadow); padding: 4px; display: flex; flex-direction: column; }
+.menu button { border: 0; background: transparent; text-align: left; padding: 7px 10px; border-radius: var(--r-sm); font-size: var(--fs-sm); display: flex; gap: 6px; align-items: center; }
+.menu button:hover { background: var(--c-surface-2); }
+.more-wrap { position: relative; }
+.chip-btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--c-line-strong); background: var(--c-surface); border-radius: var(--r-pill); padding: 3px 10px 3px 4px; font-size: var(--fs-xs); }
+.chip-btn:hover { border-color: var(--c-accent); }
+.pick-spaces { display: flex; flex-wrap: wrap; gap: 6px; }
+.ok-chip { color: var(--c-ok); background: var(--c-ok-soft); border-color: transparent; }
+
+/* ---------- card types ---------- */
+.t-brief { --tc: var(--c-warn); } .t-digest { --tc: var(--c-info); } .t-meeting { --tc: var(--c-agent-3); } .t-reply { --tc: var(--c-accent); }
+.t-monitor { --tc: var(--c-agent-1); } .t-approval { --tc: var(--c-danger); } .t-fyi { --tc: var(--c-ok); } .t-task { --tc: var(--c-text-2); }
+.ctype { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: var(--fw-semibold); letter-spacing: .06em; text-transform: uppercase; color: var(--c-text-2); white-space: nowrap; }
+.ctype-ic { width: 18px; height: 18px; border-radius: 4px; display: grid; place-items: center; color: var(--tc); background: color-mix(in srgb, var(--tc) 14%, var(--c-surface)); }
+
+/* ---------- Today deck ---------- */
+.deck-page { max-width: 680px; margin: 0 auto; padding: var(--sp-5) var(--sp-6) var(--sp-10); display: flex; flex-direction: column; gap: var(--sp-5); }
+.deck-head { display: flex; flex-direction: column; gap: var(--sp-2); }
+.deck-title { font-size: var(--fs-xl); letter-spacing: -.01em; }
+.pips { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 3px; }
+.pips i { height: 4px; border-radius: 2px; background: var(--c-surface-3); transition: background var(--dur-med); }
+.pips i.done { background: var(--c-accent); } .pips i.cur { background: var(--c-text-2); }
+.deck-list { display: flex; flex-direction: column; gap: var(--sp-4); }
+.dcard { background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--r-lg); box-shadow: var(--c-shadow); display: flex; flex-direction: column; animation: settle .32s cubic-bezier(.2, .8, .2, 1) both; position: relative; }
+@keyframes settle { from { transform: translateY(8px) scale(.99); } to { transform: none; } }
+.dcard-h { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4) 0; flex-wrap: wrap; row-gap: 6px; }
+.prov { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-xs); color: var(--c-text-3); white-space: nowrap; }
+.prov .avatar { width: 18px; height: 18px; font-size: 8px; border-radius: 4px; }
+.dcard-t { padding: var(--sp-2) var(--sp-4) 0; font-size: var(--fs-lg); font-weight: var(--fw-semibold); line-height: 1.3; letter-spacing: -.005em; }
+.dcard-b { padding: var(--sp-3) var(--sp-4) var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }
+.dcard-f { display: flex; gap: var(--sp-2); align-items: center; padding: var(--sp-3) var(--sp-4); border-top: 1px solid var(--c-line); }
+.dcard-f .spacer { flex: 1; }
+.hrow { display: flex; gap: var(--sp-3); align-items: center; padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-4); border: 1px dashed var(--c-line-strong); border-radius: var(--r-lg); font-size: var(--fs-sm); color: var(--c-ok); }
+.hrow-t { flex: 1; min-width: 0; color: var(--c-text-2); overflow-wrap: anywhere; }
+.hrow-t b { font-weight: var(--fw-medium); color: var(--c-text-2); }
+.cstack, .fanned { display: flex; flex-direction: column; gap: var(--sp-2); }
+.fanned { gap: var(--sp-4); }
+.stackw { position: relative; isolation: isolate; margin-bottom: 14px; }
+.stackw.peek1::after, .stackw.peek2::after, .stackw.peek2::before { content: ""; position: absolute; left: 12px; right: 12px; bottom: -7px; height: 30px; border: 1px solid var(--c-line); border-top: 0; background: var(--c-surface-2); border-radius: 0 0 var(--r-lg) var(--r-lg); z-index: -1; }
+.stackw.peek2::before { left: 24px; right: 24px; bottom: -14px; background: var(--c-surface-3); z-index: -2; }
+.fan-btn { align-self: flex-start; display: inline-flex; gap: 8px; align-items: center; border: 1px solid var(--c-line-strong); background: var(--c-surface); border-radius: var(--r-pill); padding: 4px 12px 4px 5px; font-size: var(--fs-sm); color: var(--c-text-2); }
+.fan-btn:hover { border-color: var(--c-accent); color: var(--c-text); }
+.deck-endline { text-align: center; font-size: var(--fs-xs); color: var(--c-text-3); padding: var(--sp-3) 0; border-top: 1px solid var(--c-line); }
+.end-card { padding: var(--sp-8) var(--sp-6); align-items: center; text-align: center; gap: var(--sp-4); }
+.end-ring { width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid var(--c-ok); color: var(--c-ok); display: grid; place-items: center; }
+.end-card h2, .tri-done h2 { font-size: var(--fs-xl); }
+.end-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-5); text-align: left; width: 100%; }
+.end-sum { list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm); color: var(--c-text-2); }
+.end-sum li { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+.end-sum li svg { color: var(--c-ok); flex: none; }
+.end-spaces { gap: 4px !important; }
+.end-sum.strip li svg { color: var(--c-danger); }
+.daystrip { position: relative; height: 26px; background: var(--c-surface-2); border-radius: var(--r-sm); border: 1px solid var(--c-line); }
+.daystrip i { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; background: color-mix(in srgb, var(--scol) 35%, var(--c-surface)); border: 1px solid color-mix(in srgb, var(--scol) 60%, transparent); }
+.daystrip .now { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--c-text); border-radius: 1px; }
+.daystrip-x { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; color: var(--c-text-3); margin-top: -6px; }
+.top3 { margin: 0; padding: 0; list-style: none; counter-reset: t; display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm); color: var(--c-text-2); }
+.top3 li { counter-increment: t; display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: var(--sp-2); align-items: baseline; }
+.top3 li::before { content: counter(t); font-family: var(--font-mono); font-size: 11px; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--c-line-strong); display: grid; place-items: center; color: var(--c-text-2); }
+.top3 b { color: var(--c-text); font-weight: var(--fw-medium); }
+.task-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2); margin: 0; }
+.task-meta div { display: flex; flex-direction: column; }
+.task-meta dt { font-size: 11px; color: var(--c-text-3); text-transform: uppercase; letter-spacing: .05em; }
+.task-meta dd { margin: 0; font-size: var(--fs-sm); font-weight: var(--fw-medium); }
+.quotes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-sm); }
+.quotes li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 var(--sp-3); }
+.quotes li .faint { grid-column: 1 / -1; font-size: var(--fs-xs); }
+.quotes li:first-child span:first-child { font-weight: var(--fw-medium); }
+.mtg-when { display: flex; gap: var(--sp-3); align-items: baseline; flex-wrap: wrap; }
+.mtg-when .mono { font-size: var(--fs-base); font-weight: 500; }
+.people-row, .people li { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: var(--sp-3); align-items: start; }
+.people { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-4); }
+.memline { font-size: var(--fs-xs); color: var(--c-text-2); display: flex; gap: 5px; align-items: center; margin-top: 2px; }
+.memline svg { color: var(--c-text-3); flex: none; }
+.prep { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-sm); color: var(--c-text-2); }
+.facepile { display: flex; } .facepile .avatar { border: 2px solid var(--c-surface); margin-left: -8px; width: 30px; height: 30px; } .facepile .avatar:first-child { margin-left: 0; }
+.ba { display: flex; gap: var(--sp-3); align-items: baseline; flex-wrap: wrap; }
+.ba .was { font-family: var(--font-mono); font-size: var(--fs-lg); color: var(--c-text-3); text-decoration: line-through; text-decoration-thickness: 1px; }
+.ba .now { font-family: var(--font-mono); font-size: 30px; font-weight: 500; line-height: 1; }
+.delta { font-family: var(--font-mono); font-size: 12px; color: var(--c-ok); background: var(--c-ok-soft); padding: 1px 6px; border-radius: var(--r-sm); }
+.spark { width: 100%; max-width: 100%; height: auto; display: block; }
+.dtiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
+.dtile { border: 1px solid var(--c-line); background: var(--c-surface-2); border-radius: var(--r-md); padding: var(--sp-3); text-align: left; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.dtile:hover { border-color: var(--c-line-strong); }
+.dtile[aria-expanded="true"] { grid-column: 1 / -1; background: var(--c-surface); border-color: var(--c-info); }
+.dtile .k { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--c-info); font-weight: var(--fw-semibold); }
+.dtile .h { font-weight: var(--fw-semibold); font-size: var(--fs-sm); line-height: 1.35; }
+.dtile .m { font-size: var(--fs-xs); color: var(--c-text-3); }
+.dtile .s { font-size: var(--fs-sm); color: var(--c-text-2); }
+.dtile .srcs { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: var(--fs-xs); }
+.dtile .srcs a { display: inline-flex; gap: 4px; align-items: center; text-decoration: none; }
+.call-body.clamp { max-height: 4.9em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
+
+/* ---------- swipe stacks (triage, review) ---------- */
+.tri { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.tri-head { padding: var(--sp-3) var(--sp-6) 0; display: flex; flex-direction: column; gap: var(--sp-2); max-width: 580px; width: 100%; margin: 0 auto; }
+.tri-stage { flex: 1; min-height: 0; padding: var(--sp-4) var(--sp-6) var(--sp-6); display: flex; justify-content: center; align-items: stretch; position: relative; overflow: hidden; }
+.tri-stack { position: relative; width: 100%; max-width: 520px; max-height: 420px; height: 100%; }
+.tri-card { position: absolute; inset: 0 0 24px; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--r-lg); box-shadow: var(--c-shadow); display: flex; flex-direction: column; overflow: hidden; transition: transform .24s cubic-bezier(.2, .8, .2, 1), opacity .24s; touch-action: pan-y; user-select: none; -webkit-user-select: none; --r: 0; --l: 0; }
+.tri-card.front { cursor: grab; z-index: 3; }
+.tri-card.dragging { transition: none; cursor: grabbing; }
+.tri-card.behind { transform: translateY(12px) scale(.96); z-index: 2; background: var(--c-surface-2); }
+.tri-card.behind2 { transform: translateY(24px) scale(.92); z-index: 1; background: var(--c-surface-3); }
+.tri-card.behind .tri-in, .tri-card.behind2 .tri-in { opacity: 0; }
+.tri-card.ret-r { animation: retR .32s cubic-bezier(.2, .8, .2, 1); }
+.tri-card.ret-l { animation: retL .32s cubic-bezier(.2, .8, .2, 1); }
+.tri-card.ret-c { animation: settle .32s cubic-bezier(.2, .8, .2, 1); }
+@keyframes retR { from { transform: translate(120%, 12px) rotate(12deg); } }
+@keyframes retL { from { transform: translate(-120%, 12px) rotate(-12deg); } }
+.swipe-tag { position: absolute; top: 42%; padding: 4px 10px; border-radius: var(--r-sm); font-size: var(--fs-sm); font-weight: var(--fw-semibold); border: 2px solid; pointer-events: none; z-index: 4; background: var(--c-surface); display: inline-flex; gap: 6px; align-items: center; }
+.swipe-tag.r { left: var(--sp-4); color: var(--c-accent); border-color: var(--c-accent); opacity: var(--r); transform: rotate(-5deg); }
+.swipe-tag.l { right: var(--sp-4); color: var(--c-text-2); border-color: var(--c-line-strong); opacity: var(--l); transform: rotate(5deg); }
+.tri-in { padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-3); overflow: auto; flex: 1; transition: opacity .2s; }
+.sender { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--sp-3); align-items: center; }
+.sender .avatar { width: 40px; height: 40px; }
+.memchip { display: inline-flex; gap: 6px; align-items: center; font-size: var(--fs-xs); color: var(--c-text-2); background: var(--c-surface-2); border: 1px solid var(--c-line); border-radius: var(--r-sm); padding: 2px 8px; align-self: flex-start; }
+.gist { font-size: var(--fs-base); line-height: 1.5; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.why-line { font-size: var(--fs-sm); color: var(--c-text-2); }
+.why-line b { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--c-text-3); margin-right: 6px; }
+.intents { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-top: auto; }
+.intent { border: 1px solid var(--c-line-strong); background: var(--c-surface); border-radius: var(--r-pill); padding: 5px 12px; font-size: var(--fs-sm); }
+.intent[aria-pressed="true"] { background: var(--c-accent-soft); border-color: var(--c-accent); font-weight: var(--fw-medium); }
+.rev-dl { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 6px var(--sp-3); margin: 0; font-size: var(--fs-sm); }
+.rev-dl dt { color: var(--c-text-3); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding-top: 2px; }
+.rev-dl dd { margin: 0; }
+.proposal { display: flex; flex-direction: column; gap: 4px; padding: var(--sp-3); border-radius: var(--r-md); background: var(--c-surface-2); border: 1px solid var(--c-line); margin-top: auto; }
+.tri-controls { border-top: 1px solid var(--c-line); background: var(--c-surface); padding: var(--sp-3) var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-2); align-items: center; }
+.tri-btns { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--sp-2); width: 100%; max-width: 580px; }
+.tri-btns .btn.tb { flex-direction: column; gap: 2px; min-height: 58px; font-size: var(--fs-xs); white-space: normal; text-align: center; line-height: 1.2; width: 100%; }
+.tri-btns .undo { border-style: dashed; }
+.tri-controls[data-hl="r"] [data-hl-r] { box-shadow: 0 0 0 3px var(--c-accent-soft); transform: scale(1.04); }
+.tri-controls[data-hl="l"] [data-hl-l] { box-shadow: 0 0 0 3px var(--c-surface-3); transform: scale(1.04); }
+.tri-btns .btn { transition: transform var(--dur-fast), box-shadow var(--dur-fast); }
+.snz { position: relative; }
+.snz .menu { left: 0; right: auto; }
+.kbd { font-family: var(--font-mono); font-size: 10px; border: 1px solid var(--c-line-strong); border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; color: var(--c-text-3); line-height: 1.4; }
+.btn.primary .kbd { color: var(--c-accent-ink); border-color: color-mix(in srgb, var(--c-accent-ink) 50%, transparent); }
+.tri-note { font-size: var(--fs-xs); color: var(--c-text-2); display: flex; gap: 6px; align-items: center; text-align: center; }
+.tri-note svg { color: var(--c-accent); flex: none; }
+.tri-done { padding: var(--sp-8) var(--sp-6); align-items: center; text-align: center; gap: var(--sp-3); max-width: 460px; width: 100%; align-self: center; }
+.coach { position: absolute; inset: 0; background: color-mix(in srgb, var(--c-bg) 70%, transparent); display: grid; place-items: center; z-index: 6; padding: var(--sp-4); }
+.coach-in { max-width: 320px; background: var(--c-surface); border: 1px solid var(--c-line-strong); border-radius: var(--r-lg); padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-2); align-items: center; text-align: center; box-shadow: var(--c-shadow); }
+.coach-hand { color: var(--c-accent); animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 0%, 100% { transform: translateX(-10px); } 50% { transform: translateX(14px) rotate(8deg); } }
+
+/* ---------- drafts ---------- */
+.drafts-page { max-width: 760px; }
+.draft { background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; }
+.draft-h { display: flex; gap: var(--sp-3); align-items: center; padding: var(--sp-3) var(--sp-4); flex-wrap: wrap; }
+.draft-h .who { flex: 1 1 160px; min-width: 0; }
+details.orig { margin: 0 var(--sp-4); border: 1px solid var(--c-line); border-radius: var(--r-md); background: var(--c-surface-2); font-size: var(--fs-sm); }
+details.orig summary { cursor: pointer; padding: 6px var(--sp-3); color: var(--c-text-2); list-style: none; display: flex; gap: 6px; align-items: center; }
+details.orig summary::-webkit-details-marker { display: none; }
+details.orig[open] summary .chev { transform: rotate(90deg); }
+details.orig p { padding: 0 var(--sp-3) var(--sp-3); color: var(--c-text-2); }
+.letter { margin: var(--sp-3) var(--sp-4) var(--sp-4); border: 1px solid var(--c-line-strong); border-radius: var(--r-md); background: var(--c-bg); }
+.letter-h { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 4px var(--sp-3); margin: 0; padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--c-line); font-size: var(--fs-sm); }
+.letter-h dt { color: var(--c-text-3); }
+.letter-h dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.letter-h .mono { font-size: 12px; color: var(--c-text-2); }
+.letter-b { padding: var(--sp-4); white-space: pre-wrap; line-height: 1.6; font-size: var(--fs-base); overflow-wrap: anywhere; }
+.letter-edit { border: 0; border-radius: 0 0 var(--r-md) var(--r-md); min-height: 160px; padding: var(--sp-4); font-size: var(--fs-base); background: var(--c-surface); }
+.draft-f { display: flex; gap: var(--sp-2); align-items: center; padding: var(--sp-3) var(--sp-4); border-top: 1px solid var(--c-line); background: var(--c-surface-2); flex-wrap: wrap; }
+.tone { display: inline-flex; border: 1px solid var(--c-line-strong); border-radius: var(--r-md); padding: 2px; gap: 2px; background: var(--c-surface); }
+.tone button { border: 0; background: transparent; padding: 3px 9px; border-radius: var(--r-sm); font-size: var(--fs-xs); color: var(--c-text-2); }
+.tone button[aria-pressed="true"] { background: var(--c-accent-soft); color: var(--c-text); font-weight: var(--fw-medium); }
+.sendall { border: 1px solid var(--c-danger-line); background: var(--c-surface); border-radius: var(--r-lg); padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
+.sendall ul { list-style: none; margin: 0; padding: 0; border: 1px solid var(--c-line); border-radius: var(--r-md); }
+.sendall li { display: flex; gap: 4px var(--sp-3); padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--c-line); font-size: var(--fs-sm); flex-wrap: wrap; align-items: baseline; }
+.sendall li:last-child { border-bottom: 0; }
+
+/* ---------- Spaces ---------- */
+.spaces-page { max-width: 1120px; }
+.sgroup { display: flex; flex-direction: column; gap: var(--sp-3); }
+.sgroup .section-h h2 { font-size: var(--fs-base); }
+.tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--sp-3); }
+.stile { --scol: var(--c-accent); text-align: left; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--r-lg); padding: var(--sp-3) var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; box-shadow: var(--c-shadow); transition: border-color var(--dur-fast), transform var(--dur-fast); }
+.stile:hover { border-color: color-mix(in srgb, var(--scol) 55%, var(--c-line)); }
+.stile-h { display: flex; gap: var(--sp-2); align-items: center; min-width: 0; }
+.stile-name { font-weight: var(--fw-semibold); flex: 1; min-width: 0; line-height: 1.25; overflow-wrap: anywhere; }
+.stile-h { align-items: flex-start; } .stile-h .emblem { margin-top: -2px; }
+.stile-status { font-size: var(--fs-sm); color: var(--c-text-2); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.stile-meta { display: flex; gap: var(--sp-2); align-items: center; font-size: var(--fs-xs); color: var(--c-text-3); flex-wrap: nowrap; margin-top: auto; min-width: 0; }
+.stile-next { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.asof { flex: none; }
+.stile-next { color: var(--c-text); font-weight: var(--fw-medium); }
+.asof { margin-left: auto; font-family: var(--font-mono); font-size: 10px; }
+.stile.recessed { background: transparent; box-shadow: none; border-style: dashed; }
+.stile.recessed .stile-name { color: var(--c-text-2); font-weight: var(--fw-medium); }
+.stile.recessed .emblem { filter: saturate(.3); opacity: .8; }
+.stile.suggest { background: transparent; box-shadow: none; border: 1px dashed var(--c-accent); }
+.sgroup.quiet .tiles-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.space-page { max-width: 1000px; }
+.space-head { display: flex; flex-direction: column; gap: var(--sp-3); padding-bottom: var(--sp-4); border-bottom: 1px solid var(--c-line); }
+.space-head h2 { font-size: var(--fs-xl); letter-spacing: -.01em; }
+.space-status { font-size: var(--fs-base); max-width: 64ch; }
+.ms-line { display: flex; gap: 0; flex-wrap: wrap; }
+.ms-line span { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-xs); color: var(--c-text-3); flex: 1 1 70px; min-width: 0; }
+.ms-line span i { height: 4px; background: var(--c-surface-3); margin-right: 3px; border-radius: 2px; }
+.ms-line span.on { color: var(--c-text); }
+.ms-line span.on i { background: var(--scol); }
+.space-meta { display: flex; gap: var(--sp-3); align-items: center; flex-wrap: wrap; }
+.space-budget { display: flex; flex-direction: column; gap: 4px; min-width: 150px; }
+.lens-bar { display: flex; gap: var(--sp-3); flex-wrap: wrap; justify-content: space-between; }
+.board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-3); }
+.bcol { background: var(--c-surface-2); border-radius: var(--r-lg); padding: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.bcol h3 { font-size: var(--fs-sm); font-weight: var(--fw-semibold); }
+.bcard { background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--r-md); padding: var(--sp-3); display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm); }
+.bcard b { font-weight: var(--fw-medium); }
+.bmeta { display: flex; gap: var(--sp-2); align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.wait { display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-xs); color: var(--c-info); border-top: 1px dashed var(--c-line); padding-top: 6px; }
+.wait span { display: inline-flex; gap: 4px; align-items: center; }
+.tline { list-style: none; margin: 0; padding: 0 0 0 4px; display: flex; flex-direction: column; }
+.tline li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--sp-4); padding: 8px 0 8px 18px; position: relative; font-size: var(--fs-sm); border-left: 2px solid var(--c-surface-3); }
+.tline li::before { content: ""; position: absolute; left: -6px; top: 13px; width: 10px; height: 10px; border-radius: 50%; background: var(--c-surface); border: 2px solid var(--c-line-strong); }
+.tline li.past { color: var(--c-text-2); border-left-color: var(--scol); }
+.tline li.past::before { background: var(--scol); border-color: var(--scol); }
+.tline li.today { font-weight: var(--fw-semibold); }
+.tline li.today::before { border-color: var(--c-text); background: var(--c-text); }
+.tline .mono { color: var(--c-text-3); }
+.clist { list-style: none; margin: 0; padding: 0; border: 1px solid var(--c-line); border-radius: var(--r-lg); background: var(--c-surface); }
+.clist li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: var(--sp-3); align-items: center; padding: var(--sp-2) var(--sp-4); border-bottom: 1px solid var(--c-line); font-size: var(--fs-sm); }
+.clist li:last-child { border-bottom: 0; }
+.clist label { display: flex; gap: var(--sp-3); align-items: center; cursor: pointer; min-width: 0; }
+.clist input { accent-color: var(--c-accent); width: 16px; height: 16px; flex: none; }
+.struck { text-decoration: line-through; color: var(--c-text-3); }
+.export { border-color: var(--c-accent); }
+
+/* ---------- capture sheet ---------- */
+.veil { position: absolute; inset: 0; background: color-mix(in srgb, var(--c-text) 30%, transparent); z-index: 25; }
+.sheet { position: absolute; z-index: 26; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(520px, calc(100% - 32px)); max-height: calc(100% - 48px); overflow: auto; background: var(--c-surface); border: 1px solid var(--c-line-strong); border-radius: var(--r-lg); box-shadow: var(--c-shadow); padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-4); animation: sheetIn .24s cubic-bezier(.2, .8, .2, 1); }
+@keyframes sheetIn { from { transform: translate(-50%, calc(-50% + 12px)); } }
+.sheet .row:has(.btn.primary) { position: sticky; bottom: calc(-1 * var(--sp-5)); background: var(--c-surface); padding-block: var(--sp-2) var(--sp-3); margin-bottom: calc(-1 * var(--sp-3)); border-top: 1px solid var(--c-line); z-index: 2; }
+.cap-top { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+.cap-top h2 { font-size: var(--fs-lg); }
+.rec-wrap { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); padding: var(--sp-3) 0; color: var(--c-text-2); }
+.rec-btn { width: 96px; height: 96px; border-radius: 50%; border: 0; background: var(--c-accent-soft); display: grid; place-items: center; padding: 0; }
+.rec-core { width: 72px; height: 72px; border-radius: 50%; background: var(--c-accent); color: var(--c-accent-ink); display: grid; place-items: center; transition: transform var(--dur-fast); }
+.rec-btn:hover .rec-core { transform: scale(1.04); }
+.rec-btn.on { background: var(--c-danger-soft); animation: breathe 1.8s ease-in-out infinite; }
+.rec-btn.on .rec-core { background: var(--c-danger); }
+.rec-sq { width: 22px; height: 22px; border-radius: 4px; background: var(--c-surface); }
+@keyframes breathe { 50% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--c-danger) 10%, transparent); } }
+.rec-timer { font-size: var(--fs-lg); color: var(--c-danger); }
+.wave { display: flex; align-items: center; gap: 3px; height: 64px; padding: 0 var(--sp-2); background: var(--c-surface-2); border-radius: var(--r-md); }
+.wave i { flex: 1; min-width: 2px; background: var(--c-danger); border-radius: 2px; transition: height .2s; opacity: .85; }
+.cap-priv { display: flex; gap: 6px; align-items: center; justify-content: center; }
+.checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.checklist li { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: var(--sp-3); align-items: center; font-size: var(--fs-sm); color: var(--c-text-3); }
+.checklist li.done { color: var(--c-text); }
+.checklist li.now { color: var(--c-text); font-weight: var(--fw-medium); }
+.checklist .ck { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--c-line-strong); display: grid; place-items: center; }
+.checklist li.done .ck { background: var(--c-ok); border-color: var(--c-ok); color: var(--c-surface); }
+.checklist li.now .ck { border-color: var(--c-accent); border-top-color: transparent; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.note { white-space: pre-wrap; line-height: 1.65; font-size: var(--fs-base); padding: var(--sp-4); border: 1px solid var(--c-line); border-radius: var(--r-md); background: var(--c-bg); }
+.note.raw { font-family: var(--font-mono); font-size: 12px; color: var(--c-text-2); }
+.xcards { display: flex; flex-direction: column; gap: var(--sp-2); }
+.xcard { border: 1px solid var(--c-line); border-radius: var(--r-md); padding: var(--sp-2) var(--sp-3) var(--sp-3); display: flex; flex-direction: column; gap: 2px; background: var(--c-surface); font-size: var(--fs-sm); }
+.xcard-h { display: flex; gap: var(--sp-2); align-items: center; }
+.xcard-h .btn { min-height: 26px; padding: 2px 8px; }
+.filed { display: flex; gap: var(--sp-3); align-items: center; }
+.filed h2 { font-size: var(--fs-lg); }
+
+/* ---------- chat, onboarding, more, spend extras ---------- */
+.chatwrap { display: grid; grid-template-columns: 240px minmax(0, 1fr); height: 100%; min-height: 0; }
+.agent-rail { border-right: 1px solid var(--c-line); background: var(--c-surface); overflow: auto; min-height: 0; padding-bottom: var(--sp-4); }
+.ctx-bar { display: flex; gap: var(--sp-2); align-items: center; font-size: var(--fs-xs); color: var(--c-text-2); padding: 4px 4px 8px; flex-wrap: wrap; }
+.ctx-bar b { font-weight: var(--fw-medium); color: var(--c-text); }
+.focus-list button { font-size: var(--fs-sm); }
+.side-head .btn { min-height: 30px; padding: 4px 10px; }
+.conn-rows { display: flex; flex-direction: column; border: 1px solid var(--c-line); border-radius: var(--r-md); }
+.conn-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: var(--sp-3); align-items: center; padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--c-line); }
+.conn-row:last-child { border-bottom: 0; }
+.readback { list-style: none; margin: 0; padding: 0; border: 1px solid var(--c-line); border-radius: var(--r-md); }
+.readback li { display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; gap: var(--sp-3); align-items: center; padding: 6px var(--sp-2) 6px var(--sp-4); border-bottom: 1px solid var(--c-line); font-size: var(--fs-sm); min-height: 44px; }
+.readback li:last-child { border-bottom: 0; }
+.rb-l { color: var(--c-text-3); font-size: var(--fs-xs); }
+.rb-v { min-width: 0; overflow-wrap: anywhere; }
+.rb-a { display: flex; gap: 2px; }
+.sugg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2); }
+.sugg-c { border: 1px solid var(--c-line); border-radius: var(--r-md); padding: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-2); font-size: var(--fs-sm); }
+.sugg-c .btn { margin-top: auto; align-self: flex-start; }
+.routines { list-style: none; margin: 0; padding: 0; border: 1px solid var(--c-line); border-radius: var(--r-md); }
+.routines li { border-bottom: 1px solid var(--c-line); }
+.routines li:last-child { border-bottom: 0; }
+.switch { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: var(--sp-3); align-items: center; padding: var(--sp-3) var(--sp-4); cursor: pointer; }
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+.sw-ui { width: 36px; height: 20px; border-radius: 10px; background: var(--c-surface-3); position: relative; transition: background var(--dur-fast); }
+.sw-ui::after { content: ""; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--c-surface); box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: transform var(--dur-fast); }
+.switch input:checked + .sw-ui { background: var(--c-accent); }
+.switch input:checked + .sw-ui::after { transform: translateX(16px); }
+.switch input:focus-visible + .sw-ui { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+.rt-t { display: flex; flex-direction: column; }
+.more-row { display: flex; gap: var(--sp-3); align-items: center; width: 100%; border: 0; border-bottom: 1px solid var(--c-line); background: transparent; padding: var(--sp-3) var(--sp-4); text-align: left; font-size: var(--fs-base); min-height: 52px; }
+.more-row:last-child { border-bottom: 0; }
+.more-row span { flex: 1; }
+.meter .pace { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--c-text); border-radius: 1px; }
+.hero-spend { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-5); }
+.hero-spend .big-num { font-size: 44px; }
+.tcard .produces { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.cap-tab { border: 0; background: transparent; }
+
+@container frame (max-width: 1100px) {
+  .board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container frame (max-width: 760px) {
+  .tabbar .cap-tab { position: relative; top: -14px; color: var(--c-text-2); }
+  .cap-dot { width: 52px; height: 52px; border-radius: 50%; background: var(--c-accent); color: var(--c-accent-ink); display: grid; place-items: center; box-shadow: var(--c-shadow); border: 4px solid var(--c-surface); }
+  .deck-page { padding: var(--sp-4) var(--sp-3) var(--sp-8); gap: var(--sp-4); }
+  .dcard-t { font-size: var(--fs-base); }
+  .dcard-f { padding: var(--sp-3); }
+  .dcard-f .btn { min-height: 40px; }
+  .dcard-f .btn.primary { flex: 1; }
+  .prov span { display: none; }
+  .end-cols { grid-template-columns: minmax(0, 1fr); }
+  .tri-head { padding: var(--sp-3) var(--sp-4) 0; }
+  .tri-stage { padding: var(--sp-3) var(--sp-3) var(--sp-4); }
+  .tri-in { padding: var(--sp-4); }
+  .tri-controls { padding: var(--sp-2) var(--sp-2) var(--sp-3); }
+  .tri-btns { gap: 4px; }
+  .tri-btns .btn.tb { min-height: 56px; padding: 4px 2px; }
+  .tri-btns .kbd { display: none; }
+  .sender { grid-template-columns: auto minmax(0, 1fr); }
+  .sender .stag { grid-column: 1 / -1; }
+  .board { grid-template-columns: minmax(0, 1fr); }
+  .tiles-grid, .sgroup.quiet .tiles-grid { grid-template-columns: minmax(0, 1fr); gap: var(--sp-2); }
+  .stile { padding: var(--sp-3); gap: 6px; }
+  .stile-status { -webkit-line-clamp: 1; }
+  .chatwrap { grid-template-columns: minmax(0, 1fr); }
+  .agent-rail { display: none; }
+  .sheet { left: 0; right: 0; top: auto; bottom: 0; transform: none; width: 100%; max-height: 88%; border-radius: var(--r-lg) var(--r-lg) 0 0; animation: sheetUp .26s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes sheetUp { from { transform: translateY(40px); } }
+  .readback li { grid-template-columns: minmax(0, 1fr) auto; }
+  .readback .rb-l { grid-column: 1 / -1; padding-top: 4px; }
+  .readback li > .input { grid-column: 1; }
+  .sugg { grid-template-columns: minmax(0, 1fr); }
+  .conn-row { grid-template-columns: 36px minmax(0, 1fr); }
+  .conn-row > .btn, .conn-row > .chip { grid-column: 2; justify-self: start; }
+  .letter-h { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .letter-h dd { margin-bottom: 4px; }
+  .draft-f .btn.send { flex: 1 1 100%; min-height: 44px; }
+  .draft-f .spacer { display: none; }
+  .space-meta .spacer { display: none; }
+  .lens-bar .seg-in { width: 100%; }
+  .lens-bar .seg-in button { flex: 1; justify-content: center; }
+  .hero-spend .big-num { font-size: 36px; }
+  .toast { bottom: 92px; }
+  .clist li { grid-template-columns: minmax(0, 1fr) auto; }
+  .clist li .owner, .clist li .chip { display: none; }
+  .tline li { grid-template-columns: 56px minmax(0, 1fr); gap: var(--sp-3); }
+}
 
 /* ============ narrow frame (phone) ============ */
 @container frame (max-width: 1100px) {
@@ -723,7 +1108,29 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
     replay: '<path d="M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.5 2.5v3.2h3.2"/>',
     download: '<path d="M8 2v8.5M4.5 7.5 8 11l3.5-3.5M2.5 13.5h11"/>',
     phone: '<rect x="4" y="1.5" width="8" height="13" rx="1.5"/><path d="M7 12.2h2"/>',
-    laptop: '<rect x="3" y="3" width="10" height="7" rx="1"/><path d="M1.5 12.5h13"/>'
+    laptop: '<rect x="3" y="3" width="10" height="7" rx="1"/><path d="M1.5 12.5h13"/>',
+    sun: '<circle cx="8" cy="8" r="2.8"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"/>',
+    news: '<rect x="2" y="3" width="12" height="10" rx="1"/><path d="M4.5 6h7M4.5 8.5h7M4.5 11h4"/>',
+    cal: '<rect x="2" y="3" width="12" height="11" rx="1.2"/><path d="M2 6.5h12M5 1.8v2.4M11 1.8v2.4"/>',
+    reply: '<path d="M6.5 4 2.5 8l4 4"/><path d="M2.5 8h6.5a4.5 4.5 0 0 1 4.5 4.5"/>',
+    pulse: '<path d="M1.5 8.5h3l1.5-4 3 7 1.5-3h4"/>',
+    task: '<rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="m5.5 8 2 2 3.5-4"/>',
+    chat: '<path d="M2.5 3.5h11v7.5h-6l-3 2.5V11h-2V3.5Z"/>',
+    clock: '<circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/>',
+    mute: '<path d="M2.5 6h2.5L8.5 3v10L5 10H2.5V6Z"/><path d="m11 6 3.5 4M14.5 6 11 10"/>',
+    undo: '<path d="M5 3.5 2 6.5l3 3"/><path d="M2 6.5h7.5a3.5 3.5 0 0 1 0 7H7"/>',
+    mic: '<rect x="6" y="1.8" width="4" height="7.5" rx="2"/><path d="M3.5 7.5a4.5 4.5 0 0 0 9 0M8 12v2.2"/>',
+    plus: '<path d="M8 3v10M3 8h10"/>',
+    spaces: '<rect x="2" y="2" width="5.2" height="5.2" rx="1.5"/><rect x="8.8" y="2" width="5.2" height="5.2" rx="1.5"/><rect x="2" y="8.8" width="5.2" height="5.2" rx="1.5"/><circle cx="11.4" cy="11.4" r="2.6"/>',
+    house: '<path d="M2.5 7.5 8 3l5.5 4.5v6h-11v-6Z"/><path d="M6.5 13.5V10h3v3.5"/>',
+    brief: '<rect x="2" y="5" width="12" height="8.5" rx="1"/><path d="M5.5 5V3.5h5V5M2 8.5h12"/>',
+    plane: '<path d="M2 9.5 14 4l-2.5 9-3.5-3-2 2.5v-3.5L2 9.5Z"/>',
+    receipt: '<path d="M3.5 1.8h9v12.4l-1.5-1-1.5 1-1.5-1-1.5 1-1.5-1-1.5 1V1.8Z"/><path d="M5.5 5h5M5.5 7.5h5M5.5 10h3"/>',
+    heart: '<path d="M8 13.5S2 10 2 6a3 3 0 0 1 6-1 3 3 0 0 1 6 1c0 4-6 7.5-6 7.5Z"/>',
+    gift: '<rect x="2" y="6" width="12" height="3" rx=".5"/><path d="M3 9v4.5h10V9M8 6v7.5M8 6S6.5 2.5 5 3.5 6 6 8 6ZM8 6s1.5-3.5 3-2.5S10 6 8 6Z"/>',
+    rocket: '<path d="M8 1.8c2.5 1.7 3.5 4.2 3 7.2l-1.5 2h-3L5 9c-.5-3 .5-5.5 3-7.2Z"/><circle cx="8" cy="6.3" r="1.2"/><path d="M5.3 9.5 3.5 11.5l2.5.5M10.7 9.5l1.8 2-2.5.5"/>',
+    book: '<path d="M2.5 3h4A1.5 1.5 0 0 1 8 4.5v9A1.5 1.5 0 0 0 6.5 12h-4V3ZM13.5 3h-4A1.5 1.5 0 0 0 8 4.5v9A1.5 1.5 0 0 1 9.5 12h4V3Z"/>',
+    building: '<rect x="3" y="2" width="10" height="12" rx="1"/><path d="M5.5 5h1M9.5 5h1M5.5 8h1M9.5 8h1M7 14v-3h2v3"/>'
   };
   const ic = (n, s = 16) => `<svg width="${s}" height="${s}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n] || ""}</svg>`;
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -777,7 +1184,7 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
   ];
 
   const state = {
-    screen: "home",
+    screen: "today",
     device: "desktop",
     approvals: approvalsSeed.map((a) => ({ ...a })),
     editing: {},
@@ -800,47 +1207,86 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
     installed: {},
     lane: "edge",
     deleteConfirm: false,
-    paired: false
+    paired: false,
+    handled: {}, moreOpen: null, fanned: {}, groupBy: "space", tileOpen: null,
+    triIdx: 0, triHist: [], triIntent: {}, snoozeOpen: false, returning: null, coachSeen: false,
+    revIdx: 0, revHist: [], drafts: [], dEditing: null, sendAll: false, dmCtx: null,
+    spaceId: "house", lens: "stack", exporting: false, listDone: {}, kitchen: null, many: false,
+    capture: null, spendMode: "remaining",
+    conns: {}, learnStep: 0, facts: [["Name", "Sam Kerr"], ["Work", "Engineering manager at Yourco"], ["Hours", "09:00–18:00, London"], ["Manager", "Priya Raman, 1:1 on Thursdays"], ["Moving house", "Completion Dec 12, solicitor Jess Patel"], ["Job search", "Talking to recruiters about Staff roles"], ["Family", "Mum's birthday is Dec 3"], ["Writing style", "Short paragraphs, signs off \"Best, Sam\""]], factEdit: null, suggDone: {}, routines: { brief: true, inbox: true, meet: true }
   };
 
   const screens = [
     ["onboarding", "1 · Onboarding"],
-    ["home", "2 · Home / team"],
-    ["dm", "3 · Agent DM"],
-    ["approvals", "4 · Approvals inbox"],
-    ["activity", "5 · Activity log"],
-    ["spend", "6 · Spend"],
-    ["browser", "7 · Live browser"],
-    ["memory", "8 · Memory"],
-    ["templates", "9a · Template gallery"],
-    ["install", "9b · Template install"],
-    ["account", "10 · Settings"],
+    ["today", "2 · Today deck"],
+    ["triage", "3 · Triage stack"],
+    ["drafts", "4 · Drafts"],
+    ["approvals", "4b · Approvals"],
+    ["spaces", "5 · Spaces overview"],
+    ["space", "6 · Space: House move"],
+    ["review", "7 · Weekly review"],
+    ["capture", "8 · Voice capture"],
+    ["home", "9 · Chat (team)"],
+    ["dm", "10 · Agent DM"],
+    ["activity", "11 · Activity log"],
+    ["spend", "12 · Spend"],
+    ["browser", "13 · Live browser"],
+    ["memory", "14 · Memory"],
+    ["templates", "15 · Templates"],
+    ["install", "15b · Create Space from template"],
+    ["account", "16 · Settings"],
+    ["more", "More (phone)"],
     ["tokens", "Tokens"]
   ];
 
   /* ---------------- helpers ---------------- */
   const pct = (a) => (a.spent / a.cap) * 100;
   const meterCls = (p) => (p >= 100 ? "over" : p >= 80 ? "warn" : "");
-  const meter = (spent, cap, lg) => {
+  const meter = (spent, cap, lg, pace) => {
     const p = (spent / cap) * 100;
-    return `<div class="meter ${lg ? "lg" : ""} ${meterCls(p)}" role="meter" aria-valuemin="0" aria-valuemax="${cap}" aria-valuenow="${spent}" aria-label="Spend ${money(spent)} of ${money(cap)}"><i style="width:${Math.min(p, 100)}%"></i></div>`;
+    return `<div class="meter ${lg ? "lg" : ""} ${meterCls(p)}" role="meter" aria-valuemin="0" aria-valuemax="${cap}" aria-valuenow="${spent}" aria-label="Spend ${money(spent)} of ${money(cap)}"><i style="width:${Math.min(p, 100)}%"></i>${pace ? `<b class="pace" style="left:${pace}%" title="Pace for day 11 of 30"></b>` : ""}</div>`;
   };
+  const reduced = () => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } };
   const status = (s) => `<span class="status ${s}">${statusLabel[s]}</span>`;
   const avatar = (a, lg) => `<span class="avatar ${a.cls} ${lg ? "lg" : ""}" aria-hidden="true">${a.ini}</span>`;
   const pending = () => state.approvals.length;
   const tierTag = (t) => t === "irr" ? `<span class="tier irr">${ic("lock", 12)} Irreversible</span>` : t === "rev" ? `<span class="tier rev">Reversible</span>` : `<span class="tier read">Read only</span>`;
 
   /* ---------------- shell ---------------- */
-  const navItems = [
-    ["home", "Team", "team"], ["approvals", "Approvals", "inbox"], ["activity", "Activity", "log"], ["spend", "Spend", "coin"],
-    ["browser", "Live browser", "globe"], ["memory", "Memory", "file"], ["templates", "Templates", "grid"], ["account", "Settings", "gear"]
-  ];
-  const navActive = (s) => (s === "dm" ? "" : s === "install" ? "templates" : s);
+  const navPrimary = [["today", "Today", "sun"], ["spaces", "Spaces", "spaces"], ["drafts", "Drafts", "edit"], ["home", "Chat", "chat"]];
+  const navSecondary = [["activity", "Activity", "log"], ["spend", "Spend", "coin"], ["memory", "Memory", "file"], ["browser", "Live browser", "globe"], ["templates", "Templates", "grid"], ["account", "Settings", "gear"], ["tokens", "Tokens", "info"]];
+  const navActive = (s) => ({ dm: "home", install: "templates", approvals: "drafts", triage: "today", capture: "today", space: "spaces", review: "spaces" }[s] || s);
+  const draftBadge = () => state.drafts.length + pending();
 
   function shell(top, body, opts = {}) {
-    const total = agents.reduce((s, a) => s + a.spent, 0);
-    const navHtml = navItems.map(([id, label, icon]) => `<button data-go="${id}" ${navActive(state.screen) === id ? 'aria-current="page"' : ""}>${ic(icon)}<span>${label}</span>${id === "approvals" ? `<span class="badge" data-badge data-zero="${pending() === 0}">${pending()}</span>` : ""}</button>`).join("");
-    const agentHtml = agents.map((a) => `
+    const cur = navActive(state.screen);
+    const nb = ([id, label, icon]) => `<button data-go="${id}" ${cur === id ? 'aria-current="page"' : ""}>${ic(icon)}<span>${label}</span>${id === "drafts" ? `<span class="badge" data-zero="${draftBadge() === 0}">${draftBadge()}</span>` : id === "today" ? `<span class="badge soft">${todayCards.filter((c) => !isHandled(c)).length}</span>` : ""}</button>`;
+    const focus = spaces.filter((s) => s.focus && !s.archived).slice(0, 3);
+    const tabs = [["today", "Today", "sun"], ["spaces", "Spaces", "spaces"], ["capture", "Capture", "plus"], ["drafts", "Drafts", "edit"], ["home", "Chat", "chat"]];
+    const tabHtml = tabs.map(([id, label, icon]) => id === "capture"
+      ? `<button class="cap-tab" data-act="capture-open" aria-label="Capture"><span class="cap-dot">${ic("plus", 22)}</span><span>Capture</span></button>`
+      : `<button data-go="${id}" ${cur === id || (id === "home" && false) ? 'aria-current="page"' : ""}>${ic(icon, 20)}<span>${label}</span>${id === "drafts" && draftBadge() ? `<span class="badge">${draftBadge()}</span>` : ""}</button>`).join("");
+    return `
+      <aside class="side" aria-label="Navigation">
+        <div class="side-head"><div class="wordmark"><span class="wordmark-mark"></span>Later</div><button class="btn primary" data-act="capture-open">${ic("plus", 14)} Capture</button></div>
+        <div class="host-chip"><span class="dot"></span>later.sam-k.workers.dev</div>
+        <nav class="nav">${navPrimary.map(nb).join("")}</nav>
+        <div class="side-section"><span class="label">Focus this week</span></div>
+        <div class="nav focus-list">${focus.map((s) => `<button data-space="${s.id}" ${state.screen === "space" && state.spaceId === s.id ? 'aria-current="page"' : ""}>${emblem(s, 12, "sm")}<span>${esc(s.name)}</span>${s.needs ? `<span class="badge soft">${s.needs}</span>` : ""}</button>`).join("")}</div>
+        <div class="side-section"><span class="label">More</span></div>
+        <nav class="nav">${navSecondary.map(nb).join("")}</nav>
+        <div class="side-foot small faint">Runs in your Cloudflare account on your Anthropic key. Open source, v0.1.0.</div>
+      </aside>
+      <section class="main">
+        ${top ? `<header class="topbar">${top}</header>` : ""}
+        <div class="scroll" ${opts.noScroll ? 'style="overflow:hidden;display:flex;flex-direction:column"' : ""}>${body}</div>
+      </section>
+      <nav class="tabbar" aria-label="Tabs">${tabHtml}</nav>
+      ${captureSheet()}`;
+  }
+  function agentRail() {
+    return `<div class="side-section" style="padding-top:var(--sp-4)"><span class="label">Agents</span><span class="label num">${money(agents.reduce((s, a) => s + a.spent, 0))} / $100</span></div>
+      <div class="agent-list">${agents.map((a) => `
       <button class="agent-row" data-dm="${a.id}" ${state.screen === "dm" && state.dmAgent === a.id ? 'aria-current="page"' : ""}>
         ${avatar(a)}
         <span style="min-width:0;display:flex;flex-direction:column;gap:3px">
@@ -849,27 +1295,8 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
           ${meter(a.spent, a.cap)}
           <span class="meter-line"><span>${money(a.spent)}</span><span>of ${money(a.cap)}</span></span>
         </span>
-      </button>`).join("");
-    const tabs = [["home", "Team", "team"], ["approvals", "Approvals", "inbox"], ["activity", "Activity", "log"], ["spend", "Spend", "coin"], ["more", "More", "more"]];
-    const moreScreens = ["browser", "memory", "templates", "install", "account", "tokens"];
-    const tabHtml = tabs.map(([id, label, icon]) => {
-      const cur = id === "more" ? moreScreens.includes(state.screen) : navActive(state.screen) === id || (id === "home" && state.screen === "dm");
-      return `<button data-go="${id === "more" ? "account" : id}" ${cur ? 'aria-current="page"' : ""}>${ic(icon, 20)}<span>${label}</span>${id === "approvals" && pending() ? `<span class="badge" data-badge>${pending()}</span>` : ""}</button>`;
-    }).join("");
-    return `
-      <aside class="side" aria-label="Navigation">
-        <div class="side-head"><div class="wordmark"><span class="wordmark-mark"></span>Later</div></div>
-        <div class="host-chip"><span class="dot"></span>later.sam-k.workers.dev</div>
-        <nav class="nav">${navHtml}</nav>
-        <div class="side-section"><span class="label">Agents</span><span class="label num">${money(total)} / $100</span></div>
-        <div class="agent-list">${agentHtml}</div>
-        <div class="side-foot small faint">Runs in your Cloudflare account on your Anthropic key. Open source, v0.1.0.</div>
-      </aside>
-      <section class="main">
-        ${top ? `<header class="topbar">${top}</header>` : ""}
-        <div class="scroll" ${opts.noScroll ? 'style="overflow:hidden;display:flex;flex-direction:column"' : ""}>${body}</div>
-      </section>
-      <nav class="tabbar" aria-label="Tabs">${tabHtml}</nav>`;
+      </button>`).join("")}</div>
+      <p class="xs faint" style="padding:0 var(--sp-4)">Agents are staff. They work inside Spaces and sign every card they make.</p>`;
   }
   const topbar = (title, sub, actions = "", back) => `
     ${back ? `<button class="btn ghost back" data-go="${back}" aria-label="Back">${ic("back")}</button>` : ""}
@@ -913,89 +1340,94 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
   }
 
   /* ---------------- screens ---------------- */
+  const learnSteps = [["Reading the last 30 days of mail", "1,850 emails, newest first"], ["Learning who you talk to", "64 people, 9 you write to weekly"], ["Reading 3 months of calendar", "112 events"], ["Finding what needs a reply", "5 threads"], ["Sorting things into Spaces", "12 Spaces found"], ["Building your first Today deck", "10 cards"]];
   function scrOnboarding() {
-    const steps = ["Cloudflare", "API key", "Spend cap", "Template"];
+    const steps = ["Account", "Spend cap", "Connect", "Learning", "About you", "Routines"];
     const s = state.onbStep;
-    const stepper = `<ol class="stepper" aria-label="Setup steps">${steps.map((t, i) => `<li class="${i < s ? "done" : i === s ? "cur" : ""}" ${i === s ? 'aria-current="step"' : ""}><span>${i + 1}. ${t}</span></li>`).join("")}</ol>`;
-    let card = "";
+    const stepper = `<ol class="stepper" style="grid-template-columns:repeat(${steps.length},minmax(0,1fr))" aria-label="Setup steps">${steps.map((t, i) => `<li class="${i < s ? "done" : i === s ? "cur" : ""}" ${i === s ? 'aria-current="step"' : ""}><span>${t}</span></li>`).join("")}</ol>`;
+    let card = "", nextOk = true, nextLabel = "Continue";
     if (s === 0) {
-      card = `
-        <span class="label">Step 1 of 4</span>
-        <h1>Deploy Later to your Cloudflare account</h1>
-        <p class="lead">Later runs entirely in an account you own. We don't host a server, so there is nothing of ours between you, your data and your agents.</p>
-        <ul class="creates" aria-label="What gets created">
-          <li><span>1 Worker</span><span class="mono">later-app</span></li>
-          <li><span>Durable Objects, one per agent and one for the team</span><span class="mono">TeamDO, AgentDO</span></li>
-          <li><span>Cron triggers for schedules</span><span class="mono">created paused</span></li>
-          <li><span>Plan needed</span><span class="mono">Workers Free is enough</span></li>
-        </ul>
-        ${state.deployed ? `<div class="progress" aria-live="polite">
-            <div class="ok">${ic("check", 14)} Forked github.com/sam-k/later (from later-dev/later@v0.1.0)</div>
-            <div class="ok">${ic("check", 14)} Built and deployed Worker</div>
-            <div class="ok">${ic("check", 14)} Live at later.sam-k.workers.dev</div>
-          </div>` : `<button class="btn primary lg deploy-btn" data-act="deploy">${ic("cloud", 18)} Deploy to Cloudflare</button>
-          <p class="small faint">Opens Cloudflare in a new tab. You sign in there; Later never sees your Cloudflare password or token.</p>`}`;
-    } else if (s === 1) {
-      card = `
-        <span class="label">Step 2 of 4</span>
-        <h1>Add your Anthropic API key</h1>
-        <p class="lead">Your agents call Claude models with this key. Create one at console.anthropic.com under API keys.</p>
-        <div class="field">
-          <label for="api-key">API key</label>
-          <div class="key-row">
-            <input class="input" id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-api03-..." value="${state.keySaved ? "sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxx" : ""}">
-            <button class="btn ${state.keySaved ? "" : "primary"}" data-act="savekey">${state.keySaved ? ic("check", 14) + " Saved" : "Save key"}</button>
-          </div>
+      card = `<span class="label">Step 1 of 6 · about 2 minutes</span>
+        <h1>Set Later up in your own account</h1>
+        <p class="lead">Later runs in your Cloudflare account on your Anthropic key. We host nothing in between.</p>
+        <div class="conn-rows">
+          <div class="conn-row"><span class="conn-logo">CF</span><div style="min-width:0"><b>Cloudflare</b><div class="small muted">${state.deployed ? "Deployed to later.sam-k.workers.dev · Workers Free" : "Sign in and approve one deploy. Workers Free is enough."}</div></div>${state.deployed ? `<span class="chip ok-chip">${ic("check", 12)} Connected</span>` : `<button class="btn primary" data-act="deploy">Connect</button>`}</div>
+          <div class="conn-row"><span class="conn-logo">${ic("key")}</span><div style="min-width:0;flex:1"><b>Anthropic API key</b><div class="key-row" style="margin-top:6px"><input class="input" id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-api03-..." value="${state.keySaved ? "sk-ant-api03-xxxxxxxxxxxxxxxx" : ""}"><button class="btn ${state.keySaved ? "" : "primary"}" data-act="savekey">${state.keySaved ? ic("check", 14) + " Saved" : "Save"}</button></div></div></div>
         </div>
-        <div class="callout accent">${ic("lock")}<div>Stored as an encrypted secret in <b>your</b> Cloudflare account (<span class="mono xs">ANTHROPIC_API_KEY</span>). It is never sent to Later, and this page can't read it back once saved.</div></div>`;
-    } else if (s === 2) {
-      card = `
-        <span class="label">Step 3 of 4</span>
+        <div class="callout accent">${ic("lock")}<div>The key is stored as a secret in <b>your</b> Cloudflare account. It is never sent to Later, and this page can't read it back.</div></div>
+        <p class="xs faint">Developer? Use the <a href="#" data-noop>Deploy to Cloudflare button</a> instead (needs a GitHub or GitLab account).</p>`;
+      nextOk = state.deployed && state.keySaved;
+    } else if (s === 1) {
+      card = `<span class="label">Step 2 of 6</span>
         <h1>Set a monthly spend cap</h1>
-        <p class="lead">Agents pause when the team reaches this amount. You can split it between agents later.</p>
+        <p class="lead">Agents pause when the team reaches this. You can split it between Spaces later.</p>
         <div class="credit">
           <svg class="ring" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16" fill="none" stroke="var(--c-surface-3)" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="none" stroke="var(--c-accent)" stroke-width="4" stroke-dasharray="${(11 / 30) * 100.5} 100.5" transform="rotate(-90 20 20)"/></svg>
-          <div><b>$100 credit this cycle, expires in 19 days</b><div class="small muted">From your Max plan. Unused credit doesn't roll over. After it runs out, usage bills to your card on file with Anthropic.</div></div>
+          <div><b>$100 credit this cycle, expires in 19 days</b><div class="small muted">From your Max plan. Unused credit doesn't roll over.</div></div>
         </div>
-        <div class="field">
-          <label for="cap-range">Team cap per month</label>
+        <div class="field"><label for="cap-range">Team cap per month</label>
           <div class="cap-big"><span class="big-num" id="cap-val">$${state.cap}</span><small class="muted">/ month, estimated</small></div>
-          <input type="range" class="cap" id="cap-range" min="10" max="300" step="5" value="${state.cap}">
-          <div class="meter-line"><span>$10</span><span>$300</span></div>
-        </div>
-        <div class="callout warn">${ic("shield")}<div>Also set a spend limit in the Anthropic Console. Later's meter is an estimate from usage data; the Console limit is the hard stop.</div></div>`;
+          <input type="range" class="cap" id="cap-range" min="10" max="300" step="5" value="${state.cap}"><div class="meter-line"><span>$10</span><span>$300</span></div></div>
+        <div class="callout warn">${ic("shield")}<div>Also set a spend limit in the Anthropic Console. Later's meter is an estimate; the Console limit is the hard stop.</div></div>`;
+    } else if (s === 2) {
+      const rows = [["gmail", "GM", "Gmail", "Mail for Today, Triage and Drafts", "Your own Google OAuth client, guided (about 4 min)"], ["cal", "CA", "Google Calendar", "Meeting cards and the morning brief", "Same Google client"], ["slack", "SL", "Slack", "Optional. Post reports you approve", "Your own Slack app"]];
+      card = `<span class="label">Step 3 of 6</span>
+        <h1>Connect mail and calendar. Your first Today deck is ready in about five minutes.</h1>
+        <div class="conn-rows">${rows.map(([id, l, n, use, how]) => `<div class="conn-row"><span class="conn-logo">${l}</span><div style="min-width:0"><b>${n}</b><div class="small muted">${use}</div><div class="xs faint">${how}</div></div>${state.conns[id] ? `<span class="chip ok-chip">${ic("check", 12)} Connected</span>` : `<button class="btn ${id === "slack" ? "" : "primary"}" data-conn="${id}">Connect</button>`}</div>`).join("")}</div>
+        <p class="xs faint">No Google account? <a href="#" data-noop>Use IMAP with an app password</a>.</p>`;
+      nextOk = !!state.conns.gmail;
+    } else if (s === 3) {
+      const k = state.learnStep;
+      card = `<span class="label">Step 4 of 6 · first five minutes</span>
+        <h1>Getting to know your mail</h1>
+        <ul class="checklist">${learnSteps.map(([t, m], i) => `<li class="${i < k ? "done" : i === k ? "now" : ""}"><span class="ck">${i < k ? ic("check", 12) : ""}</span><span>${t}</span><span class="mono xs faint">${i < k ? m : ""}</span></li>`).join("")}</ul>
+        <div class="stack" style="gap:6px"><div class="row small"><span>Learning budget</span><span class="spacer"></span><span class="mono num">Used ${money(Math.min(1.2, k * 0.2))} of $5.00</span></div>${meter(Math.min(1.2, k * 0.2), 5)}<span class="xs faint">Haiku, newest mail first. Stops at the budget and picks up later if you want more.</span></div>`;
+      nextOk = k >= learnSteps.length; nextLabel = nextOk ? "See what I learned" : "Working…";
+    } else if (s === 4) {
+      card = `<span class="label">Step 5 of 6</span>
+        <h1>What I learned about you</h1>
+        <p class="lead">Correct anything that's wrong. I use this for briefs and drafts.</p>
+        <ul class="readback">${state.facts.map(([l, v], i) => `<li>${state.factEdit === i ? `<span class="rb-l">${esc(l)}</span><input class="input" id="fact-${i}" value="${esc(v)}" aria-label="${esc(l)}"><button class="btn primary" data-fsave="${i}">Save</button>` : `<span class="rb-l">${esc(l)}</span><span class="rb-v">${esc(v)}</span><span class="rb-a"><button class="btn ghost icon-only" data-fedit="${i}" aria-label="Edit ${esc(l)}">${ic("edit", 14)}</button><button class="btn ghost icon-only" data-fdel="${i}" aria-label="Delete ${esc(l)}">${ic("trash", 14)}</button></span>`}</li>`).join("")}</ul>
+        <div class="stack"><span class="label">Try one of these first</span>
+          <div class="sugg">${[["needs-reply", "Draft replies to 5 people waiting on you", "triage"], ["meeting", "Brief you before the 10:30 call with Jess", "today"], ["fyi", "Mute 9 newsletters you never open", "toast"]].map(([t, l, a], i) => `<div class="sugg-c">${ctypeChip(t)}<span>${l}</span><button class="btn" data-sugg="${i}">${state.suggDone[i] ? ic("check", 14) + " Queued" : "Do it"}</button></div>`).join("")}</div></div>`;
     } else {
-      const opts = [["inbox-zero", "Inbox Zero", "Inbox Watcher triages and drafts. ~$12/mo"], ["competitor", "Weekly Competitor Brief", "Research Analyst. ~$18/mo"], ["monitor", "Monitor & Report", "Weekly metrics digest. ~$8/mo"], ["blank", "Start empty", "Add agents yourself"]];
-      card = `
-        <span class="label">Step 4 of 4</span>
-        <h1>Pick a starter template</h1>
-        <p class="lead">Templates add agents with their permissions and budgets. You'll review every permission before anything installs, and schedules start paused.</p>
-        <div class="pick" role="radiogroup" aria-label="Starter template">${opts.map(([id, t, d]) => `<label><input type="radio" name="tpl" id="tpl-${id}" value="${id}" ${state.template === id ? "checked" : ""}><span><b>${t}</b><span>${d}</span></span></label>`).join("")}</div>`;
+      const r = [["brief", "Morning brief", "A Today deck at 07:00 on weekdays", "~$0.06 a day"], ["inbox", "Inbox sort and draft", "Files mail into Spaces and drafts replies", "~$0.30 a day"], ["meet", "Meeting briefs", "A card 15 minutes before each meeting", "~$0.02 each"]];
+      card = `<span class="label">Step 6 of 6</span>
+        <h1>Turn on three routines</h1>
+        <p class="lead">They only draft and suggest. Anything that sends, posts or pays waits for your yes.</p>
+        <ul class="routines">${r.map(([id, n, d, c]) => `<li><label class="switch"><input type="checkbox" id="rt-${id}" ${state.routines[id] ? "checked" : ""} data-routine="${id}"><span class="sw-ui" aria-hidden="true"></span><span class="rt-t"><b>${n}</b><span class="small muted">${d}</span></span><span class="mono xs faint">${c}</span></label></li>`).join("")}</ul>
+        <p class="small muted">Want more? <button class="linkbtn" data-go="templates">Browse Space templates</button></p>`;
+      nextLabel = "Open my first Today deck";
     }
-    const nextOk = (s === 0 && state.deployed) || (s === 1 && state.keySaved) || s >= 2;
     return `<div class="onb">
       <div class="onb-top"><div class="wordmark"><span class="wordmark-mark"></span>Later</div><span class="small faint">Setup takes about 5 minutes</span></div>
       ${stepper}
       <section class="onb-card">${card}
         <div class="onb-f">
           <button class="btn ghost" data-act="onb-back" ${s === 0 ? "disabled" : ""}>Back</button>
-          <button class="btn primary" data-act="onb-next" ${nextOk ? "" : "disabled"}>${s === 3 ? "Review template" : "Continue"}</button>
+          <button class="btn primary" data-act="onb-next" ${nextOk ? "" : "disabled"}>${nextLabel}</button>
         </div>
       </section>
     </div>`;
+  }
+  let learnT = null;
+  function startLearning() {
+    clearInterval(learnT);
+    if (reduced()) { state.learnStep = learnSteps.length; render(); return; }
+    learnT = setInterval(() => { if (state.screen !== "onboarding" || state.onbStep !== 3) { clearInterval(learnT); return; } state.learnStep++; render(); if (state.learnStep >= learnSteps.length) clearInterval(learnT); }, 650);
   }
 
   function scrHome() {
     const total = agents.reduce((s, a) => s + a.spent, 0);
     const mini = agents.map((a) => `<button class="mini-agent" data-dm="${a.id}">${avatar(a)}<span style="min-width:0;display:flex;flex-direction:column;gap:3px"><b>${a.name}</b><span class="meta xs faint" style="display:flex;gap:6px;flex-wrap:wrap">${status(a.status)}<span>· ${a.model}</span></span>${meter(a.spent, a.cap)}</span><span class="mono xs faint num" style="text-align:right">${money(a.spent)}<br>/ ${money(a.cap)}</span></button>`).join("");
-    const body = `
+    const body = `<div class="chatwrap"><aside class="agent-rail" aria-label="Agents">${agentRail()}</aside>
     <div class="home">
       <div class="channel">
         <div class="thread">
           <div class="mini-agents">
             <div class="row"><span class="label">Agents</span><span class="spacer"></span><span class="label num">${money(total)} of $100 · est.</span></div>
             ${mini}
-            ${pending() ? `<button class="callout warn" data-go="approvals" style="text-align:left;width:100%">${ic("inbox")}<span><b>${pending()} waiting for your approval</b><br><span class="muted">Nothing irreversible happens until you say yes.</span></span></button>` : ""}
+            ${pending() && false ? `<button class="callout warn" data-go="approvals" style="text-align:left;width:100%">${ic("inbox")}<span><b>${pending()} waiting for your approval</b><br><span class="muted">Nothing irreversible happens until you say yes.</span></span></button>` : ""}
             <div class="label" style="margin-top:var(--sp-3)"># team</div>
           </div>
           <div class="day-sep">Today, Tue Nov 11</div>
@@ -1049,8 +1481,8 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
         <div class="callout warn">${ic("alert")}<div>Research Analyst is at 85% of its budget and will pause at $25.00, around Nov 13.</div></div>
         <button class="btn" data-go="spend">Open spend</button>
       </aside>
-    </div>`;
-    return shell(topbar("# team", "3 agents · all activity is logged", `<button class="btn" data-go="templates">${ic("grid", 14)} <span class="hide-narrow">Add from template</span></button>`), body, { noScroll: true });
+    </div></div>`;
+    return shell(topbar("Chat · #team", "3 agents · every message and action is logged"), body, { noScroll: true });
   }
 
   function scrDM() {
@@ -1119,20 +1551,20 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
       <div class="topbar-actions">${pausedBtn}<button class="btn ghost hide-narrow" data-go="memory">${ic("file", 14)} Memory</button></div>`;
     const body = `<div class="channel" style="height:100%;border-right:0">
       ${a.status === "paused" ? `<div class="callout" style="border-radius:0;border-width:0 0 1px">${ic("pause")}<div>${a.name} is paused. Triggers and schedules are held until you resume. Nothing runs in the meantime.</div></div>` : ""}
-      <div class="thread">${thread}</div>
-      <div class="composer"><div class="composer-box"><textarea id="dm-compose" rows="1" placeholder="Message ${a.name}" aria-label="Message ${a.name}"></textarea><button class="btn primary" aria-label="Send">${ic("send", 14)}</button></div></div>
+      <div class="thread">${thread}${state.dmCtx ? `<div class="msg">${avatar(a)}<div class="msg-body"><div class="msg-h"><b>${a.name}</b><time>now</time></div><p>I have the card "${esc(state.dmCtx.title)}" open. What should I change or explain?</p></div></div>` : ""}</div>
+      <div class="composer">${state.dmCtx ? `<div class="ctx-bar">Discussing ${state.dmCtx.space && state.dmCtx.space !== "_all" ? stag(SP(state.dmCtx.space)) : ""}${ctypeChip(state.dmCtx.type)}<b>${esc(state.dmCtx.title)}</b><button class="btn ghost icon-only" data-act="ctx-clear" aria-label="Remove card from chat">${ic("x", 12)}</button></div>` : ""}<div class="composer-box"><textarea id="dm-compose" rows="1" placeholder="${state.dmCtx ? "Ask about this card, or tell me what to change" : "Message " + a.name}" aria-label="Message ${a.name}"></textarea><button class="btn primary" aria-label="Send">${ic("send", 14)}</button></div></div>
     </div>`;
     return shell(top, body, { noScroll: true });
   }
 
-  function scrApprovals() {
+  function approvalsInner() {
     const list = state.approvals;
     const irr = list.filter((a) => a.tier === "irr").length;
     const body = `<div class="page">
       <div class="callout">${ic("shield")}<div>Cards show the tool call exactly as the agent will run it. Irreversible actions (send, post, pay, share, delete) always come here. So does anything from a run that read untrusted content.</div></div>
       ${list.length ? `<div class="queue">${list.map((a) => approvalCard(a)).join("")}</div>` : `<div class="empty panel"><div class="ring">${ic("check", 20)}</div><b>Nothing waiting</b><span class="small">Agents will post here when they need a yes. You'll get a push notification on paired devices.</span><button class="btn" data-act="reset-approvals">Reset demo queue</button></div>`}
     </div>`;
-    return shell(topbar("Approvals", `<span data-pending-label>${list.length} waiting · ${irr} irreversible</span>`, ``), body);
+    return body;
   }
 
   const runs = [
@@ -1198,13 +1630,19 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
       const p = pct(a);
       return `<tr>
         <td><div class="row" style="flex-wrap:nowrap">${avatar(a)}<div style="min-width:0"><b>${a.name}</b><div class="xs faint">${status(a.status)} · ${a.model}</div></div></div></td>
-        <td style="min-width:160px">${meter(a.spent, a.cap, true)}<div class="meter-line"><span>${money(a.spent)}</span><span>${p.toFixed(0)}%</span></div></td>
+        <td style="min-width:160px">${meter(a.spent, a.cap, true, 36.7)}<div class="meter-line"><span>${money(a.spent)}</span><span>${p.toFixed(0)}% of cap</span></div></td>
         <td class="r mono">${money(Math.min(a.cap, (a.spent / 11) * 30))}${(a.spent / 11) * 30 > a.cap ? '<div class="xs" style="color:var(--c-warn)">hits cap</div>' : ""}</td>
         <td class="r"><label class="cap-input"><span>$</span><input type="number" min="1" step="1" value="${a.cap}" data-cap="${a.id}" id="cap-${a.id}" aria-label="${a.name} monthly cap"></label></td>
       </tr>`;
     }).join("");
     const body = `<div class="page">
       <div class="callout">${ic("info")}<div><b>All figures are estimates.</b> Later meters each call from the API's usage fields and price table <span class="mono xs">prices@2026-10-01</span>. Your Anthropic Console bill is the source of truth.</div></div>
+      <section class="panel hero-spend">
+        <div class="row"><span class="label">${{ remaining: "Left this cycle", spent: "Spent this cycle", budgeted: "Budgeted this cycle" }[state.spendMode]}</span><span class="spacer"></span><div class="seg-in" role="group" aria-label="Show">${[["remaining", "Remaining"], ["spent", "Spent"], ["budgeted", "Budgeted"]].map(([k, l]) => `<button data-spendmode="${k}" aria-pressed="${state.spendMode === k}">${l}</button>`).join("")}</div></div>
+        <span class="big-num">${money(state.spendMode === "remaining" ? 100 - total : state.spendMode === "spent" ? total : agents.reduce((s, a) => s + a.cap, 0))}</span>
+        ${meter(total, 100, true, 36.7)}
+        <div class="row small muted"><span>${money(total)} spent of the $100 team cap on day 11 of 30.</span><span class="spacer"></span><span class="xs faint">Line marks today's pace</span></div>
+      </section>
       <div class="tiles">
         <div class="tile"><span class="label">Month to date</span><span class="big-num">${money(total)}</span><span class="xs faint">Nov 1 to 11</span></div>
         <div class="tile"><span class="label">Projected Nov 30</span><span class="big-num">${money(proj)}</span><span class="xs faint">${capped.length ? `${capped.map((a) => a.name).join(", ")} hits its cap` : "All agents under cap"}</span></div>
@@ -1328,18 +1766,19 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
   }
 
   const templates = [
-    { id: "inbox-zero", name: "Inbox Zero", by: "Later gallery · reviewed", desc: "Triages new mail, files receipts, drafts replies in your voice. Never sends without asking.", agents: "1 agent", models: "Haiku, Sonnet", cost: "~$12/mo", perms: ["Gmail read", "Gmail drafts", "Gmail send (asks)"] },
-    { id: "competitor", name: "Weekly Competitor Brief", by: "Later gallery · reviewed", desc: "Visits competitor pricing and changelog pages every Tuesday and writes a one-page brief with sources.", agents: "1 agent", models: "Sonnet", cost: "~$18/mo", perms: ["Browser", "Notion write", "Web search"] },
-    { id: "youtube", name: "YouTube Content Pipeline", by: "community · github.com/mkerr/later-yt", desc: "Turns a topic list into outlines, scripts and thumbnail briefs. Stops before anything is uploaded.", agents: "2 agents", models: "Sonnet, Opus", cost: "~$35/mo", perms: ["Notion write", "Web search", "Drive write"] },
-    { id: "finance", name: "Personal Finance Monitor", by: "Later gallery · reviewed", desc: "Reads bank alert emails and statements, keeps a monthly ledger, and flags unusual charges.", agents: "1 agent", models: "Haiku", cost: "~$5/mo", perms: ["Gmail read (label only)", "Sheets write"] }
+    { id: "inbox-zero", name: "Inbox Zero", by: "Later gallery · reviewed", desc: "Triages new mail, files receipts, drafts replies in your voice. Never sends without asking.", agents: "1 agent", models: "Haiku, Sonnet", cost: "~$12/mo", perms: ["Gmail read", "Gmail drafts", "Gmail send (asks)"], cards: ["brief", "needs-reply", "digest", "fyi"] },
+    { id: "competitor", name: "Weekly Competitor Brief", by: "Later gallery · reviewed", desc: "Visits competitor pricing and changelog pages every Tuesday and writes a one-page brief with sources.", agents: "1 agent", models: "Sonnet", cost: "~$18/mo", perms: ["Browser", "Notion write", "Web search"], cards: ["monitor", "digest"] },
+    { id: "youtube", name: "YouTube Content Pipeline", by: "community · github.com/mkerr/later-yt", desc: "Turns a topic list into outlines, scripts and thumbnail briefs. Stops before anything is uploaded.", agents: "2 agents", models: "Sonnet, Opus", cost: "~$35/mo", perms: ["Notion write", "Web search", "Drive write"], cards: ["task", "brief", "approval"] },
+    { id: "finance", name: "Personal Finance Monitor", by: "Later gallery · reviewed", desc: "Reads bank alert emails and statements, keeps a monthly ledger, and flags unusual charges.", agents: "1 agent", models: "Haiku", cost: "~$5/mo", perms: ["Gmail read (label only)", "Sheets write"], cards: ["monitor", "fyi", "approval"] }
   ];
   function scrTemplates() {
     const cards = templates.map((t) => `<article class="tcard">
       <div class="row" style="align-items:flex-start;flex-wrap:nowrap"><div style="min-width:0;flex:1"><h3>${t.name}</h3><div class="xs faint">${t.by}</div></div>${state.installed[t.id] ? '<span class="chip">Installed, paused</span>' : ""}</div>
       <p>${t.desc}</p>
+      <div class="produces"><span class="xs faint">Makes cards:</span>${t.cards.map(ctypeChip).join("")}</div>
       <div class="row">${t.perms.map((p) => `<span class="chip">${p}</span>`).join("")}</div>
       <div class="facts"><div><b>${t.agents}</b><span>adds</span></div><div><b>${t.models}</b><span>models</span></div><div><b>${t.cost}</b><span>est. budget</span></div></div>
-      <div class="tcard-f"><button class="btn primary" data-install="${t.id}">Review and install</button><button class="btn ghost" data-noop>View manifest</button></div>
+      <div class="tcard-f"><button class="btn primary" data-install="${t.id}">Create a Space from this</button><button class="btn ghost" data-noop>View manifest</button></div>
     </article>`).join("");
     const body = `<div class="page">
       <div class="panel panel-b stack">
@@ -1378,6 +1817,9 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
       </div>
       ${t.id === "youtube" ? `<div class="callout warn">${ic("alert")}<div>This template is not in the reviewed gallery. Read its permissions closely.</div></div>` : ""}
       <section class="panel">
+        <div class="panel-b row"><span class="small muted">Cards this Space will make:</span>${t.cards.map(ctypeChip).join("")}</div>
+      </section>
+      <section class="panel">
         <div class="panel-h"><h3>Permissions it asks for</h3><span class="xs faint">${m.perms.length} total</span></div>
         <ul class="perm-list">${m.perms.map(([n, sc, tr]) => `<li><div><b>${n}</b><div class="mono">${sc}</div></div>${tierTag(tr)}</li>`).join("")}</ul>
       </section>
@@ -1399,9 +1841,9 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
     <div class="install-bar">
       <span class="small muted" style="flex:1 1 220px">${done ? "Installed. Schedules are paused until you turn them on." : "Nothing runs until you resume its schedules."}</span>
       <button class="btn" data-go="templates">Cancel</button>
-      <button class="btn primary" data-act="install" ${done ? "disabled" : ""}>${done ? ic("check", 14) + " Installed" : "Install " + t.name}</button>
+      <button class="btn primary" data-act="install" ${done ? "disabled" : ""}>${done ? ic("check", 14) + " Space created" : "Create " + t.name + " Space"}</button>
     </div>`;
-    return shell(topbar("Install template", "Review before anything runs", "", "templates"), body, { noScroll: false });
+    return shell(topbar("Create a Space from this template", "Review before anything runs", "", "templates"), body, { noScroll: false });
   }
 
   function qrSvg() {
@@ -1501,7 +1943,599 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
     return shell(topbar("Design tokens", "Colour, type, spacing, radii"), body);
   }
 
-  const renderers = { onboarding: scrOnboarding, home: scrHome, dm: scrDM, approvals: scrApprovals, activity: scrActivity, spend: scrSpend, browser: scrBrowser, memory: scrMemory, templates: scrTemplates, install: scrInstall, account: scrAccount, tokens: scrTokens };
+  /* ================= card-first + Spaces ================= */
+  const spaces = [
+    { id: "house", name: "House move", kind: "Project", icon: "house", st: "needs", needs: 3, status: "Mortgage offer is in. Waiting on the seller's solicitor for an exchange date.", asof: "08:10", next: "Exchange target Fri Nov 28", ms: [["Offer", 1], ["Survey", 1], ["Mortgage", 1], ["Exchange", 0], ["Completion", 0], ["Move", 0]], agents: ["inbox", "research"], budget: [4.10, 8], focus: true },
+    { id: "mum", name: "Mum's birthday", kind: "Project", icon: "gift", st: "needs", needs: 1, status: "Gift shortlist of 3 is ready. The restaurant booking needs you.", asof: "07:55", next: "Wed Dec 3", ms: [["Gift", 1], ["Table", 0], ["Card", 0]], agents: ["inbox"], budget: [0.40, 3], focus: true },
+    { id: "side", name: "Side project launch", kind: "Project", icon: "rocket", st: "ok", needs: 0, status: "Landing page is live with 41 waitlist sign-ups. Launch post drafted.", asof: "Yesterday", next: "Launch Tue Nov 25", ms: [["Landing", 1], ["Waitlist", 1], ["Beta", 0], ["Launch", 0]], agents: ["research"], budget: [2.20, 6], focus: true },
+    { id: "job", name: "Job search", kind: "Project", icon: "brief", st: "needs", needs: 2, status: "Halcyon wants an intro call next week. One application has been quiet for 12 days.", asof: "08:02", next: "Reply to Halcyon today", ms: [["CV", 1], ["Apply", 1], ["Interviews", 0], ["Offer", 0]], agents: ["inbox", "research"], budget: [1.10, 5] },
+    { id: "work", name: "Work · Yourco", kind: "Area", icon: "building", st: "needs", needs: 1, status: "Ops report is ready to post. Q1 headcount doc is due before Thursday.", asof: "08:03", next: "1:1 with Priya, Thu", agents: ["monitor", "inbox"], budget: [9.80, 20] },
+    { id: "inbox", name: "Inbox", kind: "Unfiled", icon: "inbox", st: "needs", needs: 4, status: "4 items I couldn't place. Each takes one tap to file.", asof: "08:12", next: "", agents: ["inbox"], budget: [0.30, 2] },
+    { id: "japan", name: "Japan trip in April", kind: "Project", icon: "plane", st: "wait", needs: 0, status: "Waiting on Kenji to confirm Kyoto dates. Osaka fare dropped to £742.", asof: "08:03", next: "Chasing Kenji Thu", ms: [["Dates", 0], ["Flights", 0], ["Hotels", 0], ["Rail pass", 0]], agents: ["research"], budget: [1.60, 6] },
+    { id: "yt", name: "YouTube channel", kind: "Area", icon: "play", st: "ok", needs: 0, status: "Episode 14 script drafted. Thumbnail brief is ready.", asof: "Mon", next: "Publish Thu Nov 13", agents: ["research"], budget: [6.40, 12] },
+    { id: "fin", name: "Finances", kind: "Area", icon: "coin", st: "ok", needs: 0, status: "Spending is 8% under October. One odd charge was explained.", asof: "07:40", next: "Card bill Nov 24", agents: ["inbox"], budget: [0.90, 4] },
+    { id: "health", name: "Health", kind: "Area", icon: "heart", st: "ok", needs: 0, status: "Dentist booked for Nov 20. Nothing else due.", asof: "Nov 8", next: "Dentist Thu Nov 20", agents: ["inbox"], budget: [0.10, 2] },
+    { id: "tax", name: "Taxes 2026", kind: "Project", icon: "receipt", st: "stalled", needs: 0, status: "Nothing filed since Oct 2. Three documents are still missing.", asof: "07:41", next: "Deadline Jan 31", ms: [["Receipts", 0], ["P60", 0], ["Draft", 0], ["Filed", 0]], agents: ["inbox"], budget: [0.20, 3] },
+    { id: "read", name: "Reading list", kind: "List", icon: "book", st: "quiet", needs: 0, status: "12 saved, 2 finished this month.", asof: "Nov 9", next: "", agents: ["research"], budget: [0.50, 2] }
+  ];
+  const ALL = { id: "_all", name: "All Spaces", icon: "spaces" };
+  const SP = (id) => spaces.find((s) => s.id === id) || ALL;
+  const emblem = (s, size = 14, cls = "") => `<span class="emblem ${cls}" style="--scol:var(--sc-${s.id})" aria-hidden="true">${ic(s.icon, size)}</span>`;
+  const stag = (s) => `<span class="stag" style="--scol:var(--sc-${s.id})">${emblem(s, 12, "sm")}${esc(s.name)}</span>`;
+  const stLabel = { needs: "Needs you", ok: "On track", wait: "Waiting", stalled: "Stalled", quiet: "Quiet", paused: "Paused" };
+  const schip = (s) => `<span class="schip ${s.st}">${stLabel[s.st]}${s.st === "needs" && s.needs ? ` · ${s.needs}` : ""}</span>`;
+  const pav = (ini) => `<span class="avatar person" aria-hidden="true">${ini}</span>`;
+  const msDots = (ms) => ms ? `<span class="msdots" aria-label="${ms.filter((m) => m[1]).length} of ${ms.length} milestones">${ms.map(([n, d]) => `<i class="${d ? "on" : ""}" title="${n}"></i>`).join("")}</span>` : "";
+
+  const ctypes = { brief: ["Brief", "sun", "t-brief"], digest: ["Digest", "news", "t-digest"], meeting: ["Meeting", "cal", "t-meeting"], "needs-reply": ["Needs reply", "reply", "t-reply"], monitor: ["Monitor", "pulse", "t-monitor"], approval: ["Approval", "lock", "t-approval"], fyi: ["FYI", "check", "t-fyi"], task: ["Task", "task", "t-task"], filed: ["Filed", "inbox", "t-fyi"], review: ["Review", "replay", "t-brief"] };
+  const ctypeChip = (t) => `<span class="ctype ${ctypes[t][2]}"><span class="ctype-ic">${ic(ctypes[t][1], 12)}</span>${ctypes[t][0]}</span>`;
+  const taskMeta = (due, owner, st) => `<dl class="task-meta"><div><dt>Due</dt><dd>${due}</dd></div><div><dt>Owner</dt><dd>${owner}</dd></div><div><dt>Status</dt><dd>${st}</dd></div></dl>`;
+
+  const todayCards = [
+    { id: "c-brief", type: "brief", space: "_all", agent: "inbox", time: "07:00", title: "Busy morning, clear after 12:30" },
+    { id: "c-appr", type: "approval", space: "work", agent: "monitor", time: "Mon 08:03", title: "Post the weekly ops report to #ops-weekly", ap: "ap-1043" },
+    { id: "hm2", type: "meeting", space: "house", agent: "inbox", time: "07:00", title: "Call with Jess Patel at 10:30" },
+    { id: "hm1", type: "task", space: "house", agent: "research", time: "Yesterday", title: "Choose a removals firm" },
+    { id: "c-reply", type: "needs-reply", space: "inbox", agent: "inbox", time: "07:00", title: "5 emails need a reply" },
+    { id: "hm3", type: "task", space: "house", agent: "inbox", time: "Nov 7", title: "Sign and return the TR1 form" },
+    { id: "c-mum", type: "task", space: "mum", agent: "inbox", time: "07:55", title: "Book a table for Dec 3" },
+    { id: "c-mon", type: "monitor", space: "japan", agent: "research", time: "08:03", title: "Osaka return fare dropped to £742" },
+    { id: "c-fyi", type: "fyi", space: "tax", agent: "inbox", time: "07:41", title: "Filed 2 receipts in Taxes 2026" },
+    { id: "c-digest", type: "digest", space: "read", agent: "inbox", time: "07:00", title: "11 newsletters, 4 stories worth your time" }
+  ];
+  const isHandled = (c) => !!state.handled[c.id] || (c.type === "approval" && !state.approvals.some((a) => a.id === c.ap));
+  const handledLabel = (c) => state.handled[c.id] || (state.resolved[c.ap] === "deny" ? "Denied. Nothing was posted." : "Approved.");
+
+  const digestTiles = [
+    { k: "Your market", h: "Two field-service tools were bought this week", s: "Both buyers are payroll companies adding scheduling. Fieldnote was not involved.", src: [["Margin Notes", "Nov 10"], ["The Stack Weekly", "Nov 11"]] },
+    { k: "Engineering", h: "Teams moving CI to ARM runners report 30–40% lower bills", s: "Three case studies. Savings come from cheaper minutes, not faster builds.", src: [["The Stack Weekly", "Nov 11"], ["Ops Daily", "Nov 10"]] },
+    { k: "Hiring", h: "Staff engineer offers flat for a third quarter", s: "Survey of 1,200 offers. Equity down, base unchanged. Relevant to Job search.", src: [["Field & Function", "Nov 9"]] },
+    { k: "Local", h: "Bus 38 diverted until Dec 5", s: "Roadworks on Essex Road. Your Thursday commute adds about 10 minutes.", src: [["Borough Bulletin", "Nov 10"]] }
+  ];
+
+  function sparkline() {
+    const pts = [818, 806, 812, 795, 790, 784, 780, 742];
+    const W = 240, H = 64, lo = 730, hi = 830;
+    const x = (i) => 8 + (i * (W - 40)) / (pts.length - 1), y = (v) => 8 + ((hi - v) / (hi - lo)) * (H - 22);
+    const d = pts.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
+    return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="Fare over 8 weeks, from £818 to £742">
+      <line x1="8" x2="${W - 32}" y1="${y(780)}" y2="${y(780)}" stroke="var(--c-line)" stroke-dasharray="3 3"/>
+      <path d="${d} L${x(7)} ${H - 14} L8 ${H - 14} Z" fill="color-mix(in srgb, var(--scol) 12%, transparent)"/>
+      <path d="${d}" fill="none" stroke="var(--scol)" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="${x(7)}" cy="${y(742)}" r="3.5" fill="var(--scol)"/>
+      <text x="${x(7) + 7}" y="${y(742) + 4}" font-size="10" font-family="var(--font-mono)" fill="var(--c-text)">£742</text>
+      <text x="8" y="${H - 2}" font-size="9" font-family="var(--font-mono)" fill="var(--c-text-3)">Sep 23</text>
+      <text x="${x(7)}" y="${H - 2}" font-size="9" font-family="var(--font-mono)" fill="var(--c-text-3)" text-anchor="end">Nov 11</text>
+    </svg>`;
+  }
+
+  /* each card: body, primary [label, action], secondary [label, action], more [[label, action]] */
+  function cardParts(c) {
+    const disc = ["Discuss", "discuss"];
+    switch (c.id) {
+      case "c-brief": return {
+        body: `<div class="daystrip" style="--scol:var(--c-agent-3)" aria-label="Meetings: 09:00 standup, 10:30 call with Jess, 11:30 hiring loop"><i style="left:10%;width:5%" title="09:00 Standup"></i><i style="left:25%;width:5%" title="10:30 Jess Patel"></i><i style="left:35%;width:10%" title="11:30 Hiring loop"></i><span class="now" style="left:2%" title="Now 08:12"></span></div>
+          <div class="daystrip-x"><span>08</span><span>10</span><span>12</span><span>14</span><span>16</span><span>18</span></div>
+          <ol class="top3"><li><span><b>Approve the ops report</b> · 41 people are waiting on it</span></li><li><span><b>Call Jess Patel at 10:30</b> · exchange date and TR1</span></li><li><span><b>Reply to 5 people</b> · about 2 minutes in Triage</span></li></ol>`,
+        primary: ["Got it", "done:Read"], secondary: disc, more: [["Change brief time", "toast:Brief time: 07:00 on weekdays"]] };
+      case "c-appr": {
+        const a = state.approvals.find((x) => x.id === c.ap);
+        return { body: a ? `<div class="call"><div class="call-h"><span>Exact tool call</span><span class="mono">${a.tool}</span></div><dl class="call-args" style="margin:0"><dt>channel</dt><dd>#ops-weekly · 41 people</dd></dl><div class="call-body clamp">${esc(a.body)}</div></div><span class="tier irr">${ic("lock", 12)} Irreversible · posts as your Slack app</span>` : "",
+          primary: ["Approve", "approve"], secondary: ["Deny", "deny"], more: [["Edit before approving", "go:approvals"], ["Discuss", "discuss"]] };
+      }
+      case "hm2": return {
+        body: `<div class="mtg-when"><span class="mono">10:30–11:00</span><span class="small muted">Phone · 30 min</span></div>
+          <div class="people-row">${pav("JP")}<div><b>Jess Patel</b> <span class="small muted">your solicitor</span><div class="memline">${ic("file", 12)} Prefers phone. Sent the contract pack Nov 7.</div></div></div>
+          <ul class="prep"><li>Ask for the exchange date; the seller's side has been quiet 5 days</li><li>Confirm TR1 can be signed electronically</li><li>Check completion on Dec 12 still holds</li></ul>`,
+        primary: ["Mark prepped", "done:Prepped"], secondary: disc, more: [["Open contacts.md", "go:space"]] };
+      case "hm1": return {
+        body: `${taskMeta("Tue Nov 18", "You", "Next")}<ul class="quotes"><li><span>Swift Removals</span><span class="mono">£1,180</span><span class="faint">packing included</span></li><li><span>Oakline</span><span class="mono">£1,340</span><span class="faint">packing included</span></li><li><span>BoxCo</span><span class="mono">£990</span><span class="faint">no packing, 2 poor reviews</span></li></ul>`,
+        primary: ["Choose Swift", "queue:Book Swift Removals for Dec 14"], secondary: disc, more: [["Ask for a 4th quote", "toast:Research Analyst will ask 2 more firms"]] };
+      case "hm3": return {
+        body: `${taskMeta("Fri Nov 21", "You", "Next")}<p class="small muted">Jess sent it on Nov 7. Sign page 3, then post it back or use e-sign.</p>`,
+        primary: ["Mark done", "done:Done"], secondary: disc, more: [["Remind me Thursday", "done:Snoozed until Thu 8am"]] };
+      case "c-reply": {
+        const left = triageItems.length - state.triIdx;
+        return left ? {
+          body: `<div class="row"><span class="facepile">${triageItems.slice(state.triIdx).map((t) => pav(t.ini)).join("")}</span><span class="small muted">${triageItems.slice(state.triIdx).map((t) => t.name.split(" ")[0]).join(", ")}</span></div><p class="small muted">About 2 minutes. Swiping only writes drafts; nothing is sent.</p>`,
+          primary: ["Start triage", "go:triage"], secondary: disc, more: [] }
+          : { body: `<p class="small muted">Triage done. ${state.drafts.length} drafts are waiting for you to send.</p>`, primary: ["Open drafts", "go:drafts"], secondary: ["Got it", "done:Triage done"], more: [["Discuss", "discuss"]] };
+      }
+      case "c-mum": return {
+        body: `${taskMeta("Fri Nov 14", "You", "Next")}<p class="small muted">Rosa's was Mum's favourite last year. Luca's and The Orchard also have tables at 19:00.</p>`,
+        primary: ["Ask agent to book Rosa's", "queue:Book Rosa's for 4 people, Dec 3, 19:00"], secondary: disc, more: [["I'll book it myself", "done:You're booking it"]] };
+      case "c-mon": return {
+        body: `<div class="ba"><span class="was">£818</span><span class="now">£742</span><span class="delta">−£76 since Sep 23</span></div>${sparkline()}<div class="sources" style="border:0;padding:0"><a href="#" data-noop><span class="mono">1</span> skyfare.example/LHR-KIX · return, Apr 4–19 · checked 08:03</a></div>`,
+        primary: ["Draft a booking", "queue:Book LHR–KIX return, Apr 4–19, £742"], secondary: disc, more: [["Stop tracking", "done:Stopped tracking"], ["Watch live", "go:browser"]] };
+      case "c-fyi": return {
+        body: `<p class="small muted">An Uber receipt (£14.20) and a Figma invoice ($45.00) moved from your inbox to Taxes 2026. Rule allowlisted on Nov 9.</p>`,
+        primary: ["OK", "done:Kept"], secondary: ["Undo", "done:Undone. Both are back in your inbox."], more: [["Discuss", "discuss"]] };
+      case "c-digest": return {
+        body: `<div class="dtiles">${digestTiles.map((t, i) => { const o = state.tileOpen === i; return `<button class="dtile" data-tile="${i}" aria-expanded="${o}"><span class="k">${t.k}</span><span class="h">${t.h}</span>${o ? `<span class="s">${t.s}</span><span class="srcs">${t.src.map(([n, d]) => `<a href="#" data-noop>${ic("ext", 11)} ${n}, ${d}</a>`).join("")}</span>` : `<span class="m">${t.src.length} source${t.src.length > 1 ? "s" : ""}</span>`}</button>`; }).join("")}</div><p class="xs faint">7 more newsletters had nothing new. Every tile links to its source.</p>`,
+        primary: ["Done reading", "done:Read"], secondary: disc, more: [["Unsubscribe from the 7", "queue:Unsubscribe from 7 newsletters"]] };
+    }
+    return { body: "", primary: ["OK", "done:OK"], secondary: disc, more: [] };
+  }
+
+  function dcard(c, extra = "") {
+    const s = SP(c.space), ag = A(c.agent);
+    if (isHandled(c)) return `<div class="hrow" style="--scol:var(--sc-${s.id})">${ic("check", 14)}<span class="hrow-t"><b>${esc(c.title)}</b><span class="faint"> · ${esc(handledLabel(c))}</span></span>${c.type === "approval" ? "" : `<button class="btn ghost" data-cundo="${c.id}">Undo</button>`}</div>`;
+    const p = cardParts(c);
+    const moreItems = [...p.more];
+    if (p.secondary[1] !== "discuss" && !moreItems.some((m) => m[1] === "discuss")) moreItems.push(["Discuss", "discuss"]);
+    moreItems.push(["Move to another Space", "toast:Pick a Space to move it to (prototype)"], ["Why am I seeing this?", `toast:${ag.name} made this card from ${c.type === "digest" ? "your newsletters" : "your mail and calendar"} at ${c.time}.`]);
+    return `<article class="dcard" data-dcard="${c.id}" style="--scol:var(--sc-${s.id})" ${extra}>
+      <header class="dcard-h">${c.space === "_all" ? `<span class="stag">${emblem(s, 12, "sm")}All Spaces</span>` : stag(s)}${ctypeChip(c.type)}<span class="prov" title="Made by ${ag.name}">${avatar(ag)}<span>${ag.name} · ${c.time}</span></span></header>
+      <h3 class="dcard-t">${esc(c.title)}</h3>
+      <div class="dcard-b">${p.body}</div>
+      <footer class="dcard-f">
+        <button class="btn primary" data-cact="${c.id}|${esc(p.primary[1])}">${esc(p.primary[0])}</button>
+        <button class="btn" data-cact="${c.id}|${esc(p.secondary[1])}">${p.secondary[1] === "discuss" ? ic("chat", 14) + " " : ""}${esc(p.secondary[0])}</button>
+        <span class="spacer"></span>
+        <div class="more-wrap"><button class="btn ghost icon-only" data-more="${c.id}" aria-label="More actions" aria-expanded="${state.moreOpen === c.id}">${ic("more")}</button>
+        ${state.moreOpen === c.id ? `<div class="menu" role="menu">${moreItems.map(([l, a]) => `<button role="menuitem" data-cact="${c.id}|${esc(a)}">${esc(l)}</button>`).join("")}</div>` : ""}</div>
+      </footer>
+    </article>`;
+  }
+
+  function scrToday() {
+    const total = todayCards.length, done = todayCards.filter(isHandled).length;
+    const pips = `<div class="pips" aria-hidden="true">${todayCards.map((c) => `<i class="${isHandled(c) ? "done" : ""}"></i>`).join("")}</div>`;
+    let list = "";
+    if (done === total) {
+      const bySpace = {}; todayCards.forEach((c) => { bySpace[c.space] = (bySpace[c.space] || 0) + 1; });
+      const handled = `<li>${total} cards decided. ${state.drafts.length} drafts and ${pending()} approvals wait in Drafts.</li><li class="end-spaces">${Object.entries(bySpace).map(([sid, n]) => `<span class="chip">${sid === "_all" ? "Brief" : esc(SP(sid).name)} · ${n}</span>`).join("")}</li>`;
+      list = `<section class="dcard end-card"><div class="end-ring">${ic("check", 22)}</div><h2>That's everything for today</h2>
+        <div class="end-cols"><div><span class="label">Handled</span><ul class="end-sum">${handled}</ul></div>
+        <div><span class="label">Waits for tomorrow</span><ul class="end-sum"><li>${stag(SP("house"))} TR1 form, due Fri</li><li>${stag(SP("japan"))} Kenji's Kyoto dates, chasing Thu</li><li>${stag(SP("tax"))} P60 still missing</li></ul></div></div>
+        <button class="btn primary lg" data-go="spaces">Close Today</button>
+        <p class="xs faint">This deck cost about $0.06 to make (Batch API, Haiku). Next deck Wed 07:00.</p></section>`;
+    } else if (state.groupBy === "space") {
+      const order = []; todayCards.forEach((c) => { if (!order.includes(c.space)) order.push(c.space); });
+      list = order.map((sid) => {
+        const cs = todayCards.filter((c) => c.space === sid), open = cs.filter((c) => !isHandled(c)), closed = cs.filter(isHandled);
+        if (open.length > 1 && !state.fanned[sid]) {
+          const s = SP(sid);
+          return `<div class="cstack">${closed.map((c) => dcard(c)).join("")}<div class="stackw ${open.length > 2 ? "peek2" : "peek1"}" style="--scol:var(--sc-${s.id})">${dcard(open[0])}</div><button class="fan-btn" data-fan="${sid}" style="--scol:var(--sc-${s.id})">${emblem(s, 12, "sm")} ${open.length - 1} more from ${esc(s.name)} · Show all</button></div>`;
+        }
+        if (open.length > 1) return `<div class="fanned">${cs.map((c, i) => dcard(c, `style="--scol:var(--sc-${sid});animation-delay:${i * 50}ms"`)).join("")}<button class="fan-btn" data-fan="${sid}">Stack them again</button></div>`;
+        return cs.map((c) => dcard(c)).join("");
+      }).join("");
+      list += `<div class="deck-endline">End of today's deck · ${total - done} still open</div>`;
+    } else {
+      list = todayCards.filter((c) => !isHandled(c)).map((c) => dcard(c)).join("") + todayCards.filter(isHandled).map((c) => dcard(c)).join("") + `<div class="deck-endline">End of today's deck · ${total - done} still open</div>`;
+    }
+    const body = `<div class="deck-page">
+      <div class="deck-head">
+        <div class="row"><div style="min-width:0"><span class="label">Tuesday, Nov 11</span><h2 class="deck-title">${total} cards, about 5 minutes</h2></div><span class="spacer"></span>
+          <div class="seg-in" role="group" aria-label="Group cards"><button data-group="space" aria-pressed="${state.groupBy === "space"}">By Space</button><button data-group="priority" aria-pressed="${state.groupBy === "priority"}">By priority</button></div></div>
+        <div class="row small"><span class="mono num"><b>${done}</b> of ${total} handled</span><span class="spacer"></span>${done < total ? `<button class="linkbtn" data-act="deck-skip">Skip to end (demo)</button>` : `<button class="linkbtn" data-act="deck-reset">Reset deck (demo)</button>`}</div>
+        ${pips}
+      </div>
+      <div class="deck-list">${list}</div>
+    </div>`;
+    return shell(topbar("Today", "", `<button class="btn show-narrow icon-only" data-go="more" aria-label="More">${ic("more")}</button>`), body);
+  }
+
+  /* ---------- triage + weekly review: one swipe component ---------- */
+  const triageItems = [
+    { id: "t1", ini: "ML", name: "Maya Lin", email: "maya@halcyon-talent.example", space: "job", mem: "Recruiter at Halcyon. Last spoke in March.", subject: "Staff Engineer role, 20 minutes next week?", gist: "Has a Staff Engineer role at a climate-data company and wants a 20-minute intro call. Offers Tuesday or Wednesday afternoon.", why: "A direct question with two proposed times.", intents: ["Accept", "Decline", "Ask for time", "Custom"], mute: "Mute sender" },
+    { id: "t2", ini: "PR", name: "Priya Raman", email: "priya@yourco.example", space: "work", mem: "Your manager. 1:1 on Thursdays.", subject: "Q1 headcount doc", gist: "Asks whether the Q1 headcount doc will be ready before Thursday's 1:1, and if you need finance's numbers first.", why: "Your manager asked a yes-or-no question with a deadline.", intents: ["Yes, by Thursday", "Need until Friday", "Ask for time", "Custom"] },
+    { id: "t3", ini: "TB", name: "Tom Becker", email: "tom.becker@northwind.io", space: "work", mem: "Northwind finance. Works with Dana Okafor.", subject: "INV-20931 needs a PO number", gist: "Needs a PO number to process invoice INV-20931 before month end.", why: "It blocks a vendor payment and you own the budget.", intents: ["Send PO number", "Ask Ops to send it", "Ask for time", "Custom"] },
+    { id: "t4", ini: "OP", name: "Oakridge PTA", email: "volunteers@oakridge-pta.example", space: "inbox", mem: "Mailing list. You opened 2 of the last 12.", subject: "Bake sale volunteers, Sat Nov 22", gist: "Asks parents to sign up for a two-hour slot at Saturday's bake sale.", why: "They want replies by Friday to confirm slots.", intents: ["Accept", "Decline", "Ask for time", "Custom"], mute: "Unsubscribe" },
+    { id: "t5", ini: "JH", name: "Jordan Hale", email: "jordan.hale@fastmail.example", space: "inbox", mem: "Friend. Dinner together in October.", subject: "Dinner Saturday?", gist: "Wants to know if you and Alex are free for dinner on Saturday, around 19:30.", why: "A personal invite with a direct question.", intents: ["Accept", "Decline", "Ask for time", "Custom"] }
+  ];
+  const intentText = { "Accept": "That works for me. Count me in.", "Decline": "Thanks for thinking of me. I can't make it this time.", "Ask for time": "Can I come back to you by Friday?", "Custom": "[Say what you want here. I'll keep your usual tone.]", "Yes, by Thursday": "Yes, it'll be ready before Thursday. I don't need finance's numbers first.", "Need until Friday": "I'll need until Friday. I'm waiting on finance's numbers.", "Send PO number": "The PO number is PO-2026-0417. Let me know if you need anything else.", "Ask Ops to send it": "I've asked our ops team to send you the PO number today." };
+  const reviewItems = [
+    { id: "r1", space: "house", moved: "Mortgage offer arrived. Survey closed.", stalled: "Exchange date: seller's solicitor silent 5 days.", proposal: "Keep in Focus and chase Hartley & Co on Thursday", verb: "Keep in Focus", kind: "keep" },
+    { id: "r2", space: "tax", moved: "2 receipts filed today.", stalled: "No progress for 5 weeks. P60 missing.", proposal: "Nudge your accountant, Ruth Ade, for the P60", verb: "Draft a nudge to Ruth", kind: "nudge", to: "Ruth Ade" },
+    { id: "r3", space: "read", moved: "2 articles finished.", stalled: "Nothing added in 3 weeks.", proposal: "Pause until January. It stops running and costs nothing.", verb: "Pause until Jan", kind: "pause" },
+    { id: "r4", space: "japan", moved: "Fare tracking found £742.", stalled: "Kyoto dates waiting on Kenji for 9 days.", proposal: "Nudge Kenji about the Kyoto dates", verb: "Draft a nudge to Kenji", kind: "nudge", to: "Kenji Mori" },
+    { id: "r5", space: "health", moved: "Dentist booked.", stalled: "Nothing else in 6 weeks.", proposal: "Archive until something new arrives. Cards will reopen it.", verb: "Archive", kind: "archive" }
+  ];
+  const swipeKinds = {
+    triage: { items: () => triageItems, idx: "triIdx", hist: "triHist", right: "Draft reply", left: "Ignore" },
+    review: { items: () => reviewItems, idx: "revIdx", hist: "revHist", right: "Accept proposal", left: "Keep as is" }
+  };
+  const snoozeOpts = [["Tonight", "returns 18:00"], ["Tomorrow", "returns 8am"], ["Monday", "returns 8am, Nov 17"]];
+
+  function triInner(it) {
+    const s = SP(it.space), cur = state.triIntent[it.id] || it.intents[0];
+    return `<div class="sender">${pav(it.ini)}<div style="min-width:0"><b>${it.name}</b><div class="mono xs faint" style="overflow-wrap:anywhere">${it.email}</div></div>${stag(s)}</div>
+      <span class="memchip">${ic("file", 12)} ${it.mem}</span>
+      <div><div class="small faint">${esc(it.subject)}</div><p class="gist">${esc(it.gist)}</p></div>
+      <p class="why-line"><b>Why it needs you</b> ${esc(it.why)}</p>
+      <div class="intents" role="group" aria-label="What should the reply say">${it.intents.map((x) => `<button class="intent" data-intent="${it.id}|${esc(x)}" aria-pressed="${cur === x}">${esc(x)}</button>`).join("")}</div>`;
+  }
+  function revInner(it) {
+    const s = SP(it.space);
+    return `<div class="sender">${emblem(s, 20, "lg")}<div style="min-width:0"><b>${esc(s.name)}</b><div class="xs faint">${s.kind} · ${s.next || "no date"}</div></div>${schip(s)}</div>
+      ${s.ms ? `<div class="row small">${msDots(s.ms)}<span class="faint">${s.ms.filter((m) => m[1]).length} of ${s.ms.length} milestones</span></div>` : ""}
+      <dl class="rev-dl"><dt>Moved</dt><dd>${esc(it.moved)}</dd><dt>Stalled</dt><dd>${esc(it.stalled)}</dd></dl>
+      <div class="proposal"><span class="label">Proposal</span><b>${esc(it.proposal)}</b>${it.kind === "nudge" ? `<span class="xs faint">Nudges are drafted for you to send. Nothing goes out from here.</span>` : ""}</div>`;
+  }
+  function swipeStage(kind) {
+    const K = swipeKinds[kind], items = K.items(), i = state[K.idx];
+    const inner = kind === "triage" ? triInner : revInner;
+    const out = [];
+    for (let j = Math.min(items.length - 1, i + 2); j >= i; j--) {
+      const front = j === i, cls = front ? "front" : j === i + 1 ? "behind" : "behind2";
+      const ret = front && state.returning ? ` ret-${state.returning}` : "";
+      out.push(`<article class="tri-card ${cls}${ret}" ${front ? `data-swipe="${kind}" aria-label="${kind === "triage" ? "Email" : "Space"} ${j + 1} of ${items.length}"` : 'aria-hidden="true"'}>
+        ${front ? `<span class="swipe-tag r">${ic("edit", 14)} ${K.right}${kind === "triage" ? " · nothing is sent" : ""}</span><span class="swipe-tag l">${ic("x", 14)} ${K.left}</span>` : ""}
+        <div class="tri-in">${inner(items[j])}</div></article>`);
+    }
+    return out.join("");
+  }
+  function swipeControls(kind) {
+    const K = swipeKinds[kind], it = K.items()[state[K.idx]], dis = it ? "" : "disabled";
+    if (kind === "triage") return `<div class="tri-controls" id="tri-controls">
+      <div class="tri-btns">
+        <button class="btn tb" data-sw="ignore" data-hl-l ${dis}>${ic("x")}<span>Ignore</span><span class="kbd">←</span></button>
+        <div class="snz"><button class="btn tb" data-act="snooze-menu" aria-expanded="${!!state.snoozeOpen}" ${dis}>${ic("clock")}<span>Snooze</span><span class="kbd">S</span></button>
+          ${state.snoozeOpen && it ? `<div class="menu up" role="menu">${snoozeOpts.map(([l, d], n) => `<button role="menuitem" data-sw="snooze:${l}"><b>${l}</b> <span class="faint">${d}</span> <span class="kbd">${n + 1}</span></button>`).join("")}</div>` : ""}</div>
+        <button class="btn tb undo" data-act="sw-undo" ${state.triHist.length ? "" : "disabled"}>${ic("undo")}<span>Undo</span><span class="kbd">U</span></button>
+        <button class="btn tb" data-sw="mute" ${it && it.mute ? "" : "disabled"}>${ic("mute")}<span>${it && it.mute ? it.mute : "Mute"}</span><span class="kbd">M</span></button>
+        <button class="btn tb primary" data-sw="reply" data-hl-r ${dis}>${ic("edit")}<span>Draft reply</span><span class="kbd">→</span></button>
+      </div>
+      <p class="tri-note">${ic("shield", 12)} Draft reply only writes a draft. Nothing is sent until you press Send in Drafts.</p></div>`;
+    return `<div class="tri-controls" id="tri-controls">
+      <div class="tri-btns">
+        <button class="btn tb" data-sw="keep" data-hl-l ${dis}>${ic("x")}<span>Keep as is</span><span class="kbd">←</span></button>
+        <button class="btn tb" data-sw="pause" ${dis}>${ic("pause")}<span>Pause</span><span class="kbd">P</span></button>
+        <button class="btn tb undo" data-act="sw-undo" ${state.revHist.length ? "" : "disabled"}>${ic("undo")}<span>Undo</span><span class="kbd">U</span></button>
+        <button class="btn tb" data-sw="archive" ${dis}>${ic("trash")}<span>Archive</span><span class="kbd">A</span></button>
+        <button class="btn tb primary" data-sw="accept" data-hl-r ${dis}>${ic("check")}<span>${it ? esc(it.verb) : "Accept"}</span><span class="kbd">→</span></button>
+      </div>
+      <p class="tri-note">${ic("shield", 12)} Pausing stops a Space's routines and spend. Nothing is deleted.</p></div>`;
+  }
+  function scrTriage() {
+    const items = triageItems, i = state.triIdx, n = items.length;
+    const counts = state.triHist.reduce((m, h) => { const k = h.action.split(":")[0]; m[k] = (m[k] || 0) + 1; return m; }, {});
+    const stage = i < n ? `<div class="tri-stack">${swipeStage("triage")}</div>
+      ${!state.coachSeen ? `<div class="coach" role="dialog" aria-label="How triage works"><div class="coach-in"><span class="coach-hand">${ic("hand", 34)}</span><p><b>Swipe right to draft a reply.</b> Nothing is sent. Swipe left to ignore.</p><p class="small muted">Or use the buttons below, or the arrow keys.</p><button class="btn primary" data-act="coach-ok">Got it</button></div></div>` : ""}`
+      : `<div class="tri-done dcard"><div class="end-ring">${ic("check", 22)}</div><h2>Triage done</h2><p class="muted">${counts.reply || 0} drafts queued, ${counts.ignore || 0} ignored, ${counts.snooze || 0} snoozed${counts.mute ? `, ${counts.mute} muted` : ""}. Nothing was sent.</p><button class="btn primary lg" data-go="drafts">Review drafts</button></div>`;
+    const body = `<div class="tri">
+      <div class="tri-head"><div class="row small"><b class="num">${Math.min(i + 1, n)} of ${n}</b><span class="faint">${n - i} left</span><span class="spacer"></span><button class="linkbtn" data-act="coach-show">How it works</button></div>
+        <div class="pips">${items.map((_, j) => `<i class="${j < i ? "done" : j === i ? "cur" : ""}"></i>`).join("")}</div></div>
+      <div class="tri-stage">${stage}</div>
+      ${swipeControls("triage")}
+    </div>`;
+    return shell(topbar("Triage", "Emails that need a reply", "", "today"), body, { noScroll: true });
+  }
+  function scrReview() {
+    const items = reviewItems, i = state.revIdx, n = items.length;
+    const stage = i < n ? `<div class="tri-stack">${swipeStage("review")}</div>` : `<div class="tri-done dcard"><div class="end-ring">${ic("check", 22)}</div><h2>Weekly review done</h2><p class="muted">${state.revHist.length} Spaces reviewed. Changes take effect now; nudges wait in Drafts.</p><button class="btn primary lg" data-go="spaces">Back to Spaces</button></div>`;
+    const body = `<div class="tri">
+      <div class="tri-head"><div class="row small"><b class="num">${Math.min(i + 1, n)} of ${n}</b><span class="faint">Spaces with something to decide this week</span></div>
+        <div class="pips">${items.map((_, j) => `<i class="${j < i ? "done" : j === i ? "cur" : ""}"></i>`).join("")}</div></div>
+      <div class="tri-stage">${stage}</div>
+      ${swipeControls("review")}
+    </div>`;
+    return shell(topbar("Weekly review", "Week 46 · 5 Spaces", "", "spaces"), body, { noScroll: true });
+  }
+  function swipeAct(kind, action) {
+    const K = swipeKinds[kind], items = K.items(), it = items[state[K.idx]];
+    if (!it) return;
+    if (action === "mute" && !it.mute) return;
+    state.snoozeOpen = false;
+    const card = app.querySelector(".tri-card.front");
+    const dir = action === "reply" || action === "accept" ? "r" : action === "ignore" || action === "keep" ? "l" : "c";
+    const finish = () => {
+      const rec = { idx: state[K.idx], action, dir };
+      let msg = "";
+      if (kind === "triage") {
+        if (action === "reply") { const intent = state.triIntent[it.id] || it.intents[0]; const d = draftFromTriage(it, intent); state.drafts.unshift(d); rec.draftId = d.id; msg = `Draft queued for ${it.name}. Nothing was sent.`; }
+        else if (action === "ignore") msg = `Ignored ${it.name}.`;
+        else if (action.startsWith("snooze")) { const o = snoozeOpts.find((x) => x[0] === action.split(":")[1]); msg = `Snoozed. ${it.name} ${o[1]}.`; }
+        else if (action === "mute") {
+          if (it.mute === "Unsubscribe") { const ap = { id: "ap-u" + Date.now(), agent: "inbox", tier: "irr", tool: "gmail.unsubscribe", title: `Unsubscribe from ${it.name}`, args: [["list", it.email], ["method", "List-Unsubscribe (one email)"]], body: "Sends one unsubscribe request to the list. Future mail from this list is also filtered out of your inbox.", why: "You chose Unsubscribe in Triage.", run: "triage · $0.00", untrusted: false, age: "just now" }; state.approvals.push(ap); rec.apId = ap.id; msg = `Unsubscribe request is waiting in Approvals.`; }
+          else msg = `Muted ${it.name}. Future mail skips Today.`;
+        }
+      } else {
+        const s = SP(it.space); rec.prevSt = s.st; rec.prevFocus = s.focus;
+        if (action === "accept") {
+          if (it.kind === "nudge") { const d = { id: "d-" + it.id, ini: it.to.split(" ").map((w) => w[0]).join(""), name: it.to, email: it.to.toLowerCase().replace(" ", ".") + "@mail.example", space: it.space, subject: it.space === "tax" ? "P60 for 2025–26" : "Kyoto dates in April", from: "From weekly review", orig: { time: "", body: "No original email. This is a nudge from your weekly review." }, base: it.space === "tax" ? "Hi Ruth,\n\nCould you send over my P60 when you have a moment? It's the last thing I need before we can start the return.\n\nBest,\nSam" : "Hi Kenji,\n\nAny news on the Kyoto dates? Fares are good right now and I'd like to book flights this week.\n\nBest,\nSam", tone: "base" }; state.drafts.unshift(d); rec.draftId = d.id; msg = `Nudge drafted for ${it.to}. It's in Drafts, not sent.`; }
+          else if (it.kind === "pause") { s.st = "paused"; msg = `${s.name} paused until January.`; }
+          else if (it.kind === "archive") { s.archived = true; msg = `${s.name} archived.`; }
+          else { s.focus = true; msg = `${s.name} stays in Focus.`; }
+        } else if (action === "pause") { s.st = "paused"; msg = `${s.name} paused.`; }
+        else if (action === "archive") { s.archived = true; msg = `${s.name} archived.`; }
+        else msg = `${s.name} kept as is.`;
+        rec.space = s.id;
+      }
+      state[K.hist].push(rec); state[K.idx]++; state.returning = null;
+      render(); toast(msg, kind);
+    };
+    if (card && !reduced()) {
+      card.classList.remove("dragging");
+      card.style.transform = dir === "r" ? "translate(130%, 20px) rotate(14deg)" : dir === "l" ? "translate(-130%, 20px) rotate(-14deg)" : "translateY(-24px) scale(.92)";
+      card.style.opacity = "0"; setTimeout(finish, 200);
+    } else finish();
+  }
+  function swipeUndo(kind) {
+    const K = swipeKinds[kind], rec = state[K.hist].pop();
+    if (!rec) { toast("Nothing to undo."); return; }
+    if (rec.draftId) state.drafts = state.drafts.filter((d) => d.id !== rec.draftId);
+    if (rec.apId) state.approvals = state.approvals.filter((a) => a.id !== rec.apId);
+    if (rec.space) { const s = SP(rec.space); s.st = rec.prevSt; s.focus = rec.prevFocus; delete s.archived; }
+    state[K.idx] = rec.idx; state.returning = rec.dir;
+    render(); state.returning = null;
+    const it = K.items()[rec.idx];
+    toast(`Undone. ${it.name || SP(it.space).name} is back.`);
+  }
+  function bindSwipe() {
+    const card = app.querySelector(".tri-card.front"); if (!card) return;
+    const kind = card.dataset.swipe, ctr = document.getElementById("tri-controls");
+    let sx = 0, sy = 0, dx = 0, t0 = 0, drag = false;
+    card.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button, a, input, textarea") || e.button > 0) return;
+      drag = true; sx = e.clientX; sy = e.clientY; dx = 0; t0 = performance.now();
+      try { card.setPointerCapture(e.pointerId); } catch (err) {}
+      card.classList.add("dragging");
+    });
+    card.addEventListener("pointermove", (e) => {
+      if (!drag) return;
+      dx = e.clientX - sx; const dy = (e.clientY - sy) * 0.15;
+      card.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx / 24}deg)`;
+      card.style.setProperty("--r", Math.max(0, Math.min(1, dx / 100)));
+      card.style.setProperty("--l", Math.max(0, Math.min(1, -dx / 100)));
+      if (ctr) ctr.dataset.hl = dx > 50 ? "r" : dx < -50 ? "l" : "";
+    });
+    const end = () => {
+      if (!drag) return; drag = false; card.classList.remove("dragging");
+      if (ctr) ctr.dataset.hl = "";
+      const v = Math.abs(dx) / Math.max(1, performance.now() - t0);
+      if (Math.abs(dx) > 110 || (Math.abs(dx) > 45 && v > 0.6)) swipeAct(kind, dx > 0 ? (kind === "triage" ? "reply" : "accept") : (kind === "triage" ? "ignore" : "keep"));
+      else { card.style.transform = ""; card.style.setProperty("--r", 0); card.style.setProperty("--l", 0); }
+    };
+    card.addEventListener("pointerup", end); card.addEventListener("pointercancel", end);
+  }
+
+  /* ---------- drafts ---------- */
+  const mkDraft = (o) => ({ tone: "base", ...o });
+  state.drafts = [
+    mkDraft({ id: "d1", ini: "SM", name: "Sofia Marquez", email: "sofia.marquez@lettings.example", space: "house", subject: "Re: Boiler service visit", from: "Queued yesterday", orig: { time: "Yesterday 18:02", body: "Hi Sam, the engineer can come Thursday 8–10am or Friday 1–3pm for the annual boiler service. Which suits?" }, base: "Hi Sofia,\n\nThursday 8 to 10 works. I'll be home. Thanks for arranging it.\n\nBest,\nSam", v: { shorter: "Hi Sofia,\n\nThursday 8–10 works. Thanks.\n\nSam", warmer: "Hi Sofia,\n\nThanks so much for sorting this out. Thursday 8 to 10 is perfect, and I'll make sure I'm in.\n\nBest,\nSam", direct: "Hi Sofia,\n\nThursday 8–10. I'll be in.\n\nSam" } }),
+    mkDraft({ id: "d2", ini: "KI", name: "Ken Ito", email: "ken@devconf.example", space: "side", subject: "Re: Speaker slot confirmation", from: "Queued yesterday", orig: { time: "Mon 11:20", body: "Can you confirm the 25-minute slot on Feb 12 and send a talk title by Dec 1?" }, base: "Hi Ken,\n\nConfirmed for the 25-minute slot on Feb 12. Working title: \"Agents that ask first\". I'll send the abstract by Dec 1.\n\nBest,\nSam" }),
+    mkDraft({ id: "d3", ini: "AC", name: "Alex Chen", email: "alex.chen@yourco.example", space: "work", subject: "Re: Onboarding flow notes", from: "Queued this morning", orig: { time: "07:58", body: "Did you get a chance to look at the onboarding notes before today's review?" }, base: "Hi Alex,\n\nYes, I read them. Two comments: the key step should come before the cap, and the empty state needs a real example. Happy to go through it at the review.\n\nBest,\nSam" })
+  ];
+  function toneText(d) {
+    if (d.tone === "base") return d.base;
+    if (d.v && d.v[d.tone]) return d.v[d.tone];
+    const [greet, ...rest] = d.base.split("\n\n"); const sign = rest.pop(); const body = rest.join("\n\n");
+    if (d.tone === "shorter") return `${greet}\n\n${body.split(/(?<=\.)\s/)[0]}\n\nSam`;
+    if (d.tone === "warmer") return `${greet}\n\nThanks for getting in touch. ${body}\n\n${sign}`;
+    return `${greet}\n\n${body.replace(/Thanks[^.]*\.\s?/g, "")}\n\n${sign}`;
+  }
+  function draftFromTriage(it, intent) {
+    const first = it.name.split(" ")[0];
+    return mkDraft({ id: "dt-" + it.id, ini: it.ini, name: it.name, email: it.email, space: it.space, subject: "Re: " + it.subject, from: `From Triage · ${intent}`, orig: { time: "Today", body: it.gist }, base: `Hi ${first},\n\n${intentText[intent] || intent}\n\nBest,\nSam` });
+  }
+  function draftItem(d) {
+    const s = SP(d.space), first = d.name.split(" ")[0], ed = state.dEditing === d.id;
+    return `<article class="draft" data-draft="${d.id}">
+      <div class="draft-h">${pav(d.ini)}<div class="who"><b>${esc(d.name)}</b><div class="xs faint">${esc(d.from)}</div></div>${stag(s)}</div>
+      <details class="orig"><summary>${ic("chev", 12).replace("<svg", '<svg class="chev"')} Original${d.orig.time ? ` from ${esc(first)}, ${esc(d.orig.time)}` : ""}</summary><p>${esc(d.orig.body)}</p></details>
+      <div class="letter">
+        <dl class="letter-h"><dt>To</dt><dd><b>${esc(d.name)}</b> <span class="mono">&lt;${esc(d.email)}&gt;</span></dd><dt>Subject</dt><dd>${esc(d.subject)}</dd></dl>
+        ${ed ? `<textarea class="input letter-edit" id="dedit-${d.id}" aria-label="Edit draft to ${esc(d.name)}">${esc(toneText(d))}</textarea>` : `<div class="letter-b">${esc(toneText(d))}</div>`}
+      </div>
+      <div class="draft-f">
+        <div class="tone" role="group" aria-label="Tone">${[["shorter", "Shorter"], ["warmer", "Warmer"], ["direct", "More direct"]].map(([k, l]) => `<button data-tone="${d.id}|${k}" aria-pressed="${d.tone === k}">${l}</button>`).join("")}</div>
+        <span class="spacer"></span>
+        <button class="btn" data-dedit="${d.id}">${ed ? "Done" : ic("edit", 14) + " Edit"}</button>
+        <button class="btn primary send" data-dsend="${d.id}">${ic("send", 14)} Send to ${esc(first)}</button>
+      </div>
+    </article>`;
+  }
+  function scrDrafts() {
+    const tab = state.screen === "approvals" ? "approvals" : "drafts";
+    const tabs = `<div class="seg-in" role="tablist" aria-label="Drafts and approvals"><button role="tab" data-go="drafts" aria-selected="${tab === "drafts"}" aria-pressed="${tab === "drafts"}">Drafts <span class="cnt">${state.drafts.length}</span></button><button role="tab" data-go="approvals" aria-selected="${tab === "approvals"}" aria-pressed="${tab === "approvals"}">Approvals <span class="cnt">${pending()}</span></button></div>`;
+    let inner;
+    if (tab === "approvals") inner = approvalsInner();
+    else {
+      const n = state.drafts.length;
+      inner = `<div class="page drafts-page">
+        <div class="callout accent">${ic("edit")}<div><b>Written in your voice.</b> Learned from 412 emails you sent in the last 6 months: short paragraphs, first names, "Best, Sam". <a href="#" data-noop>Voice settings</a></div></div>
+        ${n ? `<div class="row"><b>${n} draft${n > 1 ? "s" : ""} ready</b><span class="faint small">Nothing here has been sent.</span><span class="spacer"></span>${n > 1 && !state.sendAll ? `<button class="btn" data-act="sendall-open">${ic("send", 14)} Send all ${n}</button>` : ""}</div>` : ""}
+        ${state.sendAll && n ? `<section class="sendall" aria-label="Confirm send all"><b>Send ${n} emails now?</b><span class="small muted">Each goes to the person below as written. This can't be undone.</span>
+          <ul>${state.drafts.map((d) => `<li><b>${esc(d.name)}</b><span class="mono xs">${esc(d.email)}</span><span class="faint small">${esc(d.subject)}</span></li>`).join("")}</ul>
+          <div class="row"><button class="btn primary" data-act="sendall-go">${ic("send", 14)} Send ${n} emails</button><button class="btn" data-act="sendall-cancel">Cancel</button></div></section>` : ""}
+        ${n ? `<div class="queue">${state.drafts.map(draftItem).join("")}</div>` : `<div class="empty panel"><div class="ring">${ic("check", 20)}</div><b>No drafts waiting</b><span class="small">Swipe right in Triage to queue one. Nothing sends without you.</span><button class="btn" data-go="triage">Open Triage</button></div>`}
+      </div>`;
+    }
+    return shell(topbar("Drafts", tab === "drafts" ? "Review exactly what will be sent" : "Actions waiting for your yes", tabs), inner);
+  }
+
+  /* ---------- Spaces ---------- */
+  const fillerNames = ["Garden", "Wedding (Ana & Tom)", "Learn Japanese", "Bike repair", "Pension review", "Kids' school", "Running club", "Photo archive", "Volunteering", "Home insurance", "Book club", "Podcast guest spots", "Conference talk", "Dog's vet plan", "Energy switch", "Passport renewal", "Christmas plans", "Board games night"];
+  const fillerIcons = ["heart", "gift", "book", "rocket", "coin", "building", "pulse", "file", "team", "shield", "book", "play", "brief", "heart", "coin", "plane", "gift", "grid"];
+  function allSpaces() {
+    const list = spaces.filter((s) => !s.archived);
+    if (state.kitchen) list.splice(3, 0, state.kitchen);
+    if (state.many) fillerNames.forEach((n, i) => list.push({ id: "f" + i, sc: ["house", "job", "yt", "japan", "tax", "health", "fin", "mum", "side", "read", "work", "inbox"][i % 12], name: n, kind: i % 3 ? "Area" : "Project", icon: fillerIcons[i], st: i % 5 === 0 ? "wait" : i % 4 === 0 ? "quiet" : "ok", needs: 0, status: "Nothing new this week.", asof: "Nov " + (10 - (i % 7)), next: "", agents: ["inbox"], budget: [0.1, 1] }));
+    return list;
+  }
+  function tile(s) {
+    const col = s.sc || s.id;
+    const rec = ["quiet", "stalled", "paused"].includes(s.st) ? " recessed" : "";
+    return `<button class="stile${rec}" data-space="${s.id}" style="--scol:var(--sc-${col})" aria-label="${esc(s.name)}, ${stLabel[s.st]}">
+      <span class="stile-h"><span class="emblem" style="--scol:var(--sc-${col})" aria-hidden="true">${ic(s.icon, 14)}</span><span class="stile-name">${esc(s.name)}</span>${schip(s)}</span>
+      <span class="stile-status">${esc(s.status)}</span>
+      <span class="stile-meta">${s.ms ? msDots(s.ms) : ""}<span class="stile-next">${s.next ? esc(s.next) : esc(s.kind)}</span><span class="asof">as of ${esc(s.asof)}</span></span>
+    </button>`;
+  }
+  function scrSpaces() {
+    const list = allSpaces();
+    const focus = list.filter((s) => s.focus).slice(0, 3);
+    const rest = list.filter((s) => !focus.includes(s));
+    const g = [["Focus this week", focus, "Pinned. These get priority in Today."], ["Needs you", rest.filter((s) => s.st === "needs"), ""], ["On track or waiting", rest.filter((s) => s.st === "ok" || s.st === "wait"), ""], ["Quiet", rest.filter((s) => ["quiet", "stalled", "paused"].includes(s.st)), "Nothing runs here, so nothing is spent."]];
+    const sugg = state.kitchen ? "" : `<div class="stile suggest"><span class="stile-h"><span class="emblem" style="--scol:var(--c-text-3)">${ic("plus", 14)}</span><span class="stile-name">Suggested Space</span></span><span class="stile-status">6 items look like a new Space: <b>Kitchen renovation</b>. Create it?</span><span class="row"><button class="btn primary" data-act="kitchen-yes">Create</button><button class="btn ghost" data-act="kitchen-no">Not now</button></span></div>`;
+    const needN = list.filter((s) => s.st === "needs").length;
+    const body = `<div class="page spaces-page">
+      <div class="row"><p class="muted small" style="flex:1 1 260px">${list.length} Spaces · ${needN} need you. Agents keep these up to date; you decide and correct.</p>
+        <button class="btn" data-go="review">${ic("replay", 14)} Weekly review</button>
+        <button class="linkbtn" data-act="many">${state.many ? "Back to 12 (demo)" : "Show 30 Spaces (demo)"}</button></div>
+      ${g.map(([t, arr, note], gi) => arr.length || (gi === 1 && sugg) ? `<section class="sgroup ${gi === 3 ? "quiet" : ""}"><div class="section-h"><h2>${t}</h2>${note ? `<span class="xs faint">${note}</span>` : ""}</div><div class="tiles-grid">${arr.map(tile).join("")}${gi === 1 ? sugg : ""}</div></section>` : "").join("")}
+    </div>`;
+    return shell(topbar("Spaces", "", `<button class="btn" data-act="capture-open">${ic("plus", 14)} <span class="hide-narrow">New Space</span></button><button class="btn show-narrow icon-only" data-go="more" aria-label="More">${ic("more")}</button>`), body);
+  }
+
+  const houseCards = [
+    { id: "hm2", t: "Call with Jess Patel at 10:30", status: "doing", owner: "me", due: "Today 10:30", needs: true },
+    { id: "hm1", t: "Choose a removals firm", status: "next", owner: "me", due: "Nov 18", needs: true },
+    { id: "hm3", t: "Sign and return the TR1 form", status: "next", owner: "me", due: "Nov 21", needs: true },
+    { id: "hm4", t: "Get an exchange date", status: "waiting", owner: "inbox", due: "Nov 28", waitOn: "Hartley & Co, seller's solicitor", chase: "Inbox Watcher chases Thu 10:00" },
+    { id: "hm5", t: "Broadband at the new flat", status: "waiting", owner: "inbox", due: "Dec 14", waitOn: "Fibrely, install date", chase: "Inbox Watcher chases Mon 09:00" },
+    { id: "hm6", t: "Council tax change of address", status: "doing", owner: "inbox", due: "Dec 1" },
+    { id: "hm7", t: "Redirect post", status: "next", owner: "me", due: "Dec 1" },
+    { id: "hm8", t: "Meter readings on move day", status: "next", owner: "inbox", due: "Dec 14" },
+    { id: "hm9", t: "Mortgage offer received", status: "done", owner: "inbox", due: "Nov 6" },
+    { id: "hm10", t: "Survey: no major issues", status: "done", owner: "research", due: "Oct 28" }
+  ];
+  const genericCards = (s) => [
+    { id: s.id + "-a", t: s.status.split(".")[0], status: s.st === "needs" ? "next" : "doing", owner: "me", due: s.next || "No date", needs: s.st === "needs" },
+    { id: s.id + "-b", t: "Weekly check-in", status: "waiting", owner: s.agents[0], due: "Fri", waitOn: "Nobody yet", chase: "" },
+    { id: s.id + "-c", t: "Set up the Space", status: "done", owner: s.agents[0], due: "Oct" }
+  ];
+  const ownerChip = (o) => o === "me" ? `<span class="chip">You</span>` : `<span class="owner">${avatar(A(o))}<span class="xs">${A(o).name}</span></span>`;
+  function scrSpace() {
+    const s = SP(state.spaceId) === ALL ? spaces[0] : SP(state.spaceId);
+    const isHouse = s.id === "house";
+    const cards = (isHouse ? houseCards : genericCards(s)).map((c) => ({ ...c, status: state.listDone[c.id] ? "done" : c.status }));
+    const lens = state.lens;
+    const lensBtns = [["stack", "Stack"], ["board", "Board"], ["timeline", "Timeline"], ["list", "List"]];
+    const tabBtns = [["memory", "Memory"], ["people", "People"]];
+    let content = "";
+    if (lens === "stack") {
+      const needCards = isHouse ? todayCards.filter((c) => c.space === "house") : [];
+      const open = needCards.filter((c) => !isHandled(c));
+      content = isHouse ? (open.length ? `<p class="small muted">${open.length} card${open.length > 1 ? "s" : ""} need a decision. The same cards appear in Today.</p><div class="deck-list">${needCards.map((c) => dcard(c)).join("")}</div>` : `<div class="empty">${ic("check", 20)}<b>Nothing to decide in House move</b><span class="small">The agents are on the waiting items.</span></div>`)
+        : `<div class="deck-list">${cards.filter((c) => c.needs).map((c) => `<article class="dcard" style="--scol:var(--sc-${s.id})"><header class="dcard-h">${stag(s)}${ctypeChip("task")}</header><h3 class="dcard-t">${esc(c.t)}</h3><div class="dcard-b">${taskMeta(c.due, "You", "Next")}</div><footer class="dcard-f"><button class="btn primary" data-act="toast-light">Mark done</button><button class="btn" data-act="discuss-space">${ic("chat", 14)} Discuss</button></footer></article>`).join("") || `<div class="empty">${ic("check", 20)}<b>Nothing needs you in ${esc(s.name)}</b><span class="small">Lighter demo content for this Space.</span></div>`}</div>`;
+    } else if (lens === "board") {
+      const cols = [["next", "Next"], ["doing", "Doing"], ["waiting", "Waiting on someone"], ["done", "Done"]];
+      content = `<div class="board">${cols.map(([k, l]) => { const cs = cards.filter((c) => c.status === k); return `<section class="bcol"><h3>${l} <span class="faint">${cs.length}</span></h3>${cs.map((c) => `<div class="bcard"><b>${esc(c.t)}</b><div class="bmeta">${ownerChip(c.owner)}<span class="mono xs faint">${esc(c.due)}</span></div>${c.waitOn ? `<div class="wait"><span>${ic("clock", 12)} Waiting on ${esc(c.waitOn)}</span>${c.chase ? `<span class="faint">${esc(c.chase)}</span>` : ""}</div>` : ""}</div>`).join("") || `<p class="xs faint">Nothing here</p>`}</section>`; }).join("")}</div>`;
+    } else if (lens === "timeline") {
+      const ev = isHouse ? [["Oct 14", "Offer accepted", 1], ["Oct 28", "Survey: no major issues", 1], ["Nov 6", "Mortgage offer received", 1], ["Nov 11", "Today · call with Jess at 10:30", 2], ["Nov 18", "Choose a removals firm", 0], ["Nov 21", "TR1 form due back", 0], ["Nov 28", "Exchange (target)", 0], ["Dec 1", "Redirect post · council tax", 0], ["Dec 12", "Completion", 0], ["Dec 14", "Move day", 0]] : [["Oct", "Space created", 1], ["Nov 11", "Today", 2], [s.next || "Later", "Next date", 0]];
+      content = `<ol class="tline">${ev.map(([d, t, p]) => `<li class="${p === 1 ? "past" : p === 2 ? "today" : ""}"><span class="mono xs">${d}</span><span>${esc(t)}</span></li>`).join("")}</ol>`;
+    } else if (lens === "list") {
+      content = `<ul class="clist">${cards.map((c) => `<li><label><input type="checkbox" data-ldone="${c.id}" ${c.status === "done" ? "checked" : ""}><span class="${c.status === "done" ? "struck" : ""}">${esc(c.t)}</span></label><span class="mono xs faint">${esc(c.due)}</span>${ownerChip(c.owner)}</li>`).join("")}</ul><p class="xs faint">Agents add and tick items too. You never have to sort this list.</p>`;
+    } else if (lens === "memory") {
+      content = isHouse ? `<div class="grid-2"><section class="panel"><div class="panel-h"><h3 class="mono">house-move/new-address.md</h3><span class="xs faint">by You, Nov 2</span></div><div class="panel-b md">${mdRender("# New address\n\n- Flat 3, 18 Albion Road\n- Completion Dec 12, move Dec 14\n- Parking permit needed for the van")}</div></section><section class="panel"><div class="panel-h"><h3 class="mono">house-move/decisions.md</h3><span class="xs faint">by Research Analyst, yesterday</span></div><div class="panel-b md">${mdRender("# Decisions\n\n- Removals: compare packing included\n- Budget for removals under £1,300\n- Keep the old sofa, sell the desk")}</div></section></div><button class="btn" data-go="memory">Open in Memory</button>` : `<p class="muted small">No memory files yet in ${esc(s.name)}.</p>`;
+    } else {
+      const ppl = isHouse ? [["JP", "Jess Patel", "Your solicitor, Patel & Lowe", "Prefers phone. Replies within a day."], ["HC", "Hartley & Co", "Seller's solicitor", "Slow. Last reply Nov 6."], ["MW", "Mark Wells", "Estate agent", "Chases by text; keep him copied on dates."], ["SM", "Sofia Marquez", "Current letting agent", "Needs a month's notice in writing."]] : [["?", "No people yet", "", "Agents add people as they appear in mail."]];
+      content = `<ul class="people">${ppl.map(([i, n, r, m]) => `<li>${pav(i)}<div><b>${n}</b> <span class="small muted">${r}</span><div class="memline">${ic("file", 12)} ${m}</div></div></li>`).join("")}</ul>`;
+    }
+    const exportPanel = state.exporting ? `<section class="panel export"><div class="panel-h"><h3>Export ${esc(s.name)} as a template</h3><button class="btn ghost icon-only" data-act="export-close" aria-label="Close">${ic("x", 14)}</button></div>
+      <div class="panel-b grid-2"><div class="stack"><span class="label">Kept</span><ul class="end-sum"><li>${ic("check", 12)} Card types: meeting, task, needs-reply, approval</li><li>${ic("check", 12)} 10 checklist items, with dates made relative (T−14 days)</li><li>${ic("check", 12)} 2 agent roles and their models</li><li>${ic("check", 12)} Budget $8/month, routines (installed paused)</li></ul></div>
+      <div class="stack"><span class="label">Stripped</span><ul class="end-sum strip"><li>${ic("x", 12)} 4 people and their memory lines</li><li>${ic("x", 12)} Addresses and the new-address file</li><li>${ic("x", 12)} Email contents and quotes</li><li>${ic("x", 12)} Connector accounts and tokens</li></ul></div></div>
+      <div class="panel-b row" style="border-top:1px solid var(--c-line)"><span class="mono xs faint" style="flex:1">later.template.json · 3.1 KB · no code</span><button class="btn primary" data-act="export-go">Export template</button></div></section>` : "";
+    const ag = s.agents.map((id) => A(id));
+    const body = `<div class="page space-page" style="--scol:var(--sc-${s.id})">
+      <header class="space-head">
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-start">${emblem(s, 22, "xl")}<div style="min-width:0;flex:1"><div class="row"><h2>${esc(s.name)}</h2>${schip(s)}</div><div class="xs faint">${s.kind}${s.next ? " · next: " + esc(s.next) : ""}</div></div></div>
+        <p class="space-status">${esc(s.status)} <span class="faint xs">as of ${esc(s.asof)}</span></p>
+        ${s.ms ? `<div class="ms-line">${s.ms.map(([n, d]) => `<span class="${d ? "on" : ""}"><i></i>${n}</span>`).join("")}</div>` : ""}
+        <div class="space-meta">
+          <span class="row" style="gap:6px">${ag.map((a) => `<span class="owner">${avatar(a)}<span class="xs">${a.name}</span></span>`).join("")}</span>
+          <span class="space-budget"><span class="mono xs">${money(s.budget[0])} of ${money(s.budget[1])} this month</span>${meter(s.budget[0], s.budget[1])}</span>
+          <span class="spacer"></span>
+          <button class="btn" data-act="space-chat">${ic("chat", 14)} Chat</button>
+          <button class="btn" data-act="export-open">Export as template</button>
+        </div>
+      </header>
+      ${exportPanel}
+      <div class="lens-bar"><div class="seg-in" role="tablist" aria-label="Lens">${lensBtns.map(([k, l]) => `<button role="tab" data-lens="${k}" aria-pressed="${lens === k}" aria-selected="${lens === k}">${l}</button>`).join("")}</div><div class="seg-in" role="tablist" aria-label="Space info">${tabBtns.map(([k, l]) => `<button role="tab" data-lens="${k}" aria-pressed="${lens === k}" aria-selected="${lens === k}">${l}</button>`).join("")}</div></div>
+      <div class="lens-body">${content}</div>
+    </div>`;
+    return shell(topbar("Spaces", esc(s.name), "", "spaces"), body);
+  }
+
+  /* ---------- capture sheet ---------- */
+  function fileGuess(t) {
+    const x = t.toLowerCase();
+    if (/japan|flight|kyoto|osaka|hotel/.test(x)) return "japan";
+    if (/mum|birthday|gift/.test(x)) return "mum";
+    if (/tax|receipt|p60|invoice/.test(x)) return "tax";
+    if (/recruit|interview|cv|job/.test(x)) return "job";
+    if (/house|loft|move|solicitor|flat|boiler|removal/.test(x)) return "house";
+    return "inbox";
+  }
+  const rawTranscript = "okay so, um, the removals. I think we just go with Swift, the guy said they can do the fourteenth, that's fine. Oh and I need to ask Mark, the estate agent, whether the loft ladder stays, because the survey didn't say. And Mum's birthday, uh, book Rosa's for the third, four of us, no wait, Dad's coming now so five. And get her that pottery class voucher she mentioned, before the weekend ideally.";
+  const cleanNote = "Go with Swift Removals for Dec 14.\nAsk Mark whether the loft ladder stays; the survey didn't cover it.\nMum's birthday: book Rosa's for Dec 3, table for five now that Dad is coming. Buy the pottery class voucher she mentioned, before the weekend.";
+  const extractSeed = () => [
+    { id: "x1", kind: "Task", t: "Book Swift Removals for Dec 14", space: "house", meta: "Owner: Research Analyst · needs your approval to book" },
+    { id: "x2", kind: "Task", t: "Ask Mark Wells if the loft ladder stays", space: "house", meta: "Person: Mark Wells, estate agent · draft an email" },
+    { id: "x3", kind: "Task", t: "Book Rosa's, Dec 3, table for 5", space: "mum", meta: "Date: Wed Dec 3, 19:00 · replaces the table for 4" },
+    { id: "x4", kind: "Task", t: "Buy the pottery class voucher", space: "mum", meta: "Due: Sat Nov 15 · owner: You" },
+    { id: "x5", kind: "Person", t: "Dad is coming to the birthday dinner", space: "mum", meta: "Updates people.md" }
+  ];
+  function captureSheet() {
+    const c = state.capture; if (!c) return "";
+    let inner;
+    if (c.stage === "idle") inner = `<div class="cap-top"><h2>Capture</h2><button class="btn ghost icon-only" data-act="cap-close" aria-label="Close">${ic("x", 14)}</button></div>
+      <p class="small muted">Talk it through. I'll tidy it up, pull out the tasks and file them in the right Spaces.</p>
+      <div class="rec-wrap"><button class="rec-btn" data-act="cap-rec" aria-label="Start recording"><span class="rec-core">${ic("mic", 30)}</span></button><span class="small">Tap to record</span></div>
+      <p class="xs faint cap-priv">${ic("lock", 12)} Transcribed on this device. Audio never leaves it.</p>
+      <button class="linkbtn" data-act="cap-type">Type instead</button>`;
+    else if (c.stage === "type") inner = `<div class="cap-top"><h2>Capture</h2><button class="btn ghost icon-only" data-act="cap-close" aria-label="Close">${ic("x", 14)}</button></div>
+      <textarea class="input" id="cap-text" rows="4" placeholder="e.g. Ask the estate agent if the loft ladder stays">${esc(c.text || "")}</textarea>
+      <div class="row"><button class="btn" data-act="cap-voice">${ic("mic", 14)} Record instead</button><span class="spacer"></span><button class="btn primary" data-act="cap-submit">Capture</button></div>`;
+    else if (c.stage === "recording") inner = `<div class="cap-top"><h2>Listening</h2><span class="mono num rec-timer" id="rec-timer">0:00</span></div>
+      <div class="wave" id="wave" aria-hidden="true">${Array.from({ length: 36 }, (_, i) => `<i style="height:${20 + ((i * 37) % 60)}%"></i>`).join("")}</div>
+      <p class="small muted">Ramble. You can change your mind mid-sentence; I'll keep the last version.</p>
+      <div class="rec-wrap"><button class="rec-btn on" data-act="cap-stop" aria-label="Stop recording"><span class="rec-core"><span class="rec-sq"></span></span></button><span class="small">Tap to stop</span></div>
+      <p class="xs faint cap-priv">${ic("lock", 12)} Transcribed on this device. Works offline; syncs later.</p>`;
+    else if (c.stage === "processing") {
+      const st = [["Transcribed on this device", "0:24 of audio"], ["Tidied into a note", "Haiku"], ["Pulled out tasks, dates and people", "Haiku"]];
+      inner = `<div class="cap-top"><h2>Working on it</h2></div><ul class="checklist">${st.map(([t, m], i) => `<li class="${i < c.step ? "done" : i === c.step ? "now" : ""}"><span class="ck">${i < c.step ? ic("check", 12) : ""}</span><span>${t}</span><span class="mono xs faint">${m}</span></li>`).join("")}</ul>`;
+    } else if (c.stage === "result") inner = `<div class="cap-top"><h2>Your note</h2><div class="seg-in" role="group" aria-label="Note view"><button data-act="cap-clean" aria-pressed="${!c.raw}">Note</button><button data-act="cap-raw" aria-pressed="${!!c.raw}">Raw transcript</button></div></div>
+      <div class="note ${c.raw ? "raw" : ""}">${esc(c.raw ? rawTranscript : cleanNote)}</div>
+      <p class="xs faint">${c.raw ? "Kept alongside the note, word for word." : "Written in your voice from 0:24 of audio. The raw transcript is kept."}</p>
+      <div class="row"><button class="btn" data-act="cap-again">${ic("mic", 14)} Record again</button><span class="spacer"></span><button class="btn primary" data-act="cap-extract">See what I pulled out</button></div>`;
+    else if (c.stage === "extract") {
+      const items = c.items;
+      inner = `<div class="cap-top"><h2>What I pulled out of this</h2></div>
+        <p class="small muted">${items.length} cards across ${new Set(items.map((x) => x.space)).size} Spaces. Check where each one goes.</p>
+        <div class="xcards">${items.map((x) => { const s = SP(x.space); return `<div class="xcard" style="--scol:var(--sc-${s.id})"><div class="xcard-h">${stag(s)}<span class="xs faint">${x.kind}</span><span class="spacer"></span><button class="btn ghost" data-xmove="${x.id}">Move</button></div><b>${esc(x.t)}</b><span class="xs faint">${esc(x.meta)}</span>
+          ${c.picking === x.id ? `<div class="pick-spaces" role="group" aria-label="Move to">${spaces.filter((y) => y.id !== s.id).map((y) => `<button class="chip-btn" data-xto="${x.id}|${y.id}">${emblem(y, 12, "sm")} ${esc(y.name)}</button>`).join("")}</div>` : ""}</div>`; }).join("")}</div>
+        <div class="row"><button class="btn" data-act="cap-undo">${ic("undo", 14)} Undo</button><span class="spacer"></span><button class="btn primary" data-act="cap-fileall">File all ${items.length}</button></div>
+        <p class="xs faint">This capture cost about $0.004 (Haiku), shown on each Space's meter.</p>`;
+    } else {
+      const s = SP(c.space);
+      inner = `<div class="filed" style="--scol:var(--sc-${s.id})">${emblem(s, 18, "lg")}<div style="min-width:0"><span class="label">Filed in</span><h2>${esc(s.name)}</h2></div></div>
+        <div class="xcard" style="--scol:var(--sc-${s.id})"><div class="xcard-h">${stag(s)}<span class="xs faint">Task</span></div><b>${esc(c.text)}</b><span class="xs faint">Owner: ${s.id === "inbox" ? "You" : "Inbox Watcher"} · no date</span></div>
+        ${c.picking ? `<div class="pick-spaces" role="group" aria-label="Move to">${spaces.filter((x) => x.id !== s.id).map((x) => `<button class="chip-btn" data-capmove="${x.id}">${emblem(x, 12, "sm")} ${esc(x.name)}</button>`).join("")}</div>` : ""}
+        <div class="row"><button class="btn" data-act="cap-pick">Move</button><button class="btn" data-act="cap-undo">${ic("undo", 14)} Undo</button><span class="spacer"></span><button class="btn primary" data-act="cap-close">Done</button></div>`;
+    }
+    return `<div class="veil" data-act="cap-close"></div><div class="sheet" role="dialog" aria-label="Capture">${inner}</div>`;
+  }
+  let recT = null;
+  function stopRecTimers() { clearInterval(recT); recT = null; }
+  function startRecTimers() {
+    stopRecTimers();
+    let sec = 0;
+    recT = setInterval(() => {
+      sec += 0.25;
+      const t = document.getElementById("rec-timer"); if (t) t.textContent = `0:${String(Math.floor(sec)).padStart(2, "0")}`;
+      if (!reduced()) document.querySelectorAll("#wave i").forEach((b) => { b.style.height = (15 + Math.random() * 80) + "%"; });
+      if (sec >= 24) { capStop(); }
+    }, 250);
+  }
+  function capStop() {
+    stopRecTimers();
+    state.capture = { stage: "processing", step: 0 }; render(true);
+    let k = 0; const adv = () => { k++; if (!state.capture || state.capture.stage !== "processing") return; if (k < 3) { state.capture.step = k; render(true); setTimeout(adv, 550); } else { state.capture = { stage: "result", raw: false }; render(true); } };
+    setTimeout(adv, reduced() ? 50 : 550);
+  }
+  /* ---------- More (phone) ---------- */
+  function scrMore() {
+    const items = [["review", "Weekly review", "replay"], ["activity", "Activity", "log"], ["spend", "Spend", "coin"], ["memory", "Memory", "file"], ["browser", "Live browser", "globe"], ["templates", "Templates", "grid"], ["account", "Settings", "gear"], ["tokens", "Design tokens", "info"], ["onboarding", "Restart onboarding (demo)", "replay"]];
+    const body = `<div class="page"><div class="panel">${items.map(([id, l, i]) => `<button class="more-row" data-go="${id}">${ic(i)}<span>${l}</span>${ic("chev", 14)}</button>`).join("")}</div></div>`;
+    return shell(topbar("More", "later.sam-k.workers.dev"), body);
+  }
+
+  const renderers = { today: scrToday, triage: scrTriage, drafts: scrDrafts, approvals: scrDrafts, spaces: scrSpaces, space: scrSpace, review: scrReview, capture: scrToday, more: scrMore, onboarding: scrOnboarding, home: scrHome, dm: scrDM, activity: scrActivity, spend: scrSpend, browser: scrBrowser, memory: scrMemory, templates: scrTemplates, install: scrInstall, account: scrAccount, tokens: scrTokens };
 
   /* ---------------- render & routing ---------------- */
   const app = document.getElementById("app");
@@ -1515,18 +2549,28 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
     app.innerHTML = renderers[state.screen]();
     sel.value = state.screen;
     const sc2 = app.querySelector(".scroll"); if (sc2) sc2.scrollTop = pos;
+    bindSwipe();
   }
   function go(screen) {
-    if (!renderers[screen]) screen = "home";
+    if (!renderers[screen]) screen = "today";
+    stopRecTimers();
+    if (screen === "capture") { state.capture = { stage: "idle" }; }
+    else if (state.screen === "capture") state.capture = null;
+    state.moreOpen = null; state.snoozeOpen = false; state.sendAll = false;
     state.screen = screen;
     if (screen === "memory") state.memViewing = false;
     if (location.hash !== "#" + screen) { try { history.replaceState(null, "", "#" + screen); } catch (e) { location.hash = screen; } }
     render();
   }
-  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (h && h !== state.screen && renderers[h]) { state.screen = h; render(); } });
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (h && h !== state.screen && renderers[h]) go(h); });
 
   let toastT;
-  function toast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2600); }
+  function toast(msg, undoKind) {
+    const t = document.getElementById("toast");
+    t.innerHTML = esc(msg) + (undoKind ? ` <button class="toast-undo" data-tundo="${undoKind}">Undo</button>` : "");
+    t.classList.toggle("has-undo", !!undoKind);
+    t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), undoKind ? 4500 : 2600);
+  }
 
   function resolveCard(id, how) {
     const card = app.querySelector(`[data-card="${id}"]`);
@@ -1554,12 +2598,49 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
     replayT = setInterval(() => { i++; show(i); if (i >= items.length) { clearInterval(replayT); setTimeout(() => items.forEach((li) => li.classList.remove("on")), 700); } }, 550);
   }
 
+  function queueApproval(title, agent) {
+    const ap = { id: "ap-q" + Date.now(), agent: agent || "inbox", tier: "irr", tool: /book/i.test(title) ? "booking.request" : "gmail.send", title, args: [["request", title]], body: title + "\n\nPrepared from a Today card. Nothing happens until you approve.", why: "You asked for this from a card in Today.", run: "today deck · $0.01", untrusted: false, age: "just now" };
+    state.approvals.push(ap); return ap;
+  }
+  function cardAct(id, action) {
+    const c = todayCards.find((x) => x.id === id);
+    state.moreOpen = null;
+    const [verb, ...restArr] = action.split(":"); const rest = restArr.join(":");
+    if (verb === "done") { state.handled[id] = rest; render(true); return; }
+    if (verb === "go") { if (rest === "space") state.spaceId = c ? c.space : "house"; go(rest); return; }
+    if (verb === "toast") { render(true); toast(rest); return; }
+    if (verb === "queue") { queueApproval(rest, c && c.agent); state.handled[id] = "Request is waiting in Approvals"; render(true); toast("Queued in Approvals. Nothing happens until you approve."); return; }
+    if (verb === "discuss") { const ctx = c || { title: id, type: "task", agent: "inbox", space: "house" }; state.dmAgent = ctx.agent; state.dmCtx = { type: ctx.type, title: ctx.title, space: ctx.space }; go("dm"); return; }
+    if (verb === "approve" || verb === "deny") { const ap = c && c.ap; if (ap && state.approvals.some((a) => a.id === ap)) { state.approvals = state.approvals.filter((a) => a.id !== ap); state.resolved[ap] = verb; if (!state.approvals.some((x) => x.agent === "monitor")) A("monitor").status = "idle"; } render(true); toast(verb === "approve" ? "Approved. Monitor & Report will post to #ops-weekly." : "Denied. Nothing was posted."); return; }
+  }
+
   app.addEventListener("click", (e) => {
-    const t = e.target.closest("button, a, [data-go]"); if (!t) return;
+    const t = e.target.closest("button, a, [data-go], [data-act]"); if (!t) { if (state.moreOpen || state.snoozeOpen) { state.moreOpen = null; state.snoozeOpen = false; render(true); } return; }
     const d = t.dataset;
     if (d.noop !== undefined) { e.preventDefault(); toast("Example link. Opens the source in the real app."); return; }
-    if (d.go) { e.preventDefault(); go(d.go); return; }
-    if (d.dm) { state.dmAgent = d.dm; go("dm"); return; }
+    if (d.go) { e.preventDefault(); state.capture = null; go(d.go); return; }
+    if (d.dm) { state.dmAgent = d.dm; state.dmCtx = null; go("dm"); return; }
+    if (d.space) { state.spaceId = d.space; state.lens = "stack"; state.exporting = false; go("space"); return; }
+    if (d.cact) { const i = d.cact.indexOf("|"); return cardAct(d.cact.slice(0, i), d.cact.slice(i + 1)); }
+    if (d.cundo) { delete state.handled[d.cundo]; render(true); toast("Card is back in Today."); return; }
+    if (d.more) { state.moreOpen = state.moreOpen === d.more ? null : d.more; render(true); return; }
+    if (d.fan) { state.fanned[d.fan] = !state.fanned[d.fan]; render(true); return; }
+    if (d.group) { state.groupBy = d.group; render(true); return; }
+    if (d.tile) { const i = +d.tile; state.tileOpen = state.tileOpen === i ? null : i; render(true); return; }
+    if (d.intent) { const [id, v] = d.intent.split("|"); state.triIntent[id] = v; render(true); return; }
+    if (d.sw) { const kind = state.screen === "review" ? "review" : "triage"; return swipeAct(kind, d.sw); }
+    if (d.tone) { const [id, k] = d.tone.split("|"); const dr = state.drafts.find((x) => x.id === id); if (dr) { dr.tone = dr.tone === k ? "base" : k; } render(true); return; }
+    if (d.dedit) { const dr = state.drafts.find((x) => x.id === d.dedit); const ta = document.getElementById("dedit-" + d.dedit); if (ta && dr) { dr.base = ta.value; dr.tone = "base"; state.dEditing = null; } else state.dEditing = d.dedit; render(true); const nt = document.getElementById("dedit-" + d.dedit); if (nt) nt.focus(); return; }
+    if (d.dsend) { const dr = state.drafts.find((x) => x.id === d.dsend); const ta = document.getElementById("dedit-" + d.dsend); if (ta) dr.base = ta.value; state.drafts = state.drafts.filter((x) => x.id !== d.dsend); state.dEditing = null; render(true); toast(`Sent to ${dr.email}. Logged in Activity.`); return; }
+    if (d.lens) { state.lens = d.lens; render(true); return; }
+    if (d.capmove) { state.capture.space = d.capmove; state.capture.picking = false; render(true); toast(`Moved to ${SP(d.capmove).name}.`); return; }
+    if (d.xmove) { state.capture.picking = state.capture.picking === d.xmove ? null : d.xmove; render(true); return; }
+    if (d.xto) { const [xid, sid] = d.xto.split("|"); const x = state.capture.items.find((y) => y.id === xid); x.space = sid; state.capture.picking = null; render(true); return; }
+    if (d.conn) { state.conns[d.conn] = true; render(); toast("Connected."); return; }
+    if (d.fedit) { state.factEdit = +d.fedit; render(); const f = document.getElementById("fact-" + d.fedit); if (f) f.focus(); return; }
+    if (d.fsave) { const i = +d.fsave; state.facts[i][1] = document.getElementById("fact-" + i).value; state.factEdit = null; render(); toast("Corrected. Saved to shared/people.md."); return; }
+    if (d.fdel) { state.facts.splice(+d.fdel, 1); render(); toast("Deleted. I won't use that."); return; }
+    if (d.sugg) { state.suggDone[+d.sugg] = true; render(); return; }
     if (d.approve) return resolveCard(d.approve, "approve");
     if (d.deny) return resolveCard(d.deny, "deny");
     if (d.edit) { const ta = document.getElementById("edit-" + d.edit); const a = state.approvals.find((x) => x.id === d.edit); if (ta && a) a.body = ta.value; state.editing[d.edit] = !state.editing[d.edit]; render(true); const nt = document.getElementById("edit-" + d.edit); if (nt) nt.focus(); return; }
@@ -1574,14 +2655,15 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
     if (d.filter) { const [g, v] = d.filter.split(":"); state.logFilter[g] = v; render(true); return; }
     if (d.mem) { state.memFile = d.mem; state.memEditing = false; state.memConfirmDel = false; state.memViewing = true; render(true); return; }
     if (d.install) { state.installTpl = d.install; go("install"); return; }
+    if (d.spendmode) { state.spendMode = d.spendmode; render(true); return; }
     const act = d.act; if (!act) return;
     switch (act) {
       case "deploy": state.deployed = true; render(); toast("Deployed to later.sam-k.workers.dev"); break;
       case "savekey": { const v = document.getElementById("api-key").value.trim(); if (!v && !state.keySaved) { toast("Paste a key that starts with sk-ant-"); return; } state.keySaved = true; render(); toast("Saved to your Cloudflare account as a secret."); break; }
       case "onb-back": state.onbStep = Math.max(0, state.onbStep - 1); render(); break;
       case "onb-next":
-        if (state.onbStep === 3) { const c = app.querySelector('input[name="tpl"]:checked'); state.installTpl = c && templates.some((x) => x.id === c.value) ? c.value : "inbox-zero"; go("install"); }
-        else { state.onbStep++; render(); }
+        if (state.onbStep === 5) { go("today"); toast("Your first Today deck is ready."); }
+        else { state.onbStep++; render(); if (state.onbStep === 3 && state.learnStep < learnSteps.length) startLearning(); }
         break;
       case "reset-approvals": state.approvals = approvalsSeed.map((a) => ({ ...a })); state.resolved = {}; A("inbox").status = "approval"; render(); break;
       case "takeover": state.browser = "takeover"; render(); toast("You have control. Research Analyst is paused."); break;
@@ -1595,11 +2677,43 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
       case "mem-del-no": state.memConfirmDel = false; render(true); break;
       case "mem-del-yes": state.memDeleted[state.memFile] = true; state.memConfirmDel = false; render(true); toast("File deleted."); break;
       case "mem-close": state.memViewing = false; render(true); break;
-      case "install": state.installed[state.installTpl] = true; render(true); toast("Installed. Schedules are paused."); break;
+      case "install": state.installed[state.installTpl] = true; render(true); toast("Space created. Its routines are paused until you turn them on."); break;
       case "pair": state.paired = true; render(true); toast("iPhone paired. Push notifications are on."); break;
       case "del-ask": state.deleteConfirm = true; render(true); break;
       case "del-cancel": state.deleteConfirm = false; render(true); break;
       case "del-go": { const v = document.getElementById("del-confirm").value.trim(); if (v !== "delete my data") { toast("Type the phrase exactly to confirm."); return; } state.deleteConfirm = false; render(true); toast("Prototype: nothing was deleted."); break; }
+      case "deck-skip": todayCards.forEach((c) => { if (!isHandled(c)) { if (c.type === "approval") { state.approvals = state.approvals.filter((a) => a.id !== c.ap); state.resolved[c.ap] = "approve"; } else state.handled[c.id] = "Handled"; } }); render(); break;
+      case "deck-reset": state.handled = {}; if (!state.approvals.some((a) => a.id === "ap-1043")) state.approvals.splice(2, 0, { ...approvalsSeed[2] }); render(); break;
+      case "snooze-menu": state.snoozeOpen = !state.snoozeOpen; render(true); break;
+      case "sw-undo": swipeUndo(state.screen === "review" ? "review" : "triage"); break;
+      case "coach-ok": state.coachSeen = true; store.set("later-proto-coach", "1"); render(true); break;
+      case "coach-show": state.coachSeen = false; render(true); break;
+      case "sendall-open": state.sendAll = true; render(true); break;
+      case "sendall-cancel": state.sendAll = false; render(true); break;
+      case "sendall-go": { const n = state.drafts.length; state.drafts = []; state.sendAll = false; render(); toast(`Sent ${n} emails. Each is logged in Activity.`); break; }
+      case "kitchen-yes": state.kitchen = { id: "kitchen", sc: "read", name: "Kitchen renovation", kind: "Project", icon: "house", st: "ok", needs: 0, status: "Made from 6 items: 3 quotes, 2 Pinterest boards, 1 email from Lena the builder.", asof: "just now", next: "", agents: ["inbox"], budget: [0, 3] }; render(true); toast("Created Kitchen renovation with 6 items."); break;
+      case "kitchen-no": state.kitchen = null; state.kitchenDismissed = true; render(true); toast("OK. I'll keep them in Inbox."); break;
+      case "many": state.many = !state.many; render(); break;
+      case "space-chat": state.dmAgent = SP(state.spaceId).agents ? SP(state.spaceId).agents[0] : "inbox"; state.dmCtx = { type: "task", title: "Space: " + SP(state.spaceId).name, space: state.spaceId }; go("dm"); break;
+      case "discuss-space": state.dmAgent = "inbox"; state.dmCtx = { type: "task", title: SP(state.spaceId).name, space: state.spaceId }; go("dm"); break;
+      case "toast-light": toast("Marked done (lighter demo content)."); break;
+      case "export-open": state.exporting = true; render(true); break;
+      case "export-close": state.exporting = false; render(true); break;
+      case "export-go": state.exporting = false; render(true); toast("Prototype: this would save later.template.json with personal data stripped."); break;
+      case "ctx-clear": state.dmCtx = null; render(true); break;
+      case "capture-open": document.getElementById("toast").classList.remove("show"); state.capture = { stage: "idle" }; render(true); break;
+      case "cap-close": stopRecTimers(); if (state.capture && state.capture.stage === "extract") toast("Not filed. Your note is kept in Inbox."); state.capture = null; render(true); break;
+      case "cap-type": state.capture = { stage: "type" }; render(true); { const ta = document.getElementById("cap-text"); if (ta) ta.focus(); } break;
+      case "cap-voice": case "cap-again": state.capture = { stage: "idle" }; render(true); break;
+      case "cap-rec": state.capture = { stage: "recording" }; render(true); startRecTimers(); break;
+      case "cap-stop": capStop(); break;
+      case "cap-raw": state.capture.raw = true; render(true); break;
+      case "cap-clean": state.capture.raw = false; render(true); break;
+      case "cap-extract": state.capture = { stage: "extract", items: extractSeed() }; render(true); break;
+      case "cap-fileall": { const it = state.capture.items; const by = {}; it.forEach((x) => { by[x.space] = (by[x.space] || 0) + 1; }); state.lastFiled = it; state.capture = null; render(true); toast("Filed: " + Object.entries(by).map(([s, n]) => `${n} in ${SP(s).name}`).join(", ") + ".", "capture"); break; }
+      case "cap-submit": { const txt = (document.getElementById("cap-text").value || "").trim(); if (!txt) { toast("Type something first."); return; } state.capture = { stage: "filed", text: txt, space: fileGuess(txt) }; render(true); break; }
+      case "cap-pick": state.capture.picking = !state.capture.picking; render(true); break;
+      case "cap-undo": if (state.capture.stage === "extract") state.capture = { stage: "result", raw: false }; else state.capture = { stage: "type", text: state.capture.text }; render(true); toast("Undone. Nothing was filed."); break;
     }
   });
   app.addEventListener("input", (e) => {
@@ -1615,14 +2729,39 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
       a.cap = v;
       const tr = t.closest("tr"); const p = pct(a);
       const m = tr.querySelector(".meter"); m.className = "meter lg " + meterCls(p); m.querySelector("i").style.width = Math.min(p, 100) + "%";
-      tr.querySelector(".meter-line span:last-child").textContent = p.toFixed(0) + "%";
+      tr.querySelector(".meter-line span:last-child").textContent = p.toFixed(0) + "% of cap";
     }
   });
   app.addEventListener("change", (e) => {
     const t = e.target;
     if (t.dataset.cap) { render(true); toast("Cap saved."); }
+    if (t.dataset.ldone) { state.listDone[t.dataset.ldone] = t.checked; render(true); }
+    if (t.dataset.routine) state.routines[t.dataset.routine] = t.checked;
     if (t.name === "lane") { state.lane = t.value; toast("Execution lane set. Applies from the next run."); }
     if (t.name === "tpl") state.template = t.value;
+  });
+  document.getElementById("toast").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-tundo]"); if (!b) return;
+    const k = b.dataset.tundo;
+    if (k === "capture") { state.lastFiled = null; toast("Undone. Nothing was filed."); return; }
+    swipeUndo(k);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.target.closest && e.target.closest("input, textarea, select, [contenteditable]")) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "Escape") { if (state.capture) { stopRecTimers(); state.capture = null; render(true); } else if (state.moreOpen || state.snoozeOpen) { state.moreOpen = null; state.snoozeOpen = false; render(true); } return; }
+    const k = e.key.toLowerCase();
+    if (state.screen === "triage" || state.screen === "review") {
+      const kind = state.screen;
+      if (state.snoozeOpen && kind === "triage" && ["1", "2", "3"].includes(k)) { swipeAct("triage", "snooze:" + snoozeOpts[+k - 1][0]); return; }
+      if (e.key === "ArrowRight") { e.preventDefault(); swipeAct(kind, kind === "triage" ? "reply" : "accept"); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); swipeAct(kind, kind === "triage" ? "ignore" : "keep"); }
+      else if (k === "u") swipeUndo(kind);
+      else if (kind === "triage" && k === "s") { state.snoozeOpen = !state.snoozeOpen; render(true); }
+      else if (kind === "triage" && k === "m") swipeAct("triage", "mute");
+      else if (kind === "review" && k === "p") swipeAct("review", "pause");
+      else if (kind === "review" && k === "a") swipeAct("review", "archive");
+    }
   });
 
   /* ---------------- chrome ---------------- */
@@ -1652,7 +2791,9 @@ input[type=range].cap { width: 100%; accent-color: var(--c-accent); }
   const savedTheme = store.get("later-proto-theme"); if (savedTheme && savedTheme !== "system") setTheme(savedTheme);
   const savedDev = store.get("later-proto-device"); if (savedDev === "phone") setDevice("phone");
   const h = location.hash.slice(1);
-  state.screen = renderers[h] ? h : "home";
+  try { if (store.get("later-proto-coach") === "1") state.coachSeen = true; } catch (e) {}
+  state.screen = renderers[h] ? h : "today";
+  if (state.screen === "capture") state.capture = { stage: "idle" };
   render();
 })();
 </script>
