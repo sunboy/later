@@ -115,6 +115,35 @@ Agents emit typed, structured cards, not prose, wherever a card type fits. Every
 
 Risks: decision fatigue if the deck is long; binary swipes hiding nuance; visual richness tempting us to render unverified model claims as confident tiles. Digest tiles therefore always carry a source link.
 
+## 4c. Spaces: organising many projects and areas (added 2026-11-11)
+
+**D19. The Space is the unit of organisation, and replaces the agent roster as the primary structure.**
+People think in terms of their projects and life areas, not in terms of bots. Agents become staff assigned to Spaces and appear as attribution on cards.
+
+Model:
+- **Card**: atomic unit. Lives in exactly one Space. Lifecycle: new → decided (acted, ignored, snoozed) → filed.
+- **Space**: a persistent home for a project (has a finish line), an area (ongoing, has a rhythm) or a list. Holds its cards, memory files, people, routines, assigned agents, connector scopes and budget.
+- **Today**: the cross-Space view by time. Pulls what needs attention from every Space, each card marked with its Space's colour and emblem.
+- **Lenses**: the same cards viewed as Stack (decide), Board (Next / Doing / Waiting on someone / Done), Timeline (when), List (scan). Cards are data; views are lenses.
+- **Zoom levels**: Life (all Spaces) → Space → Card → Detail or chat.
+
+Rules:
+- **Space tile.** Each Space has a living cover: stable colour and emblem, agent-written one-line status with an "as of" time, progress if it has a finish line, next date, count of cards needing the user, and a state (on track, needs you, waiting, stalled, quiet). The overview is ordered by need, not alphabet; position within a group is stable so spatial memory works.
+- **Stacking.** Cards of the same kind collapse into a counted stack. Stacks are the compression mechanism at every level.
+- **Agent files, user corrects.** Captured items (typed, spoken, shared, forwarded) are filed by the agent into a Space with the placement shown and one tap to move. Unfiled items go to an Inbox Space. The agent proposes a new Space when a cluster emerges, and proposes pausing Spaces that go quiet.
+- **Weekly review deck.** One card per Space: progress, what stalled, a proposal (keep, pause, archive, nudge). Uses the same swipe mechanic.
+- **Focus.** The user pins a small number of Spaces for the week; they get priority in Today. Today has a length cap with a per-Space quota.
+- **Scope guard.** We are not building a project-management tool. Tasks are a minimal card type (title, due, owner: me or agent, status). No dependencies, no Gantt, no custom fields in v1.
+
+Architecture consequences:
+- **One Durable Object per Space** (state, cards, memory, budget, scopes), plus one index object per user that materialises Today. This replaces "one object per agent" in D2. Agents are configurations (persona, model, tools) instantiated inside a Space.
+- **Isolation by Space.** Connector scopes and memory are per Space. Untrusted content ingested in one Space cannot reach another Space's connectors. This strengthens D6.
+- **Budgets are per Space** (extends D7). Quiet Spaces run nothing; tile status is regenerated on change, not on a timer.
+- **A template is a Space blueprint** (extends D9). Installing a template creates a Space. "Export this Space as a template" strips personal data and is the path for user-made templates.
+- New card types: `task`, `status`, `review`, `filed`.
+
+Risks: scope creep into project management; mis-filing eroding trust; model-written status lines read as fact (hence the "as of" time and source links); cost growing with the number of active Spaces.
+
 ## 5. Open risks and the spikes that close them
 
 | # | Risk | Spike (owner) |
