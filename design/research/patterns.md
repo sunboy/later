@@ -33,3 +33,22 @@ Each line names the evidence by `app_id/screen_id` (see apps.md for app names). 
 - **Progress.** Thin top bar plus "Step n of N" text (1276437113/onb_skshv); counted pills for goals (6745416564/oth_wlsz6).
 - **Avatars.** Circles with a surface-coloured ring; initials when no portrait (6445827140/oth_wad3x, 1131203560/oth_78bl8). Later: one flat portrait style for known people, initials for people we have no memory of, a building mark for organisations.
 - **Toasts.** Confirmations sit at the bottom edge above the controls, away from the title (frame-stepped 6748599950/oth_nb031 and the platform convention). Later moves phone toasts off the header.
+
+## Material and motion (added after founder feedback: glass, gloss, springs)
+
+Who taught it: Opal (1497465230) for material and depth, TIDE (1077776989/oth_jjyoq) and Pocket Casts (414834813/oth_8dtlo) for glass chrome over imagery, Spark (997102246) and Flashka (6748599950/oth_nb031, frame-stepped) for sheet and card motion.
+
+- **Glass needs colour behind it.** Opal never puts glass over grey: a glow or artwork sits behind every translucent surface (1497465230/oth_jsci1, oth_p2341). Later: each screen gets a soft backdrop built from its Space colours; Today blends the colours of the Spaces in the deck.
+- **Two or three tiers, not blur everywhere.** Opal's tiles are thin translucent panels with a hairline light border and a faint top highlight (oth_gbmxf, oth_313tk); its key prompt gets a luminous rim (oth_90b92); its tab bar is a thinner floating glass pill (oth_jsci1). Later: tiers `--glass-card`, `--glass-chrome`, `--glass-sheet`.
+- **Sheets take the tint of what they cover.** Green glass over green artwork, red glass for "Leave early?" (oth_81yhu, oth_bxcas). Later: approval sheets and the install sheet tint toward their Space colour; destructive confirms tint toward risk.
+- **Hold to confirm.** "Hold to start" and "Hold to leave" make a consequential action a deliberate press with visible fill (oth_81yhu, oth_bxcas). Later: actions that can't be undone use a hold-to-confirm bar.
+- **Gloss is one highlight, not chrome.** Opal's primary pill has a soft iridescent edge (onb_akxn1) and its LCD timer a single specular band (oth_og7u1). Later: one specular top edge per card and a sheen that follows the drag on the deck card.
+- **Numbers roll in.** The big-number reveal rolls like a picker with neighbours faded (onb_0m8b4). Later: counters and progress ease in on entrance only, never on data being read.
+- **Copy arrives in beats.** Opal's onboarding types lines in and dims the previous ones (onb_tvdoy, onb_46zet). Later: onboarding read-back keeps earlier answers dimmed above the current step.
+
+## Template sharing (growth loop)
+
+- **Templates are a main destination.** Canva puts Templates in the tab bar (897446215/oth_8wdnc) with a search field, filter chips that open sheets of preview tiles (oth_uu5xf), a type rail and a trending carousel (oth_katvg). Later: Templates is a tab.
+- **Creator profiles.** Avatar with verified mark, one-line bio, a stats row, Follow plus share, then a grid of works with counts (1164423781/oth_d6z2q, 1086101495/oth_tl17f, 6481115809/oth_w4clb). Later: creator page with installs, templates and a Reviewed mark per template.
+- **Sharing a public link.** A preview card of the shared item, toggles for what is included, a primary share action and a way to disable the public link (6741517781/oth_qrkgm, 281796108/oth_ppn0i). Later: "Share as template" ends on a preview of the public page, include/exclude list, copy link, and Stop sharing.
+- **Remix.** Template pages offer "Use template" and "Remix" (copy, then edit before installing), as video template apps do (1381520124/oth_1rsug). Later: Remix opens the install screen with every field editable.
