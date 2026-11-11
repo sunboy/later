@@ -18,7 +18,7 @@
   color-scheme: light;
   --stage:#E4E2DC; --bg:#F2F1EC; --surface:#FFFFFF; --surface-2:#F8F7F3; --sunken:#EAE8E2;
   --line:rgba(30,27,22,.10); --line-2:rgba(30,27,22,.18);
-  --ink:#1C1B18; --ink-2:#4A4740; --ink-3:#625E56; --ink-inv:#FFFFFF;
+  --ink:#1C1B18; --ink-2:#3F3C36; --ink-3:#4F4B44; --ink-inv:#FFFFFF;
   --btn:#1C1B18; --btn-ink:#FFFFFF;
   --accent:#2B50C8; --accent-bg:#E6EBFA; --on-accent:#FFFFFF; --on-risk:#FFFFFF;
   --ok:#256B3B; --ok-bg:#E2F0E5; --warn:#8F5400; --warn-bg:#FAEBD1; --risk:#B02A21; --risk-bg:#FBE4E0; --info:var(--accent);
@@ -40,7 +40,7 @@
   color-scheme: dark;
   --stage:#0A0A09; --bg:#121110; --surface:#1C1B19; --surface-2:#22211E; --sunken:#0E0D0C;
   --line:rgba(255,250,240,.09); --line-2:rgba(255,250,240,.16);
-  --ink:#F2F0EA; --ink-2:#C6C2B8; --ink-3:#A29D92; --ink-inv:#1C1B18;
+  --ink:#F2F0EA; --ink-2:#D2CEC4; --ink-3:#B4AFA4; --ink-inv:#1C1B18;
   --btn:#F2F0EA; --btn-ink:#1C1B18;
   --accent:#93AAFF; --accent-bg:#1E2540; --on-accent:#10152B; --on-risk:#2A0B08;
   --ok:#72C690; --ok-bg:#15281C; --warn:#F0B65A; --warn-bg:#2E2311; --risk:#FF8F84; --risk-bg:#361714;
@@ -54,7 +54,7 @@
   color-scheme: dark;
   --stage:#0A0A09; --bg:#121110; --surface:#1C1B19; --surface-2:#22211E; --sunken:#0E0D0C;
   --line:rgba(255,250,240,.09); --line-2:rgba(255,250,240,.16);
-  --ink:#F2F0EA; --ink-2:#C6C2B8; --ink-3:#A29D92; --ink-inv:#1C1B18;
+  --ink:#F2F0EA; --ink-2:#D2CEC4; --ink-3:#B4AFA4; --ink-inv:#1C1B18;
   --btn:#F2F0EA; --btn-ink:#1C1B18;
   --accent:#93AAFF; --accent-bg:#1E2540; --on-accent:#10152B; --on-risk:#2A0B08;
   --ok:#72C690; --ok-bg:#15281C; --warn:#F0B65A; --warn-bg:#2E2311; --risk:#FF8F84; --risk-bg:#361714;
@@ -1072,16 +1072,142 @@ input.sw:checked::after{transform:translateX(20px)}
 .desk .tpl.big{flex-direction:row;min-height:220px}.desk .tpl.big .cv{width:44%;height:auto;flex:none}.desk .tpl.big .cv .emb{left:auto;right:-24px;bottom:20px}.desk .tpl.big .bd{padding:24px 28px 24px 40px;align-content:center}
 .dc.b1.promote,.tc.b1.promote{transform:none!important;background:var(--g-card)!important;transition:transform 280ms var(--spring),background 200ms;--k:1;z-index:2}
 .dc.b1.promote>*{visibility:visible}
+.dc.leaving>*,.dc.leaving::after{opacity:0;transition:opacity 90ms linear}
 .tc.b1.promote>*{opacity:1}
 .heard-w{display:grid;gap:8px}
 .heard{display:flex;gap:6px;flex-wrap:wrap}
 .hd{display:inline-flex;gap:6px;align-items:center;height:32px;padding:0 12px;border-radius:var(--r-pill);background:var(--g-card);box-shadow:inset 0 1px 0 var(--g-edge),0 0 0 1px var(--g-line);font-size:13px;font-weight:600;animation:rise var(--d-slow) var(--spring) both}
+/* =====================================================================
+   GLASS v4 (pass 4: make the material visible)
+   Backdrop: four large Space-colour fields that drift over 40s. Light theme uses the colours lifted 30% toward
+   white so dark ink stays AA; dark theme uses them deepened over a near-black base and is the showpiece.
+   Card fill is a vertical tint: thinnest at the top (cover, title), densest under body text (the text tint layer).
+   Light .30 / .40 / .54 white, dark .22 / .32 / .46 ink. Blur 30 + saturate 1.9 does the legibility work.
+   Gloss: top-left corner glint, crisp 1px top edge and left edge, hairline inner stroke, one diagonal sheen
+   in the upper third, layered shadow tinted by the card's Space.
+   ===================================================================== */
+:root{
+  --g-ft:rgba(255,255,255,.36); --g-f:rgba(255,255,255,.44); --g-fx:rgba(255,255,255,.58);
+  --g-card:var(--g-f); --g-chrome:rgba(255,255,255,.48); --g-sheet:rgba(255,255,255,.74);
+  --g-spec:rgba(255,255,255,.75); --g-edge:rgba(255,255,255,1); --g-hair:rgba(255,255,255,.55); --g-line:rgba(30,27,22,.08);
+  --g-ind:rgba(255,255,255,.88); --g-ind-edge:rgba(255,255,255,1);
+  --g-base:var(--bg); --g-lift:#fff; --g-liftk:46%; --g-glow:1; --g-sheen:.42;
+  --g-sh-k:0 1px 2px rgba(20,18,14,.06);
+  --g-blur:30px; --g-blur-chrome:22px; --g-blur-sheet:40px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --g-ft:rgba(14,14,20,.30); --g-f:rgba(14,14,20,.38); --g-fx:rgba(14,14,20,.52);
+  --g-card:var(--g-f); --g-chrome:rgba(16,16,22,.56); --g-sheet:rgba(20,20,26,.74);
+  --g-spec:rgba(255,255,255,.20); --g-edge:rgba(255,255,255,.42); --g-hair:rgba(255,255,255,.12); --g-line:rgba(255,255,255,.07);
+  --g-ind:rgba(255,255,255,.16); --g-ind-edge:rgba(255,255,255,.5);
+  --g-base:#08080C; --g-lift:#000; --g-liftk:38%; --g-glow:.95; --g-sheen:.14;
+  --g-sh-k:0 1px 2px rgba(0,0,0,.4);
+}}
+:root[data-theme="dark"]{
+  --g-ft:rgba(14,14,20,.30); --g-f:rgba(14,14,20,.38); --g-fx:rgba(14,14,20,.52);
+  --g-card:var(--g-f); --g-chrome:rgba(16,16,22,.56); --g-sheet:rgba(20,20,26,.74);
+  --g-spec:rgba(255,255,255,.20); --g-edge:rgba(255,255,255,.42); --g-hair:rgba(255,255,255,.12); --g-line:rgba(255,255,255,.07);
+  --g-ind:rgba(255,255,255,.16); --g-ind-edge:rgba(255,255,255,.5);
+  --g-base:#08080C; --g-lift:#000; --g-liftk:38%; --g-glow:.95; --g-sheen:.14;
+  --g-sh-k:0 1px 2px rgba(0,0,0,.4);
+}
+/* backdrop: large drifting colour fields */
+.bd-glow{background:var(--g-base)}
+.bd-glow::before{inset:-30%;opacity:var(--g-glow);filter:none;will-change:transform;
+  background:
+   radial-gradient(38% 34% at 22% 18%,color-mix(in oklab,var(--g1,#E0603A),var(--g-lift) var(--g-liftk)) 0,transparent 100%),
+   radial-gradient(40% 36% at 80% 34%,color-mix(in oklab,var(--g2,#1B7FB5),var(--g-lift) var(--g-liftk)) 0,transparent 100%),
+   radial-gradient(42% 34% at 34% 70%,color-mix(in oklab,var(--g3,#D33F7A),var(--g-lift) var(--g-liftk)) 0,transparent 100%),
+   radial-gradient(34% 30% at 78% 84%,color-mix(in oklab,var(--g1,#E0603A),var(--g2,#1B7FB5)) 0,transparent 100%);
+  animation:drift 40s ease-in-out infinite alternate}
+.phone:has(.dragging) .bd-glow::before,.main:has(.dragging) .bd-glow::before{animation-play-state:paused}
+@keyframes drift{0%{transform:translate3d(0,0,0) rotate(0) scale(1)}50%{transform:translate3d(-5%,3%,0) rotate(7deg) scale(1.06)}100%{transform:translate3d(4%,-3%,0) rotate(-5deg) scale(1.03)}}
+/* card tier: fill with a text tint layer, gloss, floating shadow */
+.dc,.tc,.apcard,.ctx-card,.rtile,.mcard,.dr-row,.letter,.note,.xcard,.conn,.lrow,.tpl,.cpin,.cprop,.ins-conn,.mini-c,.panel,.rr,.step,.sk-card,.sk-tile,.sk-row,.quote,.memo,.act,.ftile,.pilebtn .top,.bcol,.bcard,.mem button,.always,.wr-prop,.tc-quote,.cap-alt button,.cap-ex div,.rtn,.newsp .nt,.tpl-url,.creator-h,.sh-col,.sh-link,.pub{
+  background:radial-gradient(120% 70% at 0% 0%,var(--g-spec) 0,transparent 30%),linear-gradient(180deg,var(--g-ft) 0,var(--g-f) 34%,var(--g-fx) 100%)!important;
+  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(1.9);backdrop-filter:blur(var(--g-blur)) saturate(1.9);
+  box-shadow:inset 0 1px 0 var(--g-edge),inset 1px 0 0 color-mix(in oklab,var(--g-edge) 45%,transparent),inset 0 0 0 1px var(--g-hair),0 0 0 1px var(--g-line),var(--g-sh-k),0 8px 18px -10px color-mix(in oklab,var(--sc,#3A3833) 40%,transparent)!important}
+/* floating cards: deeper layered coloured shadow */
+.dc.front,.tc.front,.apcard,.ftile,.tpl,.ctx-card,.panel,.letter,.note,.rtile,.wr-prop,.creator-h,.pub,.pilebtn .top{
+  box-shadow:inset 0 1px 0 var(--g-edge),inset 1px 0 0 color-mix(in oklab,var(--g-edge) 50%,transparent),inset 0 0 0 1px var(--g-hair),0 0 0 1px var(--g-line),var(--g-sh-k),
+   0 12px 24px -12px color-mix(in oklab,var(--sc,#3A3833) 50%,transparent),0 36px 64px -30px color-mix(in oklab,var(--sc,#3A3833) 75%,transparent)!important}
+.dc::before{display:none}
+/* peeking cards: glass, each tinted by its own Space */
+.dc.b1,.tc.b1{background:radial-gradient(120% 70% at 0% 0%,var(--g-spec) 0,transparent 30%),linear-gradient(180deg,color-mix(in oklab,var(--sc) 34%,var(--g-ft)),color-mix(in oklab,var(--sc) 22%,var(--g-f)))!important}
+.dc.b2,.tc.b2{background:radial-gradient(120% 70% at 0% 0%,var(--g-spec) 0,transparent 30%),linear-gradient(180deg,color-mix(in oklab,var(--sc) 48%,var(--g-ft)),color-mix(in oklab,var(--sc) 34%,var(--g-f)))!important}
+.dc.b1.promote,.tc.b1.promote{background:radial-gradient(120% 70% at 0% 0%,var(--g-spec) 0,transparent 30%),linear-gradient(180deg,var(--g-ft) 0,var(--g-f) 34%,var(--g-fx) 100%)!important}
+.quote.best{background:linear-gradient(180deg,color-mix(in oklab,var(--sc) 16%,var(--g-f)),color-mix(in oklab,var(--sc) 10%,var(--g-fx)))!important;box-shadow:inset 0 0 0 2px var(--sc),inset 0 1px 0 var(--g-edge),0 12px 28px -18px color-mix(in oklab,var(--sc) 60%,transparent)!important}
+.dr-row[aria-current="true"]{box-shadow:inset 0 0 0 2px var(--accent),inset 0 1px 0 var(--g-edge)!important}
+/* sheen: one diagonal band across the upper third */
+.dc.front::after,.tc.front::after,.dc.static::after{mix-blend-mode:normal;
+  background:linear-gradient(118deg,transparent 22%,rgba(255,255,255,var(--g-sheen)) 36%,rgba(255,255,255,calc(var(--g-sheen)*.35)) 42%,transparent 54%);background-size:240% 100%;
+  -webkit-mask-image:linear-gradient(180deg,#000 0,#000 14%,transparent 40%);mask-image:linear-gradient(180deg,#000 0,#000 14%,transparent 40%)}
+/* inner panels inside a glass card: a lighter glass layer, no second blur */
+.dc-foot{background:linear-gradient(180deg,transparent,var(--g-fx))!important;border-top-color:var(--g-hair)!important}
+.since div,.dayshape,.reply-rows div,.rcpt,.dtile,.orig,.snz button,.tb .c,.conn .lg,.pilebtn .lay,.mcard.stacked::after,.mcard.stacked::before,.ap-deny .chip,.csugg .chip,.seg button[aria-pressed="true"],.t-row[aria-current="true"],.fan .fc,.onb-desk .r{
+  background:linear-gradient(180deg,color-mix(in oklab,var(--g-fx),#fff 6%),var(--g-f))!important;box-shadow:inset 0 1px 0 var(--g-edge),inset 0 0 0 1px var(--g-hair)!important}
+.tb .c{-webkit-backdrop-filter:blur(var(--g-blur-chrome)) saturate(2);backdrop-filter:blur(var(--g-blur-chrome)) saturate(2);box-shadow:inset 0 1px 0 var(--g-edge),inset 0 0 0 1px var(--g-hair),0 14px 28px -14px rgba(0,0,0,.35)!important}
+.tb.big .c{background:var(--btn)!important}
+.onb-desk .r{background:transparent!important;box-shadow:none!important}
+/* legibility over raw backdrop: page-level small text steps up one ink level */
+.cap,.src,.tabs button{color:var(--ink-2)}
+.tabs button[aria-current="page"]{color:var(--ink)}
+.tabs button[aria-current="page"] svg{color:var(--accent)}
+.tb{color:var(--ink)}
+.grp-h .faint,.tb .faint,.cpin .cap,.wr-ms .faint,.ins-row small,.tc-mem{color:var(--ink-2)!important}
+.ds-free{color:color-mix(in oklab,var(--ok) 70%,var(--ink))!important}
+.srow.warn .sub b,.srow.warn .vals b{color:var(--ink)!important}
+.hero-warn{color:var(--ink)!important;font-weight:700}
+.person small,.rail li,.rail li *,.tc-mem span:last-child{color:var(--ink)!important}
+.ph-head{position:relative}
+.ph-head::before{content:"";position:absolute;inset:-60px -24px -8px;z-index:-1;pointer-events:none;background:linear-gradient(180deg,color-mix(in oklab,var(--g-base) 62%,transparent) 30%,transparent)}
+.dc-kind .cap{color:color-mix(in oklab,var(--sc) 40%,var(--ink))!important}
+.srow-panel{padding:4px 16px 8px;margin-top:4px}
+/* covers bleed into the glass body */
+.ftile .cv svg.cover,.tpl .cv svg.cover,.ctx-card .cv svg.cover,.newsp .nt .cv svg.cover{-webkit-mask-image:linear-gradient(180deg,#000 45%,transparent 100%);mask-image:linear-gradient(180deg,#000 45%,transparent 100%)}
+.desk .tpl.big .cv svg.cover{-webkit-mask-image:linear-gradient(90deg,#000 50%,transparent 100%);mask-image:linear-gradient(90deg,#000 50%,transparent 100%)}
+.desk .tpl.big .bd{background:linear-gradient(90deg,color-mix(in oklab,var(--sc) 18%,transparent),transparent 50%)!important}
+.ftile .bd,.tpl .bd{background:linear-gradient(180deg,color-mix(in oklab,var(--sc) 20%,transparent),transparent 60%)}
+.ftile .cv .emb,.tpl .cv .emb{box-shadow:0 0 0 3px color-mix(in oklab,var(--g-edge) 70%,transparent),0 10px 20px -8px color-mix(in oklab,var(--sc) 70%,transparent),inset 0 1px 0 rgba(255,255,255,.35)}
+/* chrome tier */
+.tabs,.chatbar,.ccomp,.round,.seg,.ins-foot{background:linear-gradient(180deg,color-mix(in oklab,var(--g-chrome),#fff 8%),var(--g-chrome))!important;
+  -webkit-backdrop-filter:blur(var(--g-blur-chrome)) saturate(2);backdrop-filter:blur(var(--g-blur-chrome)) saturate(2);
+  box-shadow:inset 0 1px 0 var(--g-edge),inset 0 0 0 1px var(--g-hair),0 0 0 1px var(--g-line),0 16px 32px -16px rgba(0,0,0,.32)!important}
+.chip,.tc-intents button:not([aria-pressed="true"]),.tones button:not([aria-pressed="true"]),.wr-opts button:not([aria-pressed="true"]),.fchips button:not([aria-pressed="true"]),.btn.sec{
+  background:var(--g-chrome)!important;-webkit-backdrop-filter:blur(var(--g-blur-chrome)) saturate(2);backdrop-filter:blur(var(--g-blur-chrome)) saturate(2);
+  box-shadow:inset 0 1px 0 var(--g-edge),inset 0 0 0 1px var(--g-hair),0 0 0 1px var(--g-line)}
+.tab-ind{background:var(--g-ind);box-shadow:inset 0 1px 0 var(--g-ind-edge),inset 0 0 0 1px var(--g-hair),0 6px 14px -6px rgba(0,0,0,.25)}
+.side{background:linear-gradient(180deg,color-mix(in oklab,var(--g-chrome),#fff 6%),var(--g-chrome))!important;-webkit-backdrop-filter:blur(var(--g-blur-chrome)) saturate(1.8);backdrop-filter:blur(var(--g-blur-chrome)) saturate(1.8);box-shadow:inset -1px 0 0 var(--g-hair)}
+.nav-i[aria-current="page"]{background:var(--g-ind)!important;box-shadow:inset 0 1px 0 var(--g-ind-edge),inset 0 0 0 1px var(--g-hair),0 6px 14px -8px rgba(0,0,0,.25)!important}
+.t-list,.t-ctx,.chat-l,.dr-desk .l,.tri-desk .t-list{background:color-mix(in oklab,var(--g-base) 18%,transparent)!important}
+/* record buttons get a glass ring */
+.cap-btn,.mic-big,.tab-cap{position:relative}
+.cap-btn::before,.mic-big::before,.tab-cap::before{content:"";position:absolute;inset:-7px;border-radius:50%;pointer-events:none;z-index:-1;background:var(--g-chrome);
+  -webkit-backdrop-filter:blur(var(--g-blur-chrome)) saturate(2);backdrop-filter:blur(var(--g-blur-chrome)) saturate(2);box-shadow:inset 0 1px 0 var(--g-edge),inset 0 0 0 1px var(--g-hair),0 14px 28px -12px rgba(0,0,0,.35)}
+.mic-big.rec::before{inset:-12px;background:none;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
+/* sheets */
+.sheet,.more-menu{background:linear-gradient(180deg,color-mix(in oklab,var(--g-sheet),#fff 6%),var(--g-sheet))!important;-webkit-backdrop-filter:blur(var(--g-blur-sheet)) saturate(2);backdrop-filter:blur(var(--g-blur-sheet)) saturate(2);
+  box-shadow:inset 0 1px 0 var(--g-edge),inset 0 0 0 1px var(--g-hair),0 0 0 1px var(--g-line),0 40px 80px -30px rgba(0,0,0,.5)!important}
+.sheet.sp-tint{background:linear-gradient(180deg,color-mix(in oklab,var(--sc) 18%,var(--g-sheet)),var(--g-sheet))!important}
+/* phone tab bar: Today / Spaces / Capture / Drafts / Templates */
+.tabbar .tabs{flex:1}
+.tab-cap{flex:1;display:grid;place-items:center;height:52px}
+.tab-cap span.cb{width:50px;height:50px;border-radius:50%;background:var(--btn);color:var(--btn-ink);display:grid;place-items:center;box-shadow:0 10px 22px -8px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);transition:transform 360ms var(--spring)}
+.tab-cap:active span.cb{transform:scale(.92);transition-duration:100ms}
+.tab-cap::before{inset:-1px;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px}
+.hd-ctl{display:flex;gap:8px}
+.round .bdg{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:var(--risk);color:var(--on-risk,#fff);font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.round{position:relative}
+.xlink{display:flex;gap:10px;align-items:center;width:100%;min-height:48px;padding:0 14px;border-radius:var(--r-lg);margin:0 0 14px;font-size:14px;font-weight:600;text-align:left}
+.xlink .sp{flex:1}
 /* fallbacks */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  :root{--g-card:var(--surface);--g-chrome:var(--surface);--g-sheet:var(--surface)} .bd-glow::before{display:none}}
+  :root{--g-ft:var(--surface);--g-f:var(--surface);--g-fx:var(--surface);--g-card:var(--surface);--g-chrome:var(--surface);--g-sheet:var(--surface);--g-spec:transparent} .bd-glow::before{display:none}}
 @media (prefers-reduced-transparency: reduce){
-  :root,:root[data-theme="dark"]{--g-card:var(--surface);--g-chrome:var(--surface);--g-sheet:var(--surface)} .bd-glow::before{display:none}
-  .dc.front::after,.tc.front::after{display:none}}
+  :root,:root[data-theme="dark"],:root:not([data-theme="light"]){--g-ft:var(--surface);--g-f:var(--surface);--g-fx:var(--surface);--g-card:var(--surface);--g-chrome:var(--surface);--g-sheet:var(--surface);--g-spec:transparent;--g-ind:var(--sunken)} .bd-glow::before{display:none}
+  .dc.front::after,.tc.front::after,.dc.static::after{display:none}
+  .ftile .cv svg.cover,.tpl .cv svg.cover,.ctx-card .cv svg.cover,.newsp .nt .cv svg.cover{-webkit-mask-image:none;mask-image:none}}
+@media (prefers-reduced-motion: reduce){.bd-glow::before{animation:none}}
 @media (prefers-reduced-motion: reduce){.tab-ind{transition:none}}
 /* ---------- templates, creators, sharing ---------- */
 .tpl .by{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--ink-2);margin-top:2px}
@@ -1513,7 +1639,7 @@ function doneState(){
 }
 function scrToday(ph){
   const total=CARDS.length,dn=CARDS.filter(c=>S.done[c.id]).length,left=total-dn;
-  const head=`<div class="ph-head"><div><div class="cap">Tue, Nov 11 · ${left?`${left} of ${total} left · about ${Math.max(1,Math.round(left*.5))} min`:"All decided"}</div><h1 style="margin-top:6px">Today</h1></div><span class="sp"></span><button class="round" data-go="capture" aria-label="Capture">${ic("mic")}</button></div>${left?segs():""}`;
+  const head=`<div class="ph-head"><div><div class="cap">Tue, Nov 11 · ${left?`${left} left · ${Math.max(1,Math.round(left*.5))} min`:"All decided"}</div><h1 style="margin-top:6px">Today</h1></div><span class="sp"></span><div class="hd-ctl"><button class="round" data-go="approvals" aria-label="Approvals, ${pendingAppr().length} waiting">${ic("shield")}${pendingAppr().length?`<span class="bdg num">${pendingAppr().length}</span>`:""}</button><button class="round" data-go="spend" aria-label="Spend">${ic("coin")}</button></div></div>${left?segs():""}`;
   if(ph){
     return `<div class="today">${head}${left?`<div class="deck">${deckStack()}</div>`:doneState()}</div>`;
   }
@@ -1631,7 +1757,7 @@ function scrDrafts(ph){
   if(S.draftSel&&!S.drafts.find(d=>d.id===S.draftSel))S.draftSel=null;
   const sel=S.drafts.find(d=>d.id===S.draftSel)||(ph?null:L[0]);
   const rows=L.map(d=>`<button class="dr-row" data-draft="${d.id}" aria-current="${!ph&&sel===d}">${pf(d.p,44)}<span class="tt"><b>${esc(P[d.p].n)}</b><p>${esc((d.edited||d.v[S.tone[d.id]||"base"]).split("\n").filter(Boolean)[1]||"")}</p><span class="org">${emb(SP(d.space||"inbox"),16)} ${esc(SP(d.space||"inbox").name)} · ${esc(d.from||"From Triage")}</span></span>${ic("chevR",18)}</button>`).join("");
-  const head=`<div class="ph-head"><div><div class="cap">${L.length} drafts · nothing sends without you</div><h1 style="margin-top:6px">Approvals</h1></div></div>`;
+  const head=`<div class="ph-head"><div><div class="cap">${L.length} drafts · nothing sends without you</div><h1 style="margin-top:6px">Drafts</h1></div></div>`;
   if(ph){
     if(sel)return `<div class="ph-pad" style="padding-top:8px">${draftDetail(sel,true)}</div>`;
     return `${head}<div class="ph-pad" style="padding-top:0">${apSeg("drafts")}${L.length?rows:draftDetail(null)}</div>`;
@@ -1831,11 +1957,11 @@ function spendChart(){
 }
 function scrSpend(ph){
   const pace=11/30,rows=SPACES.slice().sort((a,b)=>b.budget[0]-a.budget[0]).map(s=>{const cap=capOf(s),p=s.budget[0]/cap,ahead=p>pace*1.35&&s.budget[0]>1;return `<div class="srow ${ahead?"warn":""}" style="${scv(s)}">${emb(s,32)}<span class="who"><span class="nm">${esc(s.name)}</span><span class="sub"><span><b class="num">$${s.budget[0].toFixed(2)}</b> of $${cap} · ${Math.round(p*100)}%</span>${ahead?`<span class="pill-st needs">Ahead of pace</span>`:""}</span></span><button class="capb" data-capedit="${s.id}" aria-label="Edit cap for ${esc(s.name)}, now $${cap}">${ic("edit",14)} $${cap} cap</button><span class="trk"><i style="width:${Math.min(p,1)*100}%"></i><u style="left:${pace*100}%" title="Even pace for day 11 of 30"></u></span></div>`;}).join("");
-  const hero=`<div><span class="cap">Spent in November so far</span><div class="hero-n num" style="margin-top:8px">$27<small>.60</small></div><div style="display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap"><span class="est">${ic("info",13)} Estimate</span><span class="muted" style="font-size:14px">On pace for about <b style="color:var(--warn)">$75</b> by Nov 30</span></div></div>`;
-  const chart=`<div class="panel" style="margin-top:18px;padding:16px 12px 8px">${spendChart()}</div><div class="src" style="margin:8px 4px 0">${ic("alert",14)} Workshop channel and House move are ahead of pace. Raise their caps or let them pause at 100%.</div>`;
-  const list=`<div class="sec-h"><h3>By Space</h3><span class="faint" style="font-size:12px">Tick marks even pace for day 11</span></div><div>${rows}</div>`;
+  const hero=`<div><span class="cap">Spent in November so far</span><div class="hero-n num" style="margin-top:8px">$27<small>.60</small></div><div style="display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap"><span class="est">${ic("info",13)} Estimate</span><span class="muted" style="font-size:14px">On pace for about <b class="hero-warn">$75</b> by Nov 30</span></div></div>`;
+  const chart=`<div class="panel" style="margin-top:18px;padding:16px 12px 12px">${spendChart()}<div class="src" style="margin:8px 4px 0;color:var(--ink)">${ic("alert",14)} Workshop channel and House move are ahead of pace. Raise their caps or let them pause at 100%.</div></div>`;
+  const list=`<div class="sec-h"><h3>By Space</h3><span class="faint" style="font-size:12px">Tick marks even pace for day 11</span></div><div${ph?' class="panel srow-panel"':""}>${rows}</div>`;
   const foot=`<div class="ctx-card" style="margin-top:20px"><div class="bd"><b style="font-size:16px">How this is counted</b><span class="muted" style="font-size:13px">From the usage numbers on every API call, priced with the Nov 2026 price table. Agents warn at 80% and pause at 100% of a Space's cap. Your hard stop is the $100 monthly limit you set in the Anthropic Console.</span><div class="kb" style="margin-top:6px"><div><span>Haiku · watching, triage, decks</span><b class="num">$6.10</b></div><div><span>Sonnet · drafts, research</span><b class="num">$19.80</b></div><div><span>Opus · on request</span><b class="num">$1.70</b></div></div></div></div>`;
-  if(ph)return `<div class="ph-head"><div><div class="cap">Your key · your account</div><h1 style="margin-top:6px">Spend</h1></div></div><div class="ph-pad" style="padding-top:4px">${hero}${chart}${list}${foot}</div>`;
+  if(ph)return `<div class="ph-head"><button class="round" data-go="today" aria-label="Back to Today">${ic("chevL")}</button><div style="flex:1"><div class="cap">Your key · your account</div><h1 style="margin-top:6px">Spend</h1></div></div><div class="ph-pad" style="padding-top:4px">${hero}${chart}${list}${foot}</div>`;
   return `<div class="dhead" style="padding-bottom:8px"><div><div class="cap">Your key · your account</div><h1 style="margin-top:6px;font-size:40px">Spend</h1></div></div><div class="spend-desk"><div>${hero}${chart}${foot}</div><div class="panel">${list}</div></div>`;
 }
 
@@ -1882,14 +2008,17 @@ function apCard(a,ph){
    `<div class="ap-foot"><button class="btn sec" data-apdeny="${a.id}" ${busy?"disabled":""}>Deny</button>${a.content&&!a.list?`<button class="btn ghost" data-act="toast:Opens the editor. Edits are re-checked before sending" ${busy?"disabled":""}>${ic("edit",16)} Edit</button>`:""}${a.cls==="irr"?`<button class="btn pri hold" data-hold="${a.id}" ${busy?"disabled":""} aria-label="Hold to ${esc(a.go.toLowerCase())}">${ic("lock",16)}${busy?"Working…":`Hold to ${esc(a.go.charAt(0).toLowerCase()+a.go.slice(1))}`}</button>`:`<button class="btn pri" data-apgo="${a.id}" ${busy?"disabled":""}>${busy?"Working…":esc(a.go)}</button>`}</div>`}
   </article>`;
 }
-function apSeg(cur){const nA=pendingAppr().length,nD=draftList().length;return `<div class="seg ap-seg" role="group" aria-label="Approvals view"><button data-go="approvals" aria-pressed="${cur==="approvals"}">Agent actions <span class="num">${nA}</span></button><button data-go="drafts" aria-pressed="${cur==="drafts"}">Your drafts <span class="num">${nD}</span></button></div>`;}
+function apSeg(cur){const nA=pendingAppr().length,nD=draftList().length;
+  return cur==="drafts"?`<button class="xlink conn" data-go="approvals">${ic("shield",18)}<span class="sp">Agent actions waiting in Approvals</span><span class="num">${nA}</span>${ic("chevR",16)}</button>`
+   :`<button class="xlink conn" data-go="drafts">${ic("drafts",18)}<span class="sp">Your drafts to send</span><span class="num">${nD}</span>${ic("chevR",16)}</button>`;}
+function apSegOld(cur){const nA=pendingAppr().length,nD=draftList().length;return `<div class="seg ap-seg" role="group" aria-label="Approvals view"><button data-go="approvals" aria-pressed="${cur==="approvals"}">Agent actions <span class="num">${nA}</span></button><button data-go="drafts" aria-pressed="${cur==="drafts"}">Your drafts <span class="num">${nD}</span></button></div>`;}
 function apLog(){
   const rows=APPR.filter(a=>S.appr.done[a.id]).map(a=>[S.appr.done[a.id].at,a.agent,a.space,S.appr.done[a.id].tx,S.appr.done[a.id].kind]).concat(APPR_LOG);
   return `<div class="sec-h"><h3>Decided today</h3><span class="faint" style="font-size:12px">Append-only log</span></div><div class="aplog">${rows.map(([t,ag,sp,tx,k])=>`<div class="lg-row"><span class="mono faint">${esc(t)}</span>${emb(SP(sp),22)}<span class="tt">${esc(tx)}<small>${AG[ag].name} · ${esc(SP(sp).name)}</small></span><span class="lg-k ${k}">${{read:"Read",rev:"Undoable",irr:"Final",deny:"Denied"}[k]||k}</span></div>`).join("")}</div>`;
 }
 function scrApprovals(ph){
   const L=pendingAppr();
-  const head=`<div class="ph-head"${ph?"":' style="padding:28px 36px 12px"'}><div><div class="cap">${L.length?`${L.length} waiting · nothing runs until you decide`:"All decided"}</div><h1 style="margin-top:6px${ph?"":";font-size:40px"}">Approvals</h1></div></div>`;
+  const head=`<div class="ph-head"${ph?"":' style="padding:28px 36px 12px"'}>${ph?`<button class="round" data-go="today" aria-label="Back to Today">${ic("chevL")}</button>`:""}<div style="flex:1"><div class="cap">${L.length?`${L.length} waiting · nothing runs until you decide`:"All decided"}</div><h1 style="margin-top:6px${ph?"":";font-size:40px"}">Approvals</h1></div></div>`;
   const list=L.length?L.map(a=>apCard(a,ph)).join(""):`<div class="empty-c">${ic("shield",28)}<b>No agent is waiting on you.</b><span>Sends, posts, payments and anything that can't be undone stop here first. Changes you allowed run without asking and show in the log.</span></div>`;
   if(ph)return `${head}<div class="ph-pad" style="padding-top:0">${apSeg("approvals")}<div class="aplistw">${list}</div>${apLog()}</div>`;
   return `${head}<div class="ap-desk"><div style="min-width:0">${apSeg("approvals")}<div class="aplistw">${list}</div></div><aside class="ap-side">${apLog()}<div class="ctx-card" style="margin-top:20px"><div class="bd"><b style="font-size:16px">How approvals work</b><span class="muted" style="font-size:13px">Each card is built from the exact tool call, not a summary. Anything that sends, posts, pays, shares or deletes always asks. A run that read email or web pages always asks too, even for changes you could undo.</span></div></div></aside></div>`;
@@ -2166,13 +2295,14 @@ function screenHtml(ph){
   switch(S.screen){case"today":return scrToday(ph);case"triage":return scrTriage(ph);case"drafts":return scrDrafts(ph);case"spaces":return scrSpaces(ph);case"space":return scrSpace(ph);case"capture":return scrCapture(ph);case"onboarding":return scrOnb(ph);case"spend":return scrSpend(ph);
    case"approvals":return scrApprovals(ph);case"chat":return scrChat(ph);case"weekly":return scrWeekly(ph);case"templates":return scrTemplates(ph);case"install":return scrInstall(ph);case"creator":return scrCreator(ph);case"share":return scrShare(ph);}
 }
-const navOf=s=>({triage:"today",chat:"today",weekly:"today",capture:"today",space:"spaces",install:"templates",creator:"templates",share:"spaces",drafts:"approvals"}[s]||s);
-const TABS=[["today","Today","today"],["spaces","Spaces","spaces"],["templates","Templates","sparkline"],["approvals","Approvals","shield"],["spend","Spend","coin"]];
+const navOf=s=>({triage:"today",chat:"today",weekly:"today",capture:"today",approvals:"today",spend:"today",space:"spaces",install:"templates",creator:"templates",share:"spaces"}[s]||s);
+const deskNav=s=>({triage:"today",weekly:"today",capture:"today",space:"spaces",install:"templates",creator:"templates",share:"spaces"}[s]||s);
+const TABS=[["today","Today","today"],["spaces","Spaces","spaces"],["capture","Capture","mic"],["drafts","Drafts","drafts"],["templates","Templates","sparkline"]];
 function apCount(){return pendingAppr().length+draftList().length;}
 function tabbar(){
-  const n=apCount(),cur=navOf(S.screen);
+  const n=draftList().length,cur=navOf(S.screen);
   const T=TABS,ti=Math.max(0,T.findIndex(t=>t[0]===cur)),from=S.prevTab??ti;S.prevTab=ti;
-  return `<nav class="tabbar" aria-label="Main"><div class="tabs" style="--tn:${T.length}"><i class="tab-ind" data-from="${from}" data-to="${ti}" style="--ti:${from}" aria-hidden="true"></i>${T.map(([id,l,icn])=>`<button data-go="${id}" ${cur===id?'aria-current="page"':""}>${ic(icn,20)}<span>${l}</span>${id==="approvals"&&n?`<span class="dot num">${n}</span>`:""}</button>`).join("")}</div><button class="cap-btn" data-go="capture" aria-label="Capture by voice">${ic("mic",26)}</button></nav>`;
+  return `<nav class="tabbar" aria-label="Main"><div class="tabs" style="--tn:${T.length}"><i class="tab-ind" data-from="${from}" data-to="${ti}" style="--ti:${from}" aria-hidden="true"></i>${T.map(([id,l,icn])=>id==="capture"?`<button class="tab-cap" data-go="capture" aria-label="Capture by voice"><span class="cb">${ic("mic",24)}</span></button>`:`<button data-go="${id}" ${cur===id?'aria-current="page"':""}>${ic(icn,20)}<span>${l}</span>${id==="drafts"&&n?`<span class="dot num">${n}</span>`:""}</button>`).join("")}</div></nav>`;
 }
 /* presentation: tabs = today/spaces/approvals/spend (+drafts as a segment); push = triage, space, install; modal with own close = chat, weekly, templates, capture; one-way door = onboarding */
 const MODAL=["capture","onboarding","triage","space","chat","weekly","install","creator","share"];
@@ -2194,10 +2324,10 @@ function phoneShell(inner,mode){
    ${noTabs?"":tabbar()}${S.screen==="space"&&S.state==="normal"?spaceChat(SP(S.spaceId)):""}${toastHtml()}${sheetHtml()}</div>`;
 }
 function deskShell(inner){
-  const cur=navOf(S.screen),open=openCards().length,n=apCount();
-  const N=[["today","Today","today",open?String(open):""],["spaces","Spaces","spaces",""],["templates","Templates","sparkline",""],["approvals","Approvals","shield",n?String(n):""],["spend","Spend","coin",""]];
+  const cur=deskNav(S.screen),open=openCards().length,n=pendingAppr().length,nd=draftList().length;
+  const N=[["today","Today","today",open?String(open):""],["drafts","Drafts","drafts",nd?String(nd):""],["approvals","Approvals","shield",n?String(n):""],["chat","Chat","chat",""],["spaces","Spaces","spaces",""],["templates","Templates","sparkline",""],["spend","Spend","coin",""]];
   return `<div class="desk"><nav class="side" aria-label="Main"><div class="brand"><span class="brand-mark">L</span><b>Later</b></div>
-   ${N.map(([id,l,icn,c])=>`<button class="nav-i" data-go="${id}" ${cur===id?'aria-current="page"':""}>${ic(icn,20)}<span>${l}</span>${c?`<span class="n num ${id==="approvals"?"hot":""}">${c}</span>`:""}</button>`).join("")}
+   ${N.map(([id,l,icn,c])=>`<button class="nav-i" data-go="${id}" ${cur===id?'aria-current="page"':""}>${ic(icn,20)}<span>${l}</span>${c?`<span class="n num ${id==="approvals"||id==="drafts"?"hot":""}">${c}</span>`:""}</button>`).join("")}
    <button class="capture-d" data-go="capture">${ic("mic",18)} Capture</button>
    <div class="cap side-h">Focus this week</div>
    ${SPACES.filter(s=>s.focus).map(s=>`<button class="nav-i" data-space="${s.id}" ${S.screen==="space"&&S.spaceId===s.id?'aria-current="page"':""}>${emb(s,24)}<span>${esc(s.name)}</span>${s.needs?`<span class="n num">${s.needs}</span>`:""}</button>`).join("")}
@@ -2263,7 +2393,7 @@ function decide(id,label,after){
   const el=document.querySelector(`.dc.front[data-card="${id}"]`);
   const fin=()=>{S.done[id]=label;S.more=null;if(S.focusCard===id)S.focusCard=null;S.settle=true;after&&after();toast(label,()=>{delete S.done[id];S.focusCard=id;S.settle=true;render();});};
   const nb=document.querySelector('.dc.b1');nb&&nb.classList.add('promote');
-  if(el&&!reduced()){el.style.transition="transform 300ms cubic-bezier(.4,0,.8,.4), opacity 300ms";el.style.transform="translate(70%,-6%) rotate(9deg)";el.style.opacity="0";setTimeout(fin,280);}else fin();
+  if(el&&!reduced()){el.classList.add("leaving");el.style.transition="transform 300ms cubic-bezier(.4,0,.8,.4), opacity 300ms";el.style.transform="translate(70%,-6%) rotate(9deg)";el.style.opacity="0";setTimeout(fin,280);}else fin();
 }
 function cardAct(id,act){
   const [k,...rest]=act.split(":");const v=rest.join(":");
