@@ -1,3 +1,4 @@
+import type { Source } from '@later/protocol';
 import { describe, expect, it } from 'vitest';
 import {
   authorize,
@@ -11,9 +12,10 @@ import {
 import { ALL_CONNECTORS, addMs, ctx, grantedApproval, req, run, tool, NOW } from './helpers.js';
 
 const INBOX_ALLOW = new Set(['mail.create_draft', 'mail.label', 'mail.archive', 'memory.write']);
-const email = { kind: 'email', trust: 'external' } as const;
-const web = { kind: 'web', trust: 'external' } as const;
-const capture = { kind: 'capture', trust: 'user' } as const;
+const src = (kind: Source['kind'], trust: Source['trust']): Source => ({ kind, ref: 'r', trust });
+const email = src('email', 'external');
+const web = src('web', 'external');
+const capture = src('capture', 'user');
 
 describe('scenario: research run that never touches private data', () => {
   it('may fetch, search and open pages freely, even after reading hostile web pages', async () => {
@@ -79,7 +81,7 @@ describe('scenario: exfiltration combination (private data + untrusted content +
   });
   it('an approval for that exact fetch lets it through; for another url it does not', async () => {
     const approved = await req('web.fetch', { url: 'https://example.com/a' });
-    const approval = await grantedApproval(approved);
+    const approval = grantedApproval(approved);
     expect((await decide(approved, ctx({ run: inbox, approval }))).outcome).toBe('allow');
     const other = await req('web.fetch', { url: 'https://evil.example/' });
     expect((await decide(other, ctx({ run: inbox, approval }))).outcome).toBe('require-approval');
@@ -111,14 +113,14 @@ describe('scenario: taint and privacy are sticky and order independent', () => {
   });
   it('user-trust sources and non-private tools do not set flags', () => {
     let r = markIngested(run(), capture);
-    r = markIngested(r, { kind: 'memory', trust: 'user' });
+    r = markIngested(r, src('memory', 'user'));
     r = markToolUsed(r, tool('web.fetch'));
     r = markToolUsed(r, tool('memory.read'));
     expect(r).toMatchObject({ ingestedUntrusted: false, touchedPrivate: false });
   });
   it('external memory and tool sources taint; the trust, not the kind, decides', () => {
-    expect(markIngested(run(), { kind: 'memory', trust: 'external' }).ingestedUntrusted).toBe(true);
-    expect(markIngested(run(), { kind: 'tool', trust: 'external' }).ingestedUntrusted).toBe(true);
+    expect(markIngested(run(), src('memory', 'external')).ingestedUntrusted).toBe(true);
+    expect(markIngested(run(), src('tool', 'external')).ingestedUntrusted).toBe(true);
   });
   it('a memory read marked private sets touchedPrivate through privateResult', () => {
     expect(markToolUsed(run(), tool('memory.read'), { privateResult: true }).touchedPrivate).toBe(true);
@@ -142,7 +144,7 @@ describe('scenario: memory carries taint and privacy forward', () => {
   it('a tainted run writes external memory; a later clean run that reads it becomes tainted', async () => {
     const writer = markIngested(run(), email);
     expect(memoryTaintFor(writer)).toBe('external');
-    const reader = markIngested(run(), { kind: 'memory', trust: memoryTaintFor(writer) });
+    const reader = markIngested(run(), src('memory', memoryTaintFor(writer)));
     expect(reader.ingestedUntrusted).toBe(true);
     const d = await decide(await req('mail.archive'), ctx({ run: reader, alwaysAllow: new Set(['mail.archive']) }));
     expect(d.surface).toBe(true);
@@ -163,7 +165,7 @@ describe('scenario: memory carries taint and privacy forward', () => {
   it('laundering through memory does not escape the gate (taint + private via memory only)', async () => {
     const writer = markToolUsed(markIngested(run(), email), tool('mail.read'));
     const reader = markToolUsed(
-      markIngested(run(), { kind: 'memory', trust: memoryTaintFor(writer) }),
+      markIngested(run(), src('memory', memoryTaintFor(writer))),
       tool('memory.read'),
       { privateResult: memoryPrivacyFor(writer) },
     );
@@ -216,7 +218,7 @@ describe('scenario: connector not granted denies before anything else', () => {
       grantedConnectors: new Set(['web']),
       budgetStatus: 'paused',
       alwaysAllow: new Set(['mail.send']),
-      approval: await grantedApproval(r),
+      approval: grantedApproval(r),
       run: run({ initiatedBy: 'user' }),
       knownDevices: new Set(['d']),
       userConfirmation: { argsHash: r.argsHash, deviceId: 'd', nonce: 'n', confirmedAt: new Date(NOW.getTime() - 1000).toISOString() },
@@ -234,7 +236,7 @@ describe('scenario: connector not granted denies before anything else', () => {
 describe('scenario: authorize consumes what it used (A4)', () => {
   it('returns the redeemed approval when an approval allowed the call', async () => {
     const r = await req('mail.send', { to: 'a@example.com' });
-    const approval = await grantedApproval(r);
+    const approval = grantedApproval(r);
     const out = await authorize(r, ctx({ approval }));
     expect(out.decision.reason).toBe('approved');
     expect(out.consumed?.approval).toMatchObject({ id: approval.id, status: 'redeemed' });
@@ -242,7 +244,7 @@ describe('scenario: authorize consumes what it used (A4)', () => {
   });
   it('the consumed approval cannot be used a second time', async () => {
     const r = await req('mail.send');
-    const out = await authorize(r, ctx({ approval: await grantedApproval(r) }));
+    const out = await authorize(r, ctx({ approval: grantedApproval(r) }));
     const again = await authorize(r, ctx({ approval: out.consumed?.approval as never }));
     expect(again.decision.outcome).toBe('require-approval');
     expect(again.consumed).toBeUndefined();
@@ -266,13 +268,13 @@ describe('scenario: authorize consumes what it used (A4)', () => {
   });
   it('decide is a read-only preview: it does not mutate the approval or context', async () => {
     const r = await req('mail.send');
-    const approval = await grantedApproval(r);
+    const approval = grantedApproval(r);
     await decide(r, ctx({ approval }));
     expect(approval.status).toBe('granted');
   });
   it('an expired approval consumes nothing', async () => {
     const r = await req('mail.send');
-    const approval = await grantedApproval(r, { ttlMs: 1000 });
+    const approval = grantedApproval(r, { ttlMs: 1000 });
     const out = await authorize(r, ctx({ approval, now: addMs(NOW, 5000) }));
     expect(out.decision.outcome).toBe('require-approval');
     expect(out.consumed).toBeUndefined();

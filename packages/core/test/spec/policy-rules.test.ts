@@ -5,6 +5,7 @@ import {
   authorize,
   decide,
   type Decision,
+  type DeviceConfirmation,
   type PolicyContext,
   type RunContext,
   type ToolRequest,
@@ -24,8 +25,12 @@ interface Row {
   surface?: boolean;
 }
 
-const confirmation = (hash: string, over: Record<string, unknown> = {}): PolicyContext['userConfirmation'] =>
-  ({ argsHash: hash, deviceId: 'dev1', nonce: 'n1', confirmedAt: iso(addMs(NOW, -1000)), ...over }) as PolicyContext['userConfirmation'];
+const confirmation = (hash: string): DeviceConfirmation => ({
+  argsHash: hash,
+  deviceId: 'dev1',
+  nonce: 'n1',
+  confirmedAt: iso(addMs(NOW, -1000)),
+});
 
 const rows: Row[] = [
   // Rule 1
@@ -36,7 +41,7 @@ const rows: Row[] = [
   // Rule 2
   { name: 'r2 paused blocks reversible-write', tool: 'mail.archive', over: { budgetStatus: 'paused', alwaysAllow: new Set(['mail.archive']) }, outcome: 'deny', reason: 'budget-paused' },
   { name: 'r2 paused blocks irreversible', tool: 'mail.send', over: { budgetStatus: 'paused' }, outcome: 'deny', reason: 'budget-paused' },
-  { name: 'r2 paused blocks irreversible even with a valid approval', tool: 'mail.send', over: async () => ({ budgetStatus: 'paused', approval: await grantedApproval(await req('mail.send')) }), outcome: 'deny', reason: 'budget-paused' },
+  { name: 'r2 paused blocks irreversible even with a valid approval', tool: 'mail.send', over: async () => ({ budgetStatus: 'paused', approval: grantedApproval(await req('mail.send')) }), outcome: 'deny', reason: 'budget-paused' },
   { name: 'r2 paused does not block read', tool: 'mail.read', over: { budgetStatus: 'paused' }, outcome: 'allow', reason: 'read-only' },
   { name: 'r2 warned does not block writes', tool: 'mail.archive', over: { budgetStatus: 'warned', alwaysAllow: new Set(['mail.archive']) }, outcome: 'allow', reason: 'always-allowed' },
   // Rule 3
@@ -51,13 +56,13 @@ const rows: Row[] = [
   { name: 'r3 non-egress private read, tainted and private', tool: 'mail.read', over: { run: both }, outcome: 'allow', reason: 'read-only' },
   { name: 'r3 browser.read, tainted and private', tool: 'browser.read', over: { run: both }, outcome: 'allow', reason: 'read-only' },
   // Rule 4
-  { name: 'r4 valid approval allows irreversible', tool: 'mail.send', over: async () => ({ approval: await grantedApproval(await req('mail.send')) }), outcome: 'allow', reason: 'approved' },
-  { name: 'r4 valid approval allows exfiltration read', tool: 'web.fetch', over: async () => ({ run: both, approval: await grantedApproval(await req('web.fetch')) }), outcome: 'allow', reason: 'approved' },
-  { name: 'r4 valid approval allows reversible-write', tool: 'mail.label', over: async () => ({ approval: await grantedApproval(await req('mail.label')) }), outcome: 'allow', reason: 'approved' },
-  { name: 'r4 approval for different args falls through', tool: 'mail.send', over: async () => ({ approval: await grantedApproval(await req('mail.send', { id: 2 })) }), outcome: 'require-approval', reason: 'irreversible' },
-  { name: 'r4 approval for different tool falls through', tool: 'mail.send', over: async () => ({ approval: await grantedApproval(await req('mail.delete')) }), outcome: 'require-approval', reason: 'irreversible' },
-  { name: 'r4 approval for different Space falls through', tool: 'mail.send', over: async () => ({ approval: await grantedApproval(await req('mail.send'), { spaceId: 'space_other' }) }), outcome: 'require-approval', reason: 'irreversible' },
-  { name: 'r4 expired approval falls through', tool: 'mail.send', over: async () => ({ approval: await grantedApproval(await req('mail.send'), { ttlMs: 1000 }), now: addMs(NOW, 1000) }), outcome: 'require-approval', reason: 'irreversible' },
+  { name: 'r4 valid approval allows irreversible', tool: 'mail.send', over: async () => ({ approval: grantedApproval(await req('mail.send')) }), outcome: 'allow', reason: 'approved' },
+  { name: 'r4 valid approval allows exfiltration read', tool: 'web.fetch', over: async () => ({ run: both, approval: grantedApproval(await req('web.fetch')) }), outcome: 'allow', reason: 'approved' },
+  { name: 'r4 valid approval allows reversible-write', tool: 'mail.label', over: async () => ({ approval: grantedApproval(await req('mail.label')) }), outcome: 'allow', reason: 'approved' },
+  { name: 'r4 approval for different args falls through', tool: 'mail.send', over: async () => ({ approval: grantedApproval(await req('mail.send', { id: 2 })) }), outcome: 'require-approval', reason: 'irreversible' },
+  { name: 'r4 approval for different tool falls through', tool: 'mail.send', over: async () => ({ approval: grantedApproval(await req('mail.delete')) }), outcome: 'require-approval', reason: 'irreversible' },
+  { name: 'r4 approval for different Space falls through', tool: 'mail.send', over: async () => ({ approval: grantedApproval(await req('mail.send'), { spaceId: 'space_other' }) }), outcome: 'require-approval', reason: 'irreversible' },
+  { name: 'r4 expired approval falls through', tool: 'mail.send', over: async () => ({ approval: grantedApproval(await req('mail.send'), { ttlMs: 1000 }), now: addMs(NOW, 1000) }), outcome: 'require-approval', reason: 'irreversible' },
   { name: 'r4 pending approval falls through', tool: 'mail.send', over: async () => {
     const { requestApproval } = await import('../../src/index.js');
     const r = await req('mail.send');
@@ -117,7 +122,7 @@ describe('request integrity (A1)', () => {
   });
   it('tampering is denied even when a valid approval for the claimed hash exists', async () => {
     const good = await req('mail.send', { to: 'a@example.com' });
-    const approval = await grantedApproval(good);
+    const approval = grantedApproval(good);
     const forged: ToolRequest = { tool: good.tool, args: { to: 'evil@example.net' }, argsHash: good.argsHash };
     const d = await decide(forged, ctx({ approval }));
     expect(d).toMatchObject({ outcome: 'deny', reason: 'request-tampered' });
@@ -150,7 +155,7 @@ describe('request integrity (A1)', () => {
   });
   it('authorize also denies and consumes nothing for a tampered request', async () => {
     const good = await req('mail.send', { to: 'a' });
-    const a = await authorize({ tool: good.tool, args: { to: 'b' }, argsHash: good.argsHash }, ctx({ approval: await grantedApproval(good) }));
+    const a = await authorize({ tool: good.tool, args: { to: 'b' }, argsHash: good.argsHash }, ctx({ approval: grantedApproval(good) }));
     expect(a.decision.outcome).toBe('deny');
     expect(a.consumed).toBeUndefined();
   });

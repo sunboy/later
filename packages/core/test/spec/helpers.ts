@@ -49,10 +49,10 @@ export const ctx = (over: Partial<PolicyContext> = {}): PolicyContext => ({
 export const req = (t: ToolDescriptor | string, args: unknown = { id: 1 }): Promise<ToolRequest> =>
   buildRequest(typeof t === 'string' ? tool(t) : t, args);
 
-export async function grantedApproval(
+export function grantedApproval(
   r: ToolRequest,
   over: { spaceId?: string; id?: string; ttlMs?: number; risk?: 'exfiltration' | 'irreversible' | 'reversible-write' } = {},
-): Promise<Approval> {
+): Approval {
   const input = {
     spaceId: over.spaceId ?? SPACE,
     tool: r.tool.name,
