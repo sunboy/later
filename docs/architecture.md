@@ -157,6 +157,24 @@ Risks: scope creep into project management; mis-filing eroding trust; model-writ
 
 Spike R8 (Sonnet): on-device recognition quality and limits across iOS, Android and desktop browsers, and Workers AI Whisper cost per minute against the free allowance.
 
+## 4e. Connecting Google accounts (added 2026-11-11, replaces the Gmail part of D8)
+
+Findings:
+- Google requires a security assessment (CASA), renewed yearly, when restricted Gmail data is stored or transmitted on servers [V]. No device-only exemption was found, and whether a user's own cloud account counts as a server is unconfirmed [?].
+- OpenClaw, Hermes Agent and NanoClaw all make each user create their own Google Cloud OAuth client; none ships a shared client or uses a broker [V]. Their users' main complaint is tokens dying after 7 days in Google's Testing mode [S].
+- Token-vault services mostly store tokens for the developer's own verified client (Nango, Clerk, WorkOS, Auth0, Klavis). Vendors with their own verified Google app: Nylas, Truto ($10 per connection per month), Unipile, all paid, all with mail passing through the vendor [V]. Composio says its managed app carries verification and has a free tier of 10k calls a month, with mail flowing through Composio [V, vendor blog]; whether each end user can hold their own free account is unconfirmed [?].
+- Nothing found is both free and keeps the token out of third-party hands, other than the user's own credentials.
+- `gmail.send` and (reportedly) Calendar scopes are sensitive, not restricted: verification without CASA [V / S].
+
+**D21. Three connection paths, chosen by the user at onboarding, each labelled with who can see the mail.**
+1. **Default — app password over IMAP/SMTP.** No Google review, no cloud project; reads, drafts, sends and labels. Needs 2-Step Verification, and is unavailable on some Workspace and Advanced Protection accounts. The password is stored as a secret in the user's own Cloudflare account. New-mail detection is by scheduled polling.
+2. **Advanced — the user's own Google OAuth client**, with a guided wizard. Needed for push notifications and for accounts where app passwords are blocked.
+3. **Easy (later) — a broker with its own verified app**, using the user's own broker account where possible, clearly disclosed as passing through that company.
+- **Calendar in v1 is read-only via the calendar's secret iCal address**, which needs no OAuth and is enough for meeting briefs. Writing events waits for path 2 or 3.
+- **Commercial path:** our own verified Google app with CASA, offered as a paid one-click connection.
+
+Spike R2 is now: IMAP and SMTP from a Worker over TCP sockets on the free plan (feasibility, polling cost, draft and label operations); the exact app-password steps and where they fail; whether an unverified app published to production keeps refresh tokens alive; whether end users can hold their own free Composio account; current CASA cost and effort for our own app.
+
 ## 5. Open risks and the spikes that close them
 
 | # | Risk | Spike (owner) |
