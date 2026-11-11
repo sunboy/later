@@ -1361,6 +1361,9 @@ input.sw:checked::after{transform:translateX(20px)}
 .rmx-sel{margin-top:6px;height:40px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:var(--g-fx);padding:0 10px;font-size:0.875rem;max-width:100%}
 .rmx-row .tt{gap:2px}.rmx-row.off-r b{color:var(--ink-3)}
 .rmx-diff s{color:var(--ink-3)}
+.rmx-d{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:32px;padding:0 36px 120px;max-width:1100px;overflow:auto;height:calc(100% - 96px)}
+.rmx-aside{display:grid;gap:12px;align-content:start}
+.ins-foot .btn.wide{max-width:420px}
 .remix-b{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:var(--r-lg);background:var(--accent-bg);color:var(--accent);font-size:0.8125rem;font-weight:500;margin-top:14px}
 .sh-steps{display:flex;gap:6px;margin:0 0 16px}
 .sh-steps i{flex:1;height:4px;border-radius:var(--r-xs);background:var(--line-2)}
@@ -2453,7 +2456,10 @@ function scrRemix(ph){
    <div class="panel rmx-diff" style="padding:4px 16px">${diff.length?diff.map(([k,a,b])=>`<div class="ins-row"><span class="tt"><b>${esc(k)}</b><small><s>${esc(a)}</s> → ${esc(b)}</small></span></div>`).join(""):`<div class="ins-row"><span class="tt"><b>Nothing yet</b><small>Your copy matches the original.</small></span></div>`}</div>
    <div class="src" style="margin-top:12px">${ic("shield",14)} Same reviewed permissions. Your Space starts paused.</div>`;
    foot=`<button class="btn sec" data-act="rmx-back">Back</button><button class="btn pri" style="flex:1" data-act="rmx-save">${ic("pause",16)} Save as my Space</button>`;}
-  return `<div class="ins">${head}<div class="ph-pad" style="padding-top:0;padding-bottom:120px;${ph?"":"max-width:720px;margin:0 auto;width:100%"}">${body}</div><div class="ins-foot" style="${ph?"":"justify-content:center"}">${foot}</div></div>`;
+  if(ph)return `<div class="ins">${head}<div class="ph-pad" style="padding-top:0;padding-bottom:120px">${body}</div><div class="ins-foot">${foot}</div></div>`;
+  const aside=`<aside class="rmx-aside"><span class="cap">Your Space, as it will be created</span>${ftile({id:"rmx",name:R.name||m.prev,kind:t.kind,icon:t.icon,c:t.c,motif:t.motif,st:"paused",needs:0,status:"Your remix of "+t.name+". Paused until you turn it on.",asof:"now",next:"Cap $"+R.cap+" a month"}).replace('<button class="ftile"','<div class="ftile"').replace(/<\/button>$/,"</div>")}
+   <div class="panel rmx-diff" style="padding:4px 16px"><div class="ins-row"><span class="tt"><b>Changes so far</b><small>${diff.length?diff.length+" from the original":"None yet"}</small></span></div>${diff.map(([k,a,b])=>`<div class="ins-row"><span class="tt"><b>${esc(k)}</b><small><s>${esc(a)}</s> → ${esc(b)}</small></span></div>`).join("")}</div></aside>`;
+  return `<div class="ins">${head.replace('class="ph-head"','class="ph-head" style="padding:24px 36px 12px"')}<div class="rmx-d"><div style="min-width:0">${body}</div>${aside}</div><div class="ins-foot" style="justify-content:flex-end;padding-right:36px">${foot}</div></div>`;
 }
 function rmxSave(){
   const R=S.rmx,t=TPL.find(x=>x.id===R.id),m=tplManifest(t),id="r"+Date.now().toString(36),nm=R.name.trim()||m.prev,n=rmxDiff(t,m).length;
