@@ -144,6 +144,19 @@ Architecture consequences:
 
 Risks: scope creep into project management; mis-filing eroding trust; model-written status lines read as fact (hence the "as of" time and source links); cost growing with the number of active Spaces.
 
+## 4d. Voice capture (added 2026-11-11, founder direction)
+
+**D20. Ramble-to-note voice capture is in v1, as the main input to Capture.** The pattern is borrowed from voice-note apps such as AudioPen (speak loosely, get a clean note); the branding and design are not.
+
+- Flow: record → transcript → cleaned note in the user's voice → the agent extracts tasks, dates and people → proposes cards and a Space to file them in → user confirms or corrects.
+- Our difference: the note becomes filed, actionable cards, not just text. The raw transcript is always kept alongside the cleaned note.
+- Transcription, in order of preference: on-device speech recognition in the client (free, private); Whisper on Workers AI in the user's own Cloudflare account (free allowance of 10k Neurons/day [V], per-minute cost unverified); never a service we host.
+- Rewrite and extraction run on Haiku. Cost is shown on the Space's meter.
+- Recording works offline on the phone and syncs later.
+- Still out of v1: spoken conversation with agents, and phone calls.
+
+Spike R8 (Sonnet): on-device recognition quality and limits across iOS, Android and desktop browsers, and Workers AI Whisper cost per minute against the free allowance.
+
 ## 5. Open risks and the spikes that close them
 
 | # | Risk | Spike (owner) |
