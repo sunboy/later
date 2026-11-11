@@ -194,6 +194,18 @@ Findings: Cloudflare's API sends no CORS headers, so a web page cannot install i
 
 This amends D10: the web app is still the first client, but it is served by the user's backend after install; it cannot perform the install itself.
 
+## 4g. Runtime constraints (added 2026-11-11, from `docs/spikes/runtime-feasibility.md`)
+
+No blocker found. The Agents SDK ran locally with state, SQL and scheduling; hibernated Spaces cost nothing. Untested without real accounts: connecting to Gmail's mail servers from Cloudflare's network, and push delivery.
+
+**D25. Runtime rules.**
+- Durable Object duration is the first free-plan limit to break (modelled at 11–49% of the daily allowance), and mail polling is its largest consumer. One account-level mail poller, not one per Space; adaptive interval; one batched triage model call per poll.
+- Cron Workers do nothing except wake a Durable Object. All model calls run inside Durable Objects, started from an alarm, kept alive for the duration, with a checkpoint after every turn.
+- Mail access sits behind a `MailTransport` interface (IMAP first; Gmail API and broker later).
+- First run performs a connectivity self-test (mail servers, Anthropic API, push) and reports plainly what failed.
+- Secrets: Anthropic key, push signing key and a master key as Worker secrets (write-only after install); connector credentials encrypted with the master key in Durable Object storage.
+- Web push needs iOS 16.4+ and a Home Screen install; onboarding must walk the user through that.
+
 ## 5. Open risks and the spikes that close them
 
 | # | Risk | Spike (owner) |

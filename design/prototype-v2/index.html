@@ -1200,11 +1200,84 @@ input.sw:checked::after{transform:translateX(20px)}
 .round{position:relative}
 .xlink{display:flex;gap:10px;align-items:center;width:100%;min-height:48px;padding:0 14px;border-radius:var(--r-lg);margin:0 0 14px;font-size:14px;font-weight:600;text-align:left}
 .xlink .sp{flex:1}
+/* =====================================================================
+   GLASS v5 (pass 5: light theme conviction, three type tiers, calm bleed)
+   Light: a mid-tone stone base with clear, saturated colour fields; cards are markedly lighter than the
+   backdrop (fill .56 top / .66 / .80 under text) with a crisp dark outline and a two-part shadow, so depth
+   comes from lightness contrast as well as blur. Dark: deeper fields, denser text tint, lower saturation boost.
+   Type tiers (inside glass): primary --ink 600, secondary --ink-2 400, tertiary --ink-3 400 at a smaller
+   size. Text sitting directly on the raw backdrop uses only the primary ink (size and weight carry the
+   hierarchy there), because secondary greys cannot hold AA on saturated colour.
+   Tiles: the cover fades into a body tinted by the tile's own hue, never into the backdrop.
+   ===================================================================== */
+:root{
+  --ink-2:#47433C; --ink-3:#655F56;
+  --g-base:#D9D4CB; --g-liftk:22%;
+  --g-ft:rgba(255,255,255,.48); --g-f:rgba(255,255,255,.58); --g-fx:rgba(255,255,255,.72);
+  --g-chrome:rgba(255,255,255,.62); --g-sheet:rgba(255,255,255,.82);
+  --g-line:rgba(40,30,20,.13); --g-hair:rgba(255,255,255,.7); --g-spec:rgba(255,255,255,.9);
+  --g-sh-k:0 1px 2px rgba(40,28,16,.12),0 6px 14px -8px rgba(40,28,16,.22);
+  --g-tile-a:rgba(255,255,255,.62); --g-tile-b:rgba(255,255,255,.8);
+  --g-sat:1.5; --g-scrim:62%;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --ink-2:#CAC5BB; --ink-3:#A39E93;
+  --g-base:#07070A; --g-liftk:46%;
+  --g-ft:rgba(14,14,20,.34); --g-f:rgba(14,14,20,.46); --g-fx:rgba(14,14,20,.64);
+  --g-chrome:rgba(16,16,22,.56); --g-sheet:rgba(20,20,26,.78);
+  --g-line:rgba(255,255,255,.08); --g-hair:rgba(255,255,255,.12); --g-spec:rgba(255,255,255,.2);
+  --g-sh-k:0 1px 2px rgba(0,0,0,.45),0 6px 14px -8px rgba(0,0,0,.5);
+  --g-tile-a:rgba(14,14,20,.62); --g-tile-b:rgba(14,14,20,.78);
+  --g-sat:1.25; --g-scrim:50%;
+}}
+:root[data-theme="dark"]{
+  --ink-2:#CAC5BB; --ink-3:#A39E93;
+  --g-base:#07070A; --g-liftk:46%;
+  --g-ft:rgba(14,14,20,.34); --g-f:rgba(14,14,20,.46); --g-fx:rgba(14,14,20,.64);
+  --g-chrome:rgba(16,16,22,.56); --g-sheet:rgba(20,20,26,.78);
+  --g-line:rgba(255,255,255,.08); --g-hair:rgba(255,255,255,.12); --g-spec:rgba(255,255,255,.2);
+  --g-sh-k:0 1px 2px rgba(0,0,0,.45),0 6px 14px -8px rgba(0,0,0,.5);
+  --g-tile-a:rgba(14,14,20,.62); --g-tile-b:rgba(14,14,20,.78);
+  --g-sat:1.25; --g-scrim:50%;
+}
+/* clearer colour fields: a solid core and a defined falloff */
+.bd-glow::before{background:
+   radial-gradient(34% 30% at 20% 16%,color-mix(in oklab,var(--g1,#E0603A),var(--g-lift) var(--g-liftk)) 0,color-mix(in oklab,var(--g1,#E0603A),var(--g-lift) var(--g-liftk)) 28%,transparent 76%),
+   radial-gradient(36% 32% at 82% 36%,color-mix(in oklab,var(--g2,#1B7FB5),var(--g-lift) var(--g-liftk)) 0,color-mix(in oklab,var(--g2,#1B7FB5),var(--g-lift) var(--g-liftk)) 26%,transparent 76%),
+   radial-gradient(38% 30% at 30% 72%,color-mix(in oklab,var(--g3,#D33F7A),var(--g-lift) var(--g-liftk)) 0,color-mix(in oklab,var(--g3,#D33F7A),var(--g-lift) var(--g-liftk)) 24%,transparent 76%),
+   radial-gradient(30% 26% at 80% 86%,color-mix(in oklab,color-mix(in oklab,var(--g1,#E0603A),var(--g2,#1B7FB5)),var(--g-lift) var(--g-liftk)) 0,transparent 74%)}
+/* cards: saturation boost per theme */
+.dc,.tc,.apcard,.ctx-card,.rtile,.mcard,.dr-row,.letter,.note,.xcard,.conn,.lrow,.tpl,.cpin,.cprop,.ins-conn,.mini-c,.panel,.rr,.step,.sk-card,.sk-tile,.sk-row,.quote,.memo,.act,.ftile,.pilebtn .top,.bcol,.bcard,.mem button,.always,.wr-prop,.tc-quote,.cap-alt button,.cap-ex div,.rtn,.newsp .nt,.tpl-url,.creator-h,.sh-col,.sh-link,.pub{
+  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat))}
+.ph-head::before{background:linear-gradient(180deg,color-mix(in oklab,var(--g-base) var(--g-scrim),transparent) 30%,transparent)}
+/* type tiers */
+.cap{color:var(--ink-3)}
+.src{color:var(--ink-3)}
+.tabs button{color:var(--ink-2)}
+.top3 li{gap:12px}
+.top3 b{font-size:16px;font-weight:650;letter-spacing:-.01em;color:var(--ink)}
+.top3 small{display:block;margin-top:3px;font-size:13px;color:var(--ink-3)}
+.dc-title{font-weight:700;letter-spacing:-.025em}
+.dc-kind .cap{letter-spacing:.1em}
+.tc-gist,.tstat{color:var(--ink-2)}
+.tmeta,.rtile .tt small{color:var(--ink-3)}
+/* raw-backdrop text: primary ink only, hierarchy by size and weight */
+.grp-h .faint,.sec-h>.faint,.sec-h>span.faint,.person small,.rail li span,.tb .faint{color:var(--ink)!important;font-weight:500}
+.person small{opacity:1}
+.ph-head .cap{color:var(--ink-2)}
+/* tiles: cover fades into the tile's own hue */
+.ftile .bd,.tpl .bd{background:linear-gradient(180deg,color-mix(in oklab,var(--sc) 26%,var(--g-tile-a)) 0,color-mix(in oklab,var(--sc) 8%,var(--g-tile-b)) 100%)!important}
+.ftile .cv svg.cover,.tpl .cv svg.cover{-webkit-mask-image:linear-gradient(180deg,#000 55%,transparent 100%);mask-image:linear-gradient(180deg,#000 55%,transparent 100%)}
+.ftile .cv,.tpl .cv{background:color-mix(in oklab,var(--sc) 26%,var(--g-tile-a))}
+.desk .tpl.big .bd{background:linear-gradient(90deg,color-mix(in oklab,var(--sc) 22%,var(--g-tile-a)),var(--g-tile-b) 60%)!important}
+.desk .tpl.big .cv{background:color-mix(in oklab,var(--sc) 22%,var(--g-tile-a))}
+/* calmer Brief body in dark: the text tint layer is denser where the list sits */
+.dc .dc-body{background:linear-gradient(180deg,transparent,color-mix(in oklab,var(--g-fx) 60%,transparent) 30%)}
 /* fallbacks */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   :root{--g-ft:var(--surface);--g-f:var(--surface);--g-fx:var(--surface);--g-card:var(--surface);--g-chrome:var(--surface);--g-sheet:var(--surface);--g-spec:transparent} .bd-glow::before{display:none}}
 @media (prefers-reduced-transparency: reduce){
-  :root,:root[data-theme="dark"],:root:not([data-theme="light"]){--g-ft:var(--surface);--g-f:var(--surface);--g-fx:var(--surface);--g-card:var(--surface);--g-chrome:var(--surface);--g-sheet:var(--surface);--g-spec:transparent;--g-ind:var(--sunken)} .bd-glow::before{display:none}
+  :root,:root[data-theme="dark"],:root:not([data-theme="light"]){--g-ft:var(--surface);--g-f:var(--surface);--g-fx:var(--surface);--g-card:var(--surface);--g-chrome:var(--surface);--g-sheet:var(--surface);--g-spec:transparent;--g-ind:var(--sunken);--g-tile-a:var(--surface);--g-tile-b:var(--surface)} .bd-glow::before{display:none}
   .dc.front::after,.tc.front::after,.dc.static::after{display:none}
   .ftile .cv svg.cover,.tpl .cv svg.cover,.ctx-card .cv svg.cover,.newsp .nt .cv svg.cover{-webkit-mask-image:none;mask-image:none}}
 @media (prefers-reduced-motion: reduce){.bd-glow::before{animation:none}}
@@ -2399,7 +2472,7 @@ function tabbar(){
 /* presentation: tabs = today/spaces/approvals/spend (+drafts as a segment); push = triage, space, install; modal with own close = chat, weekly, templates, capture; one-way door = onboarding */
 const MODAL=["capture","onboarding","triage","space","chat","weekly","install","creator","share","remix"];
 function glowCols(){
-  const ids=S.screen==="today"?deckOrder().slice(0,3).map(c=>cs(c).id):["space","share"].includes(S.screen)?[S.spaceId,S.spaceId,S.spaceId]:S.screen==="approvals"?pendingAppr().map(a=>a.space):S.screen==="weekly"?WR.slice(S.wr.idx,S.wr.idx+3).map(w=>w.sp):["templates","install","creator","remix"].includes(S.screen)?(["install","remix"].includes(S.screen)?[S.tpl.sel,S.tpl.sel,"t-yt"]:["t-yt","t-ig","t-trip"]):S.screen==="triage"?TRI.slice(S.tri.idx,S.tri.idx+3).map(t=>t.space):S.screen==="chat"?[chatCard().space,chatCard().space,"japan"]:["house","japan","mum"];
+  const ids=S.screen==="today"?deckOrder().map(c=>cs(c).id).filter(x=>x!=="_all").slice(0,3):["space","share"].includes(S.screen)?[S.spaceId,S.spaceId,S.spaceId]:S.screen==="approvals"?pendingAppr().map(a=>a.space):S.screen==="weekly"?WR.slice(S.wr.idx,S.wr.idx+3).map(w=>w.sp):["templates","install","creator","remix"].includes(S.screen)?(["install","remix"].includes(S.screen)?[S.tpl.sel,S.tpl.sel,"t-yt"]:["t-yt","t-ig","t-trip"]):S.screen==="triage"?TRI.slice(S.tri.idx,S.tri.idx+3).map(t=>t.space):S.screen==="chat"?[chatCard().space,chatCard().space,"japan"]:["house","japan","mum"];
   const col=id=>{const t=TPL.find(x=>x.id===id);if(t)return t.c;const s=id==="_all"?null:SP(id);return s&&s.c?s.c:"#4A4740";};
   const c=[...ids,"house","japan","mum"].slice(0,3).map(col);
   if(["space","share"].includes(S.screen))return `--g1:${c[0]};--g2:${mix(c[0],"#ffffff",.35)};--g3:${mix(c[0],"#000000",.2)}`;
