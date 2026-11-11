@@ -12,6 +12,7 @@
       {
         "kind": "email",
         "ref": "msg_123",
+        "trust": "external",
         "title": "Re: venue"
       }
     ],
@@ -28,6 +29,7 @@
         "source": {
           "kind": "web",
           "ref": "web_1",
+          "trust": "external",
           "url": "https://example.com/news/rates"
         }
       }

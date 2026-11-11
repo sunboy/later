@@ -1275,9 +1275,9 @@ input.sw:checked::after{transform:translateX(20px)}
 /* calmer Brief body in dark: the text tint layer is denser where the list sits */
 .dc .dc-body{background:linear-gradient(180deg,transparent,color-mix(in oklab,var(--g-fx) 60%,transparent) 30%)}
 /* light fields at a fixed OKLCH lightness: full chroma, controlled lightness (vivid, not pastel) */
-:root{--g-L:.80;--g-Lb:.86;--ink-3-bd:var(--ink-2)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink-3-bd:var(--ink-3)}}
-:root[data-theme="dark"]{--ink-3-bd:var(--ink-3)}
+:root{--g-L:.82;--g-Lb:.87;--ink-2-bd:#3A3731;--ink-2-g:#45413A;--ink-3-bd:var(--ink-2-bd)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink-2-bd:#CAC5BB;--ink-2-g:#CAC5BB;--ink-3-bd:#ADA89D}}
+:root[data-theme="dark"]{--ink-2-bd:#CAC5BB;--ink-2-g:#CAC5BB;--ink-3-bd:#ADA89D}
 :root:not([data-theme="dark"]) .bd-glow::before{background:
    radial-gradient(34% 30% at 20% 16%,oklch(from var(--g1,#E0603A) var(--g-L) calc(c*1.05) h) 0,oklch(from var(--g1,#E0603A) var(--g-L) calc(c*1.05) h) 28%,transparent 76%),
    radial-gradient(36% 32% at 82% 36%,oklch(from var(--g2,#1B7FB5) var(--g-L) calc(c*1.05) h) 0,oklch(from var(--g2,#1B7FB5) var(--g-L) calc(c*1.05) h) 26%,transparent 76%),
@@ -1289,11 +1289,13 @@ input.sw:checked::after{transform:translateX(20px)}
    radial-gradient(38% 30% at 30% 72%,color-mix(in oklab,var(--g3,#D33F7A),var(--g-lift) var(--g-liftk)) 0,color-mix(in oklab,var(--g3,#D33F7A),var(--g-lift) var(--g-liftk)) 24%,transparent 76%),
    radial-gradient(30% 26% at 80% 86%,color-mix(in oklab,color-mix(in oklab,var(--g1,#E0603A),var(--g2,#1B7FB5)),var(--g-lift) var(--g-liftk)) 0,transparent 74%)}}
 /* text on the raw backdrop: tertiary steps up to secondary; inside glass all three tiers return */
-.ph-body,.main,.onb-desk{--ink-3:var(--ink-3-bd)}
-.dc,.tc,.apcard,.ctx-card,.rtile,.mcard,.dr-row,.letter,.note,.xcard,.conn,.lrow,.tpl,.cpin,.cprop,.ins-conn,.mini-c,.panel,.rr,.step,.quote,.memo,.act,.ftile,.pilebtn .top,.bcol,.bcard,.mem button,.always,.wr-prop,.tc-quote,.cap-alt button,.cap-ex div,.rtn,.newsp .nt,.tpl-url,.creator-h,.sh-col,.sh-link,.pub,.sheet,.more-menu,.t-list,.t-ctx,.chat-l,.dr-desk .l,.side{--ink-3:var(--ink-3-g)}
-:root{--ink-3-g:#655F56}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink-3-g:#A39E93}}
-:root[data-theme="dark"]{--ink-3-g:#A39E93}
+.ph-body,.main,.onb-desk{--ink-2:var(--ink-2-bd);--ink-3:var(--ink-3-bd)}
+.dc,.tc,.apcard,.ctx-card,.rtile,.mcard,.dr-row,.letter,.note,.xcard,.conn,.lrow,.tpl,.cpin,.cprop,.ins-conn,.mini-c,.panel,.rr,.step,.quote,.memo,.act,.ftile,.pilebtn .top,.bcol,.bcard,.mem button,.always,.wr-prop,.tc-quote,.cap-alt button,.cap-ex div,.rtn,.newsp .nt,.tpl-url,.creator-h,.sh-col,.sh-link,.pub,.sheet,.more-menu,.t-list,.t-ctx,.chat-l,.dr-desk .l,.side{--ink-2:var(--ink-2-g);--ink-3:var(--ink-3-g)}
+:root{--ink-3-g:#58534B}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink-3-g:#ADA89D}}
+:root[data-theme="dark"]{--ink-3-g:#ADA89D}
+.tpl .bd .cap,.tpl .by .faint,.creator-h .faint{color:var(--ink-2)!important}
+.nav-i .n{color:var(--ink-2)}
 /* desktop side lists become chrome glass so their small text sits on a surface */
 .t-list,.t-ctx,.chat-l,.dr-desk .l,.tri-desk .t-list{background:linear-gradient(180deg,color-mix(in oklab,var(--g-chrome),#fff 4%),var(--g-chrome))!important;-webkit-backdrop-filter:blur(var(--g-blur-chrome)) saturate(1.4);backdrop-filter:blur(var(--g-blur-chrome)) saturate(1.4)}
 .ph-head::before{background:linear-gradient(180deg,color-mix(in oklab,var(--g-base) 78%,transparent) 35%,transparent)}
@@ -2234,7 +2236,7 @@ function scrWeekly(ph){
   const ctl=w?`<div class="tri-ctrl wr-ctrl"><button class="tb" data-wract="keep"><span class="c">${ic("x",24,2)}</span>Keep as is</button><button class="tb undo" data-wract="undo" ${S.wr.hist.length?"":"disabled"} aria-label="Undo last decision"><span class="c">${ic("undo",20)}</span>Undo</button><button class="tb big" data-wract="accept"><span class="c">${ic("check",24,2.2)}</span>${WR_VERB[k]}</button></div>`:"";
   const body=`<div class="tri">${head}<div class="tri-stage" id="tri-stage">${stage}</div>${ctl}</div>`;
   if(ph)return body;
-  return `<div class="tri-desk"><aside class="t-list"><h2>This week</h2>${WR.map((x,j)=>`<div class="t-row ${j<i?"is-done":""}" aria-current="${j===i}">${emb(SP(x.sp),32)}<span class="tt"><b>${esc(SP(x.sp).name)}</b><small>${j<i?WR_VERB[S.wr.res[x.sp]]:esc(x.prop.t)}</small></span></div>`).join("")}</aside>${body}<aside class="t-ctx"><div><h2 style="margin:0 0 12px;font-family:var(--f-display);font-size:1.125rem">Keys</h2><div class="keys"><div><span>Accept the proposal</span><kbd>→</kbd></div><div><span>Keep as is</span><kbd>←</kbd></div><div><span>Undo</span><kbd>Z</kbd></div></div></div><div class="ctx-card"><div class="bd"><b>What the review does</b><span class="muted" style="font-size:0.875rem">One card per Space that changed or stalled this week. Accepting a pause or archive takes effect now and can be undone from the Space. A nudge only writes a draft.</span></div></div><div class="src">${ic("coin",14)} Built Sunday 18:00 with Haiku · $0.03</div></aside></div>`;
+  return `<div class="tri-desk"><aside class="t-list"><h2>This week</h2>${WR.map((x,j)=>`<div class="t-row ${j<i?"is-done":""}" aria-current="${j===i}">${emb(SP(x.sp),32)}<span class="tt"><b>${esc(SP(x.sp).name)}</b><small>${j<i?WR_VERB[S.wr.res[x.sp]]:esc(x.prop.t)}</small></span></div>`).join("")}</aside>${body}<aside class="t-ctx"><div><h2 style="margin:0 0 12px;font-family:var(--f-display);font-size:1.125rem">Keys</h2><div class="keys"><div><span>Accept the proposal</span><kbd>→</kbd></div><div><span>Keep as is</span><kbd>←</kbd></div><div><span>Undo</span><kbd>Z</kbd></div></div></div><div class="ctx-card"><div class="bd"><b>What the review does</b><span class="muted" style="font-size:0.875rem">One card per Space that changed or stalled this week. Accepting a pause or archive takes effect now and can be undone from the Space. A nudge only writes a draft.</span></div></div><div class="src" style="color:var(--ink-2)">${ic("coin",14)} Built Sunday 18:00 with Haiku · $0.03</div></aside></div>`;
 }
 function wrCommit(kind){
   const w=WR[S.wr.idx];if(!w)return;
@@ -2396,7 +2398,7 @@ function scrInstall(ph){
   const clsLbl={read:["Read","read"],rev:["Undoable change","rev"],irr:["Can't be undone","irr"]};
   const sec=(t2,inner,sub)=>`<section class="ins-sec"><div class="sec-h" style="margin:0 0 10px"><h3>${t2}</h3>${sub?`<span class="faint" style="font-size:0.75rem">${sub}</span>`:""}</div>${inner}</section>`;
   const head=`<div class="ins-head"><button class="round" data-act="tpl-back" aria-label="All templates">${ic("chevL")}</button><span class="cap">Template · v${esc(t.ver)}</span><span class="sp"></span><button class="btn sec sm" data-act="tpl-remix">${ic("edit",14)} Remix</button><button class="round" aria-label="Share template" data-act="toast:Copied later.app/t/${esc(t.repo)}">${ic("ext",18)}</button></div>`;
-  const hero=`<div class="ins-hero" style="${scv(t)}"><div class="ins-prev">${ftile(prev).replace('<button class="ftile"','<div class="ftile"').replace(/<\/button>$/,"</div>")}</div><div class="ins-tt"><span class="cap">Creates a ${t.kind.toLowerCase()} Space</span><h1>${esc(t.name)}</h1><p class="muted">${esc(t.desc)}</p><button class="ins-creator conn" data-creator="${t.by}">${cav(t.by,36)}<span class="tt"><b>${esc(CREATORS[t.by].n)} ${CREATORS[t.by].ver?`<span class="ver">${ic("check",12,2.6)}</span>`:""}</b><small>${esc(t.installs)} installs · <span class="rv">${ic("shield",11,2.2)} Reviewed by Later</span></small></span>${ic("chevR",16)}</button><label class="ins-name"><span class="cap">Name</span><input id="tpl-name" data-tplname="${t.id}" value="${esc(nm)}"></label></div></div>`;
+  const hero=`<div class="ins-hero" style="${scv(t)}"><div class="ins-prev">${ftile(prev).replace('<button class="ftile"','<div class="ftile"').replace(/<\/button>$/,"</div>")}</div><div class="ins-tt"><span class="cap">Creates ${/^[aeiou]/i.test(t.kind)?"an":"a"} ${t.kind.toLowerCase()} Space</span><h1>${esc(t.name)}</h1><p class="muted">${esc(t.desc)}</p><button class="ins-creator conn" data-creator="${t.by}">${cav(t.by,36)}<span class="tt"><b>${esc(CREATORS[t.by].n)} ${CREATORS[t.by].ver?`<span class="ver">${ic("check",12,2.6)}</span>`:""}</b><small>${esc(t.installs)} installs · <span class="rv">${ic("shield",11,2.2)} Reviewed by Later</span></small></span>${ic("chevR",16)}</button><label class="ins-name"><span class="cap">Name</span><input id="tpl-name" data-tplname="${t.id}" value="${esc(nm)}"></label></div></div>`;
   const when=`<ol class="rail">${[["Now","Space created and paused. Nothing runs and nothing is read."],["When you turn it on",m.first+" Each change below asks first unless you allow it."],[`At $${(cap*.8).toFixed(2)}`,"You get a warning card in Today."],[`At $${cap.toFixed(2)}`,"Every agent in this Space pauses until Dec 1."]].map(([a,b],i)=>`<li class="${i===0?"on":""}"><b>${a}</b><span>${b}</span></li>`).join("")}</ol>`;
   const conns=m.conns.map(([n,icn,sc,warn])=>`<div class="ins-conn"><div class="ins-ch">${ic(icn,18)}<b>${n}</b></div>${sc.map(([k,x])=>`<div class="ins-sc"><span class="lg-k ${clsLbl[k][1]}">${clsLbl[k][0]}</span><span>${esc(x)}</span></div>`).join("")}${warn?`<div class="untr-n">${ic("globe",14)}<span>${esc(warn)}</span></div>`:""}</div>`).join("");
   const perms=`<div class="perm3"><div class="pm read"><b>Read</b><span>Runs without asking</span></div><div class="pm rev"><b>Undoable changes</b><span>Asks first. You can choose Always allow later.</span></div><div class="pm irr"><b>Can't be undone</b><span>${esc(m.none)}</span></div></div>`;

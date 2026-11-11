@@ -256,3 +256,21 @@ No non-enumerable properties. Each ledger operation returns `Result<{ ledger: Le
 Add to the protocol docs as a client rule: clients never fetch a model-supplied URL automatically (no image loading, link previews or prefetching). URLs are followed only on an explicit user action.
 
 Keep the implementer's additions: approval must match the Space; `decidedAction` must belong to the card's type; `end ≥ start`; `done ≤ total`; `deny` may revoke a granted approval.
+
+### A7 — Nothing an agent does on tainted input is silent
+`Decision` gains `surface: boolean`. It is `true` whenever a write is allowed without a human decision while `run.ingestedUntrusted` is true (rule 6 allow). Hosts must then emit an `fyi` card with an `undo` for that action, and count it in the day's brief. This is the answer to "an injected email makes the agent archive the bank's fraud alert": the action stays reversible and is always shown.
+
+### A8 — Egress has three levels
+`ToolDescriptor.egress` becomes `'none' | 'fixed' | 'open'`.
+- `open`: the model chooses the destination or recipient (fetch or open an arbitrary URL, send mail, call an external MCP server). This is the exfiltration channel.
+- `fixed`: data goes only to a service fixed by the user or the template, with constrained arguments (a search provider, a weather lookup). It discloses the query to that provider, which the install screen must list, but an attacker does not receive it.
+- Rule 3 applies to `open` only. `fixed` egress is allowed in any run.
+- `BUILTIN_TOOLS`: `web.search` is `fixed`; `web.fetch`, `browser.open`, `browser.submit`, `mail.send` are `open`. Add `weather.get` (`read`, `fixed`, connector `weather`) as the reference example of a constrained fixed tool.
+- `summarizePermissions` lists `fixed` and `open` egress tools separately.
+
+### A9 — Approvals name the risk they cover
+Replace the workaround of approving risky reads as `irreversible`. `Approval` and the `approval` card data gain `risk: 'reversible-write' | 'irreversible' | 'exfiltration'`. `requestApproval` accepts a `read`-tier tool only with `risk: 'exfiltration'`. The earlier invariant becomes: an approval card's `tier` may be `read` only when `risk` is `exfiltration`. `actionsFor` treats approving an `exfiltration` or `irreversible` risk as effect `irreversible`.
+
+Accepted from the implementer: a risky read falls through to rules 4 and 5 before requiring approval; `memoryPrivacyFor(run)` marks memory written by a run that touched private data.
+
+Constraint recorded for the runner spec (M1), not implemented here: tool availability is fixed when a run starts. A run that can read private data is never given model-provider server-side tools with open egress, because those execute outside this gate.

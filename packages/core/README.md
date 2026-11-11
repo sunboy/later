@@ -4,7 +4,7 @@ Pure, runtime-agnostic domain logic: canonical hashing, the policy gate, approva
 
 Expected failures return `Result` values (from `@later/protocol`). Programmer errors (negative amounts, non-integer token counts, non-JSON arguments, duplicate reservation ids) throw `RangeError`, `TypeError` or `Error`.
 
-Inputs take plain `string` ids and ISO 8601 UTC timestamp strings, so branded protocol ids are accepted but not required. Every returned object is frozen.
+Inputs take plain `string` ids and ISO 8601 UTC timestamp strings, so branded protocol ids are accepted but not required. Returned state objects (approvals, ledgers, run contexts, requests) are frozen.
 
 This file lists the names and shapes that `docs/specs/m0-foundation.md` left open.
 
@@ -15,28 +15,39 @@ This file lists the names and shapes that `docs/specs/m0-foundation.md` left ope
 
 ## Policy gate
 
+Amended by M0.1 (A1 to A4).
+
 - `ToolRequest`: `{ tool: ToolDescriptor; args: unknown; argsHash: string }`.
-- `buildRequest(tool, args): Promise<ToolRequest>` copies `args` through canonical JSON, deep-freezes the copy and computes `argsHash`, so the arguments cannot change after hashing.
-- `decide(request, context): Decision` is synchronous and treats the request as trusted: it does not recompute the hash. Requests must come from `buildRequest`. `verifyRequest(request): Promise<boolean>` is provided for callers that receive a request from elsewhere.
-- `PolicyContext` is as specified; `RunContext` is `{ initiatedBy, ingestedUntrusted }`.
-- Rule 4 (approval) additionally requires `approval.spaceId === context.spaceId`, so an approval cannot be redeemed in another Space. An approval that does not match falls through to the later rules.
+- `buildRequest(tool, args): Promise<ToolRequest>` copies `args` through canonical JSON, deep-freezes the copy and computes `argsHash`.
+- `decide(request, context): Promise<Decision>` recomputes the hash first and denies a mismatch (`request-tampered`), including arguments that are not JSON values. It consumes nothing and is for previews. `verifyRequest(request): Promise<boolean>` is the same check on its own.
+- `authorize(request, context): Promise<Authorization>` returns `{ decision, consumed? }`. When an approval allowed the call, `consumed.approval` is that approval, now `redeemed`. When a device confirmation allowed it, `consumed.nonce` is its nonce. The host persists `consumed` before executing. Hosts execute tools only on `authorize`.
+- `RunContext` is `{ initiatedBy, ingestedUntrusted, touchedPrivate }`. Both flags are sticky.
+  - `markIngested(run, source)` takes anything with a `trust` and sets `ingestedUntrusted` for `external`.
+  - `markToolUsed(run, tool, opts?)` sets `touchedPrivate` when `tool.readsPrivate` or `opts.privateResult` is true.
+  - `memoryTaintFor(run)` returns the trust a memory entry written by this run must carry.
+  - Addition: `memoryPrivacyFor(run)` returns whether that entry must be marked private (`run.touchedPrivate`). Without it, private data written to memory by an inbox run would read back as non-private in a later run.
+- `DeviceConfirmation` is `{ argsHash, deviceId, nonce, confirmedAt }`. `PolicyContext` gains `knownDevices?`, `usedNonces?` (a missing set means none) and `confirmationMaxAgeMs?` (default `DEFAULT_CONFIRMATION_MAX_AGE_MS`, 120000). A confirmation dated in the future, older than the maximum age, or with an unparseable date is ignored. **The runtime must verify the device signature before putting a confirmation in the context.** Core cannot.
+- The approval rule also requires `approval.spaceId === context.spaceId`. An approval or confirmation that does not match falls through to the later rules.
+- **Rule 3 interpretation.** A `read` tool at exfiltration risk (it has egress, and the run has both ingested untrusted content and touched private data) is not refused outright. Rules 4 and 5 still apply, so a matching approval or device confirmation allows it. Without one, the result is `require-approval` (`exfiltration-risk`). If rule 3 returned before rule 4, as the amended text reads literally, approving such a call would be impossible.
+- **Approving a read tool.** `requestApproval` rejects the `read` tier, and approval cards never carry it. Hosts request approval for an exfiltration-risk read with tier `irreversible`, since data that has left cannot be recalled. Redemption matches on tool name and hash only.
 - `addAlwaysAllow(set, tool): Result<ReadonlySet<string>, 'not-reversible-write'>` returns a new set.
-- `markIngested(run, source): RunContext` takes anything with a `kind`. `email` and `web` set `ingestedUntrusted`; it never returns to false. `UNTRUSTED_SOURCE_KINDS` lists them.
 
 `ReasonCode` (also `REASON_CODES`):
 
-| Code                                                                                                                        | Outcome          | Rule                                                       |
-| --------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------------------------------------------------------- |
-| `connector-not-granted`                                                                                                     | deny             | 1                                                          |
-| `budget-paused`                                                                                                             | deny             | 2                                                          |
-| `read-only`                                                                                                                 | allow            | 3                                                          |
-| `approved`                                                                                                                  | allow            | 4                                                          |
-| `user-confirmed`                                                                                                            | allow            | 5                                                          |
-| `always-allowed`                                                                                                            | allow            | 6                                                          |
-| `not-always-allowed`                                                                                                        | require-approval | 6, tool not in `alwaysAllow`                               |
-| `untrusted-content`                                                                                                         | require-approval | 6, tool allowlisted but the run ingested untrusted content |
-| `irreversible`                                                                                                              | require-approval | 7                                                          |
-| `approval-not-granted`, `approval-already-redeemed`, `approval-expired`, `approval-tool-mismatch`, `approval-args-mismatch` |                  | `redeem` failures                                          |
+| Code                                                                                                                        | Outcome          | Rule                                                                     |
+| --------------------------------------------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------ |
+| `request-tampered`                                                                                                          | deny             | 0, hash mismatch                                                         |
+| `connector-not-granted`                                                                                                     | deny             | 1                                                                        |
+| `budget-paused`                                                                                                             | deny             | 2                                                                        |
+| `read-only`                                                                                                                 | allow            | 3                                                                        |
+| `approved`                                                                                                                  | allow            | 4                                                                        |
+| `user-confirmed`                                                                                                            | allow            | 5                                                                        |
+| `exfiltration-risk`                                                                                                         | require-approval | 3, after rules 4 and 5                                                   |
+| `always-allowed`                                                                                                            | allow            | 6                                                                        |
+| `not-always-allowed`                                                                                                        | require-approval | 6, tool not in `alwaysAllow`                                             |
+| `untrusted-content`                                                                                                         | require-approval | 6, allowlisted, but the run is untrusted and the tool is not `contained` |
+| `irreversible`                                                                                                              | require-approval | 7                                                                        |
+| `approval-not-granted`, `approval-already-redeemed`, `approval-expired`, `approval-tool-mismatch`, `approval-args-mismatch` |                  | `redeem` failures                                                        |
 
 ## Approvals
 
@@ -59,12 +70,14 @@ This file lists the names and shapes that `docs/specs/m0-foundation.md` left ope
 
 ## Budget ledger
 
-- `createLedger({ scope, id, cycleStart, cycleEnd, capMicroUsd, spentMicroUsd? })` builds a ledger with its status computed.
-- The specified signatures are kept: `reserve` and `settle` return `Result<LedgerStep, ...>`, and `release`, `rollover` and `setCap` return a `LedgerStep`. A `LedgerStep` is a frozen `Ledger` with one extra, **non-enumerable** property, `events: readonly LedgerEvent[]`. Because it is non-enumerable, spreading, `JSON.stringify` and equality matchers ignore it, and the value can be passed straight back in as a `Ledger`.
-- `LedgerEvent` is a string: `'warned' | 'paused' | 'resumed' | 'rolled-over'`. Status events are emitted on transitions only: entering `paused` gives `paused`; leaving `paused` gives `resumed`; going from `ok` to `warned` gives `warned`; going from `warned` to `ok` gives nothing. `rollover` adds `rolled-over` first.
+Amended by M0.1 (A5).
+
+- `createLedger({ scope, id, cycleStart, cycleEnd, capMicroUsd, spentMicroUsd? }): Ledger` builds a ledger with its status computed.
+- Every operation returns a plain `LedgerUpdate`, `{ ledger: Ledger; events: LedgerEvent[] }`: `reserve` and `settle` inside a `Result`, and `release`, `rollover` and `setCap` directly. Ledgers are frozen and have no hidden properties.
+- `LedgerEvent` is a string: `'warned' | 'paused' | 'resumed' | 'rolled-over'`. Events are emitted on transitions only: entering `paused` gives `paused`; leaving `paused` gives `resumed`; going from `ok` to `warned` gives `warned`; going from `warned` to `ok` gives nothing. `rollover` puts `rolled-over` first.
 - Status is computed from spending alone: `paused` when `spent >= cap`, `warned` when `spent >= 80%` of cap (`statusFor`, `WARN_AT`), else `ok`. Reservations do not change status. A cap of 0 is always `paused`.
 - `reserve` checks, in order: `cycle-ended` (now at or after `cycleEnd`), `paused`, `over-cap` (`spent + reserved + estimate > cap`). A duplicate reservation id throws.
-- `settle(ledger, id, actual, now)` never fails because a cycle ended; `now` is unused today.
+- `settle(ledger, id, actual, now)` never fails because a cycle ended. `now` is unused for now.
 - `release` with an unknown id returns the ledger unchanged.
 - `rollover(ledger, now, nextCycleEnd)` does nothing before `cycleEnd`. After it, the new cycle runs from the old `cycleEnd` to `nextCycleEnd`, `spent` is 0 and all reservations are cleared. Throws if `nextCycleEnd` is not after `now`.
-- `reserveBoth(spaceLedger, accountLedger, estimate, id, now): Result<{ space, account }, { ledger: 'space' | 'account'; error }>` reserves the same id on both or changes neither. The space ledger is checked first. Settle and release each ledger separately.
+- `reserveBoth(spaceLedger, accountLedger, estimate, id, now): Result<{ space: LedgerUpdate; account: LedgerUpdate }, { ledger: 'space' | 'account'; error }>` reserves the same id on both, or changes neither. Each side carries its own ledger and events. The space ledger is checked first. Settle and release each ledger separately.

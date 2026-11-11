@@ -118,16 +118,44 @@ export const SOURCE_KINDS = ['email', 'web', 'calendar', 'memory', 'capture', 't
 export const SourceKindSchema = z.enum(SOURCE_KINDS);
 export type SourceKind = z.infer<typeof SourceKindSchema>;
 
-export const SourceSchema = z.strictObject({
+export const SOURCE_TRUST = ['user', 'external'] as const;
+export const SourceTrustSchema = z.enum(SOURCE_TRUST);
+export type SourceTrust = z.infer<typeof SourceTrustSchema>;
+
+/** Trust each source kind must carry, where it is fixed. `memory` and `tool` may be either. */
+export const FIXED_SOURCE_TRUST: Readonly<Partial<Record<SourceKind, SourceTrust>>> = Object.freeze(
+  {
+    email: 'external',
+    web: 'external',
+    calendar: 'external',
+    capture: 'user',
+  },
+);
+
+const sourceFields = {
   kind: SourceKindSchema,
   ref: z.string().min(1).max(TEXT_LIMITS.short),
+  trust: SourceTrustSchema,
   title: TitleText.optional(),
   url: HttpsUrlSchema.optional(),
-});
+};
+
+const trustMatchesKind = (s: { kind: SourceKind; trust: SourceTrust }): boolean => {
+  const fixed = FIXED_SOURCE_TRUST[s.kind];
+  return fixed === undefined || fixed === s.trust;
+};
+const trustIssue = {
+  message: 'email, web and calendar sources must be external; capture sources must be user',
+  path: ['trust'],
+};
+
+export const SourceSchema = z.strictObject(sourceFields).refine(trustMatchesKind, trustIssue);
 export type Source = z.infer<typeof SourceSchema>;
 
 /** A source whose `url` is required. Used by digest tiles. */
-export const LinkedSourceSchema = SourceSchema.extend({ url: HttpsUrlSchema });
+export const LinkedSourceSchema = z
+  .strictObject({ ...sourceFields, url: HttpsUrlSchema })
+  .refine(trustMatchesKind, trustIssue);
 export type LinkedSource = z.infer<typeof LinkedSourceSchema>;
 
 export const ProvenanceSchema = z.strictObject({

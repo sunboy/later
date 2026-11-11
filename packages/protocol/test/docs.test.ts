@@ -13,14 +13,18 @@ import {
 
 const doc = readFileSync(new URL('../../../docs/protocol.md', import.meta.url), 'utf8');
 
-/** Field names (with `?` for optional) from the first column of the table under `heading`. */
+/** Field names (with `?` for optional) from the first column of the first table under `heading`. */
 function documentedFields(heading: string): string[] {
   const lines = doc.split('\n');
   const start = lines.indexOf(heading);
   if (start === -1) throw new Error(`Missing heading: ${heading}`);
   const fields: string[] = [];
+  let inTable = false;
   for (const line of lines.slice(start + 1)) {
     if (line.startsWith('#')) break;
+    // Only the first table under the heading.
+    if (line.startsWith('|')) inTable = true;
+    else if (inTable) break;
     const match = /^\|\s*`([^`]+)`\s*\|/.exec(line);
     if (match?.[1] !== undefined) fields.push(match[1]);
   }

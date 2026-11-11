@@ -5,6 +5,8 @@ import {
   CARD_ACTIONS,
   CARD_TYPES,
   PROTOCOL_VERSION,
+  SourceSchema,
+  ToolDescriptorSchema,
   actionsFor,
   isActionAllowed,
   parseCard,
@@ -30,6 +32,15 @@ describe('protocol smoke', () => {
     const card = fixture('cards/brief.json') as Record<string, unknown>;
     expect(parseCard({ ...card, extra: 1 }).ok).toBe(false);
     expect(parseCard({ ...card, title: 'bell\u0007' }).ok).toBe(false);
+  });
+
+  it('enforces source trust by kind and tool containment by tier', () => {
+    expect(SourceSchema.safeParse({ kind: 'email', ref: 'm1', trust: 'user' }).success).toBe(false);
+    expect(SourceSchema.safeParse({ kind: 'memory', ref: 'm1', trust: 'user' }).success).toBe(true);
+    for (const tool of BUILTIN_TOOLS)
+      expect(ToolDescriptorSchema.safeParse(tool).success).toBe(true);
+    const send = BUILTIN_TOOLS.find((t) => t.name === 'mail.send');
+    expect(ToolDescriptorSchema.safeParse({ ...send, contained: true }).success).toBe(false);
   });
 
   it('only draft.send and approval.approve are irreversible', () => {

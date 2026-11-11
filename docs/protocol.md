@@ -34,12 +34,13 @@ Lengths are counted in UTF-16 code units (JavaScript `string.length`).
 
 ### Source
 
-| Field    | Type                                                              | Notes                                 |
-| -------- | ----------------------------------------------------------------- | ------------------------------------- |
-| `kind`   | `email` \| `web` \| `calendar` \| `memory` \| `capture` \| `tool` |                                       |
-| `ref`    | string, 1 to 280                                                  | opaque reference within the connector |
-| `title?` | Title                                                             |                                       |
-| `url?`   | https URL                                                         | required inside digest tiles          |
+| Field    | Type                                                              | Notes                                                                                                                            |
+| -------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `kind`   | `email` \| `web` \| `calendar` \| `memory` \| `capture` \| `tool` |                                                                                                                                  |
+| `ref`    | string, 1 to 280                                                  | opaque reference within the connector                                                                                            |
+| `trust`  | `user` \| `external`                                              | `email`, `web` and `calendar` must be `external`; `capture` must be `user`; `memory` and `tool` carry what the producer recorded |
+| `title?` | Title                                                             |                                                                                                                                  |
+| `url?`   | https URL                                                         | required inside digest tiles                                                                                                     |
 
 ### Provenance
 
@@ -228,21 +229,27 @@ Lengths are counted in UTF-16 code units (JavaScript `string.length`).
 
 `RiskTier` is `read`, `reversible-write` or `irreversible`. `ToolDescriptor`:
 
-| Field           | Type             | Notes                   |
-| --------------- | ---------------- | ----------------------- |
-| `name`          | tool name        | for example `mail.send` |
-| `connector`     | connector id     |                         |
-| `tier`          | RiskTier         |                         |
-| `description`   | Body, non-empty  |                         |
-| `argsSchemaId?` | string, 1 to 128 |                         |
+| Field           | Type             | Notes                                                                                              |
+| --------------- | ---------------- | -------------------------------------------------------------------------------------------------- |
+| `name`          | tool name        | for example `mail.send`                                                                            |
+| `connector`     | connector id     |                                                                                                    |
+| `tier`          | RiskTier         |                                                                                                    |
+| `description`   | Body, non-empty  |                                                                                                    |
+| `egress`        | boolean          | the call can transmit data to a party the user did not choose                                      |
+| `readsPrivate`  | boolean          | the result contains the user's private data                                                        |
+| `contained`     | boolean          | reversible-write only: the effect stays in the user's own account; must be `false` for other tiers |
+| `argsSchemaId?` | string, 1 to 128 |                                                                                                    |
 
 `BUILTIN_TOOLS` is a frozen array. Each tool's connector is the part of its name before the dot (`mail`, `calendar`, `web`, `memory`, `browser`).
 
-| Tier             | Tools                                                                                                                 |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------- |
-| read             | `mail.search`, `mail.read`, `calendar.read`, `web.search`, `web.fetch`, `memory.read`, `browser.open`, `browser.read` |
-| reversible-write | `mail.create_draft`, `mail.label`, `mail.archive`, `memory.write`                                                     |
-| irreversible     | `mail.send`, `mail.delete`, `browser.submit`                                                                          |
+| Tool                                                              | Tier             | Flags                                             |
+| ----------------------------------------------------------------- | ---------------- | ------------------------------------------------- |
+| `mail.search`, `mail.read`, `calendar.read`, `browser.read`       | read             | readsPrivate                                      |
+| `web.search`, `web.fetch`, `browser.open`                         | read             | egress                                            |
+| `memory.read`                                                     | read             | none (privacy is per entry, reported by the host) |
+| `mail.create_draft`, `mail.label`, `mail.archive`, `memory.write` | reversible-write | contained                                         |
+| `mail.send`, `browser.submit`                                     | irreversible     | egress                                            |
+| `mail.delete`                                                     | irreversible     | none                                              |
 
 A `ToolRegistry` is an array of descriptors, a `Map` keyed by name, or a record keyed by name. `findTool(registry, name)` looks one up.
 
@@ -293,10 +300,17 @@ A `ToolRegistry` is an array of descriptors, a `Map` keyed by name, or a record 
 - `connectors`: id, scopes and reason for each declared connector.
 - `toolsByTier`: `{ read, 'reversible-write', irreversible }`, each a name-sorted list of `{ name, connector, tier, description, agentIds }`.
 - `irreversibleTools`: the name of every irreversible tool any agent may call, listed explicitly.
+- `egressTools`: the name of every tool that can send data out, listed explicitly. Each `toolsByTier` entry also carries `egress` and `readsPrivate`.
 - `unknownTools`: tool names missing from the registry (a manifest with any should not be installed).
 - `routines`: id, name, agentId, trigger, emitted card types and `startsPaused`.
 - `models`: tiers used, in the order haiku, sonnet, opus.
 - `budget`, `skills` (paths) and `mcpServers` (name and url).
+
+## Client rules
+
+- Render every string as text, never as HTML or markup.
+- **Clients never fetch a model-supplied URL automatically**: no image loading, link previews or prefetching. Any URL in a card (source links, `joinUrl`, digest tiles) is followed only on an explicit user action. An automatic fetch would let injected content send private data out through the URL.
+- Approval cards are rendered from `argsPreview`, which the host builds from the actual tool arguments.
 
 ## Fixtures
 

@@ -7,17 +7,21 @@ import {
   canonicalJson,
   costMicroUsd,
   createLedger,
+  authorize,
   decide,
   grant,
   hashArgs,
   isPriceTableVerified,
   markIngested,
+  markToolUsed,
+  memoryTaintFor,
   redeem,
   requestApproval,
   reserve,
   reserveBoth,
   settle,
   type PolicyContext,
+  type RunContext,
 } from '../src/index.js';
 
 const tool = (name: string): ToolDescriptor => {
@@ -27,11 +31,13 @@ const tool = (name: string): ToolDescriptor => {
 };
 const now = new Date('2026-11-11T09:00:00Z');
 
+const fresh: RunContext = { initiatedBy: 'agent', ingestedUntrusted: false, touchedPrivate: false };
+
 const context = (over: Partial<PolicyContext> = {}): PolicyContext => ({
   spaceId: 'space_home',
-  grantedConnectors: new Set(['mail']),
-  alwaysAllow: new Set(),
-  run: { initiatedBy: 'agent', ingestedUntrusted: false },
+  grantedConnectors: new Set(['mail', 'web']),
+  alwaysAllow: new Set(['mail.create_draft', 'mail.archive']),
+  run: fresh,
   budgetStatus: 'ok',
   now,
   ...over,
@@ -58,9 +64,9 @@ describe('canonical hashing', () => {
 });
 
 describe('policy gate and approvals', () => {
-  it('requires approval for send, then allows the exact approved args once', async () => {
+  it('requires approval for send, then authorises the exact approved args once', async () => {
     const request = await buildRequest(tool('mail.send'), { to: 'sam@example.com', body: 'Hi' });
-    expect(decide(request, context()).outcome).toBe('require-approval');
+    expect((await decide(request, context())).outcome).toBe('require-approval');
 
     const pending = requestApproval(
       {
@@ -73,22 +79,49 @@ describe('policy gate and approvals', () => {
       'appr_1',
     );
     const granted = grant(pending, now);
-    expect(decide(request, context({ approval: granted }))).toMatchObject({ reason: 'approved' });
-
-    const redeemed = redeem(granted, request, now);
-    expect(redeemed.ok).toBe(true);
-    if (redeemed.ok) expect(redeem(redeemed.value, request, now).ok).toBe(false);
+    const auth = await authorize(request, context({ approval: granted }));
+    expect(auth.decision.reason).toBe('approved');
+    expect(auth.consumed?.approval?.status).toBe('redeemed');
 
     const changed = await buildRequest(tool('mail.send'), { to: 'sam@example.com', body: 'Hi!' });
     expect(redeem(granted, changed, now)).toEqual({ ok: false, error: 'approval-args-mismatch' });
   });
 
-  it('untrusted content defeats the allowlist', async () => {
-    const request = await buildRequest(tool('mail.archive'), { id: 'm1' });
-    const run = markIngested({ initiatedBy: 'agent', ingestedUntrusted: false }, { kind: 'email' });
-    const allow = new Set(['mail.archive']);
-    expect(decide(request, context({ alwaysAllow: allow })).outcome).toBe('allow');
-    expect(decide(request, context({ alwaysAllow: allow, run })).outcome).toBe('require-approval');
+  it('denies a tampered request', async () => {
+    const request = await buildRequest(tool('mail.read'), { id: 'm1' });
+    const tampered = { ...request, args: { id: 'm2' } };
+    expect((await decide(tampered, context())).reason).toBe('request-tampered');
+  });
+
+  it('lets an inbox run draft but not fetch after reading external mail', async () => {
+    const run = markIngested(markToolUsed(fresh, tool('mail.read')), { trust: 'external' });
+    expect(memoryTaintFor(run)).toBe('external');
+    const draft = await buildRequest(tool('mail.create_draft'), { to: 'sam@example.com' });
+    const fetch = await buildRequest(tool('web.fetch'), { url: 'https://example.com/?q=secret' });
+    expect((await decide(draft, context({ run }))).outcome).toBe('allow');
+    expect(await decide(fetch, context({ run }))).toMatchObject({ reason: 'exfiltration-risk' });
+    expect((await decide(fetch, context())).outcome).toBe('allow');
+  });
+
+  it('accepts a fresh device confirmation once', async () => {
+    const request = await buildRequest(tool('mail.send'), { to: 'sam@example.com', body: 'Hi' });
+    const userContext = context({
+      run: { ...fresh, initiatedBy: 'user' },
+      knownDevices: new Set(['phone']),
+      userConfirmation: {
+        argsHash: request.argsHash,
+        deviceId: 'phone',
+        nonce: 'n1',
+        confirmedAt: '2026-11-11T08:59:30Z',
+      },
+    });
+    const auth = await authorize(request, userContext);
+    expect(auth).toMatchObject({
+      decision: { reason: 'user-confirmed' },
+      consumed: { nonce: 'n1' },
+    });
+    const replay = await decide(request, { ...userContext, usedNonces: new Set(['n1']) });
+    expect(replay.outcome).toBe('require-approval');
   });
 });
 
@@ -116,9 +149,9 @@ describe('ledger', () => {
     expect(reserve(ledger, 1001, 'r0', now)).toEqual({ ok: false, error: 'over-cap' });
     const reserved = reserve(ledger, 800, 'r1', now);
     if (!reserved.ok) throw new Error(reserved.error);
-    const settled = settle(reserved.value, 'r1', 1200, now);
+    const settled = settle(reserved.value.ledger, 'r1', 1200, now);
     if (!settled.ok) throw new Error(settled.error);
-    expect(settled.value.status).toBe('paused');
+    expect(settled.value.ledger.status).toBe('paused');
     expect(settled.value.events).toEqual(['paused']);
 
     const account = createLedger({ ...ledger, scope: 'account', id: 'acct', capMicroUsd: 100 });

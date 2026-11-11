@@ -24,13 +24,11 @@ export interface Ledger {
   readonly status: LedgerStatus;
 }
 
-/**
- * A ledger returned by an operation. It is a plain `Ledger` with one extra,
- * non-enumerable property, `events`: the status events this operation caused.
- * Being non-enumerable, `events` is dropped by spreading, `JSON.stringify` and
- * equality matchers, so the value can be stored and passed back as a `Ledger`.
- */
-export type LedgerStep = Ledger & { readonly events: readonly LedgerEvent[] };
+/** The result of a ledger operation: the new state and the status events it caused. */
+export interface LedgerUpdate {
+  readonly ledger: Ledger;
+  readonly events: LedgerEvent[];
+}
 
 export type ReserveError = 'over-cap' | 'paused' | 'cycle-ended';
 
@@ -60,10 +58,10 @@ const amount = (fn: string, name: string, n: number): number => {
   return n;
 };
 
-/** Strips any `events`, recomputes status, freezes, and attaches this step's events. */
-function step(prev: Ledger, next: Omit<Ledger, 'status'>, extra: LedgerEvent[] = []): LedgerStep {
+/** Recomputes status, freezes, and pairs the ledger with this operation's events. */
+function step(prev: Ledger, next: Omit<Ledger, 'status'>, extra: LedgerEvent[] = []): LedgerUpdate {
   const status = statusFor(next.spentMicroUsd, next.capMicroUsd);
-  const ledger: Ledger = {
+  const ledger: Ledger = Object.freeze({
     scope: next.scope,
     id: next.id,
     cycleStart: next.cycleStart,
@@ -72,10 +70,8 @@ function step(prev: Ledger, next: Omit<Ledger, 'status'>, extra: LedgerEvent[] =
     spentMicroUsd: next.spentMicroUsd,
     reservations: Object.freeze({ ...next.reservations }),
     status,
-  };
-  const events = Object.freeze([...extra, ...transitionEvents(prev.status, status)]);
-  Object.defineProperty(ledger, 'events', { value: events, enumerable: false });
-  return Object.freeze(ledger) as LedgerStep;
+  });
+  return { ledger, events: [...extra, ...transitionEvents(prev.status, status)] };
 }
 
 const without = (
@@ -97,7 +93,7 @@ export interface LedgerInput {
 }
 
 /** Creates a ledger with no reservations and its status computed. */
-export function createLedger(input: LedgerInput): LedgerStep {
+export function createLedger(input: LedgerInput): Ledger {
   const base = {
     scope: input.scope,
     id: input.id,
@@ -107,7 +103,7 @@ export function createLedger(input: LedgerInput): LedgerStep {
     spentMicroUsd: amount('createLedger', 'spentMicroUsd', input.spentMicroUsd ?? 0),
     reservations: {},
   };
-  return step({ ...base, status: 'ok' }, base);
+  return step({ ...base, status: 'ok' }, base).ledger;
 }
 
 /**
@@ -120,7 +116,7 @@ export function reserve(
   estimateMicroUsd: number,
   id: ReservationId,
   now: Date,
-): Result<LedgerStep, ReserveError> {
+): Result<LedgerUpdate, ReserveError> {
   amount('reserve', 'estimateMicroUsd', estimateMicroUsd);
   if (Object.hasOwn(ledger.reservations, id)) {
     throw new Error(`reserve: reservation "${id}" already exists`);
@@ -152,7 +148,7 @@ export function settle(
   id: ReservationId,
   actualMicroUsd: number,
   _now: Date,
-): Result<LedgerStep, 'unknown-reservation'> {
+): Result<LedgerUpdate, 'unknown-reservation'> {
   amount('settle', 'actualMicroUsd', actualMicroUsd);
   if (!Object.hasOwn(ledger.reservations, id)) return { ok: false, error: 'unknown-reservation' };
   const rest = without(ledger.reservations, id);
@@ -167,7 +163,7 @@ export function settle(
 }
 
 /** Drops a reservation without spending. Unknown ids leave the ledger unchanged. */
-export function release(ledger: Ledger, id: ReservationId): LedgerStep {
+export function release(ledger: Ledger, id: ReservationId): LedgerUpdate {
   if (!Object.hasOwn(ledger.reservations, id)) return step(ledger, ledger);
   const rest = without(ledger.reservations, id);
   return step(ledger, { ...ledger, reservations: rest });
@@ -179,7 +175,7 @@ export function release(ledger: Ledger, id: ReservationId): LedgerStep {
  * `cycleEnd` to `nextCycleEnd`. Before `cycleEnd` the ledger is returned
  * unchanged with no events. Throws if `nextCycleEnd` is not after `now`.
  */
-export function rollover(ledger: Ledger, now: Date, nextCycleEnd: string): LedgerStep {
+export function rollover(ledger: Ledger, now: Date, nextCycleEnd: string): LedgerUpdate {
   if (now.getTime() < Date.parse(ledger.cycleEnd)) return step(ledger, ledger);
   if (!(Date.parse(nextCycleEnd) > now.getTime())) {
     throw new RangeError('rollover: nextCycleEnd must be after now');
@@ -198,7 +194,7 @@ export function rollover(ledger: Ledger, now: Date, nextCycleEnd: string): Ledge
 }
 
 /** Changes the cap and recomputes status. Existing reservations are kept. */
-export function setCap(ledger: Ledger, capMicroUsd: number): LedgerStep {
+export function setCap(ledger: Ledger, capMicroUsd: number): LedgerUpdate {
   amount('setCap', 'capMicroUsd', capMicroUsd);
   return step(ledger, { ...ledger, capMicroUsd });
 }
@@ -219,7 +215,7 @@ export function reserveBoth(
   estimateMicroUsd: number,
   id: ReservationId,
   now: Date,
-): Result<{ space: LedgerStep; account: LedgerStep }, ReserveBothError> {
+): Result<{ space: LedgerUpdate; account: LedgerUpdate }, ReserveBothError> {
   if (spaceLedger.scope !== 'space' || accountLedger.scope !== 'account') {
     throw new Error('reserveBoth: expected a space ledger and an account ledger');
   }

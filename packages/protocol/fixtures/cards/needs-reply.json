@@ -12,6 +12,7 @@
       {
         "kind": "email",
         "ref": "msg_123",
+        "trust": "external",
         "title": "Re: venue"
       }
     ],

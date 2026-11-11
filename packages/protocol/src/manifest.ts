@@ -285,6 +285,8 @@ export interface ToolPermission {
   connector: string;
   tier: RiskTier;
   description: string;
+  egress: boolean;
+  readsPrivate: boolean;
   /** Agents in the template that may call this tool. */
   agentIds: string[];
 }
@@ -294,6 +296,8 @@ export interface PermissionSummary {
   toolsByTier: Record<RiskTier, ToolPermission[]>;
   /** Every irreversible tool, by name. The install screen must show each one. */
   irreversibleTools: string[];
+  /** Every tool that can send data out of the user's account, by name. */
+  egressTools: string[];
   /** Tool names not found in the registry. A manifest with any should not be installed. */
   unknownTools: string[];
   routines: {
@@ -340,6 +344,8 @@ export function summarizePermissions(
       connector: tool.connector,
       tier: tool.tier,
       description: tool.description,
+      egress: tool.egress,
+      readsPrivate: tool.readsPrivate,
       agentIds,
     });
   }
@@ -352,6 +358,10 @@ export function summarizePermissions(
     })),
     toolsByTier,
     irreversibleTools: toolsByTier.irreversible.map((t) => t.name),
+    egressTools: RISK_TIERS.flatMap((t) => toolsByTier[t])
+      .filter((t) => t.egress)
+      .map((t) => t.name)
+      .sort(),
     unknownTools: [...unknown].sort(),
     routines: manifest.routines.map((r) => ({
       id: r.id,
