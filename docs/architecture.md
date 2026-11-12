@@ -206,6 +206,21 @@ No blocker found. The Agents SDK ran locally with state, SQL and scheduling; hib
 - Secrets: Anthropic key, push signing key and a master key as Worker secrets (write-only after install); connector credentials encrypted with the master key in Durable Object storage.
 - Web push needs iOS 16.4+ and a Home Screen install; onboarding must walk the user through that.
 
+## 4h. Founder direction, 12 Nov 2026 (working design and next questions)
+
+Working design: `design/prototype-v3/` ("Now, Next, Later" structure, Space rings with story playback, stack physics, light and dark, effects as accents on AI moments only). Working palette: Harbour, until the founder picks. It is a working version, not final.
+
+Directions to develop (not yet decisions; two leads are working them up):
+
+- **Today grows beyond the deck.** Alongside the cards that need a decision, a readable feed: bite-sized snippets from the user's newsletters and from interests they ask the app to follow. Architect's constraint: the feed is an edition with an end, not an infinite scroll; every snippet carries its source; it is generated in batch on a capped budget; newsletter content is untrusted input.
+- **A mascot family replaces the plus button.** One chief character is the single entry to chat, voice and capture; it has a crew of smaller bots that it assigns to work across the app (these are the agents working in Spaces). The characters must be unique to Later: not aliens, not animal or human characters, not plain geometric figures. The current third-party bot avatars go.
+- **Chat threads.** Whether each activity gets its own thread, and how threads are reached from the chat surface. Architect's starting position: one thread per Space plus one general thread with the chief; a thread is a lens on a Space, not a second hierarchy.
+- **Generative UI.** The interface should not be static: components grow, shrink and appear according to context. Architect's constraint (non-negotiable 4 stands): the model never emits markup. It selects and parameterises components from a typed vocabulary with size, emphasis and grouping hints, and the client owns layout and motion. Anything that asks for consent (approvals, sends, payments) keeps one fixed, recognisable form.
+- **Model-agnostic backend.** Claude first; then bring-your-own keys for other providers; possibly a prebuilt plan where we serve models. Switchable by configuration or user preference. Note: a plan where we serve models is infrastructure we operate, so it is a commercial tier outside D1, not a change to the default.
+- **Guardrails against destructive actions**, especially bulk ones (deleting many emails).
+- **Onboarding and connectors**: Gmail, Slack, calendars, and long-tail apps such as daycare and school apps (for example Procare), via MCP or OAuth where they exist.
+- **Sequencing:** no backend code until the UI is settled to a reasonable extent. Backend work is planning only for now. M0 (`packages/`) stays as built.
+
 ## 5. Open risks and the spikes that close them
 
 | # | Risk | Spike (owner) |
