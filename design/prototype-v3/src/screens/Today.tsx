@@ -1,5 +1,4 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { BotAvatar } from 'bot-avatars';
 import { AGENTS, DAYLINE, DECK0, space, type DeckCard } from '../data';
 import { Icon } from '../icons';
 import { useApp } from '../store';
@@ -102,7 +101,7 @@ export function Today() {
   const minutes = Math.max(1, Math.round(deck.length * 1.2));
   return (
     <div className="screen">
-      <div className="scroll">
+      <div className="scroll no-dock">
         <div className="td-head">
           <h1>Today</h1>
           <p>{deck.length ? <><b>{deck.length} {deck.length === 1 ? 'card' : 'cards'}</b>, about {minutes} minutes. Then nothing until 14:00.</> : <>All {total} dealt with.</>}</p>
@@ -126,7 +125,6 @@ export function Today() {
                 <div className="dc-src">
                   <span className="glyph"><Icon name={space(top.spaceId).glyph} size={17} /></span>
                   <div className="who"><b>{space(top.spaceId).name}</b><small>{top.kind}, from {AGENTS[top.agent].name}</small></div>
-                  <BotAvatar className="bot" type={AGENTS[top.agent].avatar} size={32} paused={!app.running} aria-hidden="true" />
                 </div>
                 <h2 className="dc-title">{top.title}</h2>
                 {top.quote && <p className="quote">{top.quote}</p>}

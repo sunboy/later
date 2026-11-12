@@ -4,9 +4,11 @@ import { BotAvatar } from 'bot-avatars';
 import { MORE_TEMPLATES, TEMPLATE } from '../data';
 import { Icon } from '../icons';
 import { usePrefersReducedMotion } from '../motion';
+import { useTheme } from '../theme';
 
 export function Templates() {
   const reduced = usePrefersReducedMotion();
+  const { theme } = useTheme();
   const [q, setQ] = useState('');
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState(MORE_TEMPLATES);
@@ -28,13 +30,13 @@ export function Templates() {
 
   return (
     <div className="screen">
-      <div className="scroll">
+      <div className="scroll no-dock">
         <div className="tp-head">
           <h1>Templates</h1>
           <p>Start a Space from someone else’s setup. Each one is described by its rhythm.</p>
         </div>
         <form className="search" onSubmit={submit} role="search">
-          <BorderBeam size="line" colorVariant="colorful" theme="dark" active={searching && !reduced}>
+          <BorderBeam size="line" colorVariant="colorful" theme={theme} active={searching && !reduced}>
             <label className="search-box" aria-busy={searching}>
               <Icon name="search" size={18} />
               <input id="tpl-q" type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Moving, a big birthday, tax" aria-label="Search templates" />
@@ -45,9 +47,12 @@ export function Templates() {
 
         <article className="feature bezel" aria-labelledby="tpl-h">
           <div className="well">
-            <span className="by">{TEMPLATE.byLine}</span>
-            <h2 id="tpl-h">{TEMPLATE.name}</h2>
-            <p className="strap">{TEMPLATE.strap}</p>
+            <div className="cover">
+              <span className="by">{TEMPLATE.byLine}</span>
+              <h2 id="tpl-h">{TEMPLATE.name}</h2>
+              <p className="strap">{TEMPLATE.strap}</p>
+            </div>
+            <div className="body">
             <dl className="rhythm">
               <div><dt className="h-now">Now</dt><dd>{TEMPLATE.now}</dd></div>
               <div><dt className="h-next">Next</dt><dd>{TEMPLATE.next}</dd></div>
@@ -73,6 +78,7 @@ export function Templates() {
                   <button className="btn primary" onClick={() => setStarted('start')}>Start a Space from this</button>
                   <button className="btn" onClick={() => setStarted('remix')}>Remix</button>
                 </div>}
+            </div>
           </div>
         </article>
 

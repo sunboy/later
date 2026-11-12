@@ -4,6 +4,7 @@ import { ThinkingOrb } from 'thinking-orbs';
 import { AGENTS, SPACES, space } from '../data';
 import { Icon } from '../icons';
 import { useApp } from '../store';
+import { useTheme } from '../theme';
 import { ApprovalBody } from './Approve';
 import { reducedMotion } from '../motion';
 
@@ -11,6 +12,7 @@ const DUR = 7000;
 
 export function Story() {
   const app = useApp();
+  const { theme } = useTheme();
   const sid = app.storySpace ?? 'house';
   const s = space(sid);
   const agent = AGENTS[s.agent];
@@ -169,7 +171,7 @@ export function Story() {
                 {acted === card.id
                   ? <div className="stamp"><Icon name="check" size={18} />{card.done}</div>
                   : card.live && app.running
-                    ? <div className="live"><ThinkingOrb state={card.live.state} size={20} theme="dark" aria-hidden="true" />{card.live.text}</div>
+                    ? <div className="live"><ThinkingOrb state={card.live.state} size={20} theme={theme} aria-hidden="true" />{card.live.text}</div>
                     : <div className="src">{card.source}</div>}
               </article>
             </div>

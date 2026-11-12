@@ -1,4 +1,3 @@
-import { BotAvatar } from 'bot-avatars';
 import { AGENTS, PAYMENTS, gbp, space } from '../data';
 import { Icon } from '../icons';
 import { HoldButton } from '../Hold';
@@ -6,7 +5,7 @@ import { useApp } from '../store';
 
 /** The one approval moment. Rendered from the exact tool-call arguments, never a summary. */
 export function ApprovalBody({ id, compact = false }: { id: string; compact?: boolean }) {
-  const { approve, paid, running } = useApp();
+  const { approve, paid } = useApp();
   const p = PAYMENTS[id];
   const done = paid.includes(id);
   const agent = AGENTS[p.agent];
@@ -17,7 +16,7 @@ export function ApprovalBody({ id, compact = false }: { id: string; compact?: bo
     <>
       {!compact && (
         <div className="ap-head">
-          <BotAvatar className="bot" type={agent.avatar} size={32} paused={!running} aria-hidden="true" />
+          <span className="glyph"><Icon name={space(p.spaceId).glyph} size={17} /></span>
           <div className="who"><b>{space(p.spaceId).name}</b><small>{agent.name} asks, {p.source}</small></div>
         </div>
       )}
@@ -46,7 +45,7 @@ export function Approve() {
   const back = approval?.back ?? 'spaces';
   return (
     <div className="screen">
-      <div className="scroll" style={{ paddingBottom: 40 }}>
+      <div className="scroll no-dock">
         <div className="topbar">
           <button className="btn quiet sm" onClick={() => go(back)}><Icon name="close" size={16} />{paid.includes(id) ? 'Close' : 'Not now'}</button>
           <span className="fine">Needs you</span>

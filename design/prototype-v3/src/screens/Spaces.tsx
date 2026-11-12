@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as RPE } from 'react';
-import { BorderBeam } from 'border-beam';
 import { ThinkingOrb } from 'thinking-orbs';
 import { RETURNS, SPACES, space, AGENTS, type NextItem, type NowItem, type StoryCard } from '../data';
 import { Icon } from '../icons';
 import { Wordmark } from '../Wordmark';
 import { useApp, useClock, useFlash } from '../store';
+import { useTheme } from '../theme';
 import { spring, usePrefersReducedMotion, wait } from '../motion';
 
 /* ---------- ring ---------- */
@@ -124,10 +124,16 @@ function NowTile({ item, span, top, onLater }: { item: NowItem; span: boolean; t
     await wait(900);
     actNow(item.id);
   };
-  const needs = top && !!item.payment && !paid.includes(item.payment);
-  const tile = (
-    <article className={`tile bezel ${needs ? 'needs-you' : ''}`} aria-label={`${s.name}: ${item.ask}`}>
-      <div className="well">
+  // the first Now tile is the solid one: attention comes from colour and weight, not from an effect
+  const hero = top && span;
+  void paid;
+  return (
+    <div ref={ref} className={`tilewrap ${span ? 'span2' : ''} ${flash || done ? 'flash' : ''}`} data-id={item.id}
+      onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
+      <div className="tile-edges" aria-hidden="true">
+        {Array.from({ length: Math.min(3, item.depth - 1) }, (_, i) => <i key={i} style={{ ['--i' as string]: i + 1 }} />)}
+      </div>
+    <article className={`tile ${hero ? 'hero' : 'soft'}`} aria-label={`${s.name}: ${item.ask}`}>
         <div className="tile-top">
           <span className="glyph"><Icon name={s.glyph} size={17} /></span>
           <div className="who"><b>{s.name}</b>
@@ -146,39 +152,27 @@ function NowTile({ item, span, top, onLater }: { item: NowItem; span: boolean; t
         ) : <div className="tile-foot">
           {done
             ? <span className="flare-line"><Icon name="check" size={16} />{item.done}</span>
-            : <button className={`btn ${top ? 'primary' : ''} ${span ? '' : 'block'}`} onClick={act}>{item.act}</button>}
-          {span && !done && <span style={{ fontSize: 12, color: 'var(--ink-3)' }}>{item.depth} in this stack</span>}
+            : <button className={`btn primary ${span ? '' : 'block'}`} onClick={act}>{item.act}</button>}
+          {span && !done && <span style={{ fontSize: 12, color: hero ? 'var(--on-a-2)' : 'var(--ink-3)' }}>{item.depth} in this stack</span>}
         </div>}
-      </div>
     </article>
-  );
-  return (
-    <div ref={ref} className={`tilewrap ${span ? 'span2' : ''} ${flash || done ? 'flash' : ''}`} data-id={item.id}
-      onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
-      <div className="tile-edges" aria-hidden="true">
-        {Array.from({ length: Math.min(3, item.depth - 1) }, (_, i) => <i key={i} style={{ ['--i' as string]: i + 1 }} />)}
-      </div>
-      {/* pulse types drift through the full hue range; mono stays still, so the warmth comes from our own ember light */}
-      {needs
-        ? <BorderBeam size="pulse-inner" colorVariant="mono" theme="dark" strength={0.9} active={!reduced}>{tile}</BorderBeam>
-        : tile}
     </div>
   );
 }
 
 /* ---------- Next row ---------- */
-function NextRow({ item, beam }: { item: NextItem; beam: boolean }) {
+function NextRow({ item }: { item: NextItem }) {
   const { running } = useApp();
-  const reduced = usePrefersReducedMotion();
+  const { theme } = useTheme();
   const s = space(item.spaceId);
   const flash = useFlash(item.id);
   const working = !!item.orb && running;
   const status = item.orb && !running ? 'Paused by you' : item.status;
-  const row = (
+  return (
     <div className={`nrow ${working ? '' : 'waiting'} ${flash ? 'flash' : ''}`} data-id={item.id} aria-busy={working}>
       <span className={`orb-slot ${working ? '' : 'still'}`}>
         {working
-          ? <ThinkingOrb state={item.orb!} size={20} theme="dark" aria-hidden="true" />
+          ? <ThinkingOrb state={item.orb!} size={20} theme={theme} aria-hidden="true" />
           : <Icon name={s.glyph} size={16} />}
       </span>
       <div className="n-main">
@@ -190,9 +184,6 @@ function NextRow({ item, beam }: { item: NextItem; beam: boolean }) {
       <div className="n-when"><small>reaches you</small><strong>{item.eta}</strong><span>{item.day}</span></div>
     </div>
   );
-  return beam
-    ? <BorderBeam size="md" colorVariant="colorful" theme="dark" strength={0.7} active={working && !reduced} className="nrow-wrap">{row}</BorderBeam>
-    : row;
 }
 
 /* ---------- screen ---------- */
@@ -256,7 +247,6 @@ export function Spaces() {
   const secs = soon ? Math.max(0, Math.ceil((soon.backAt! - clock) / 1000)) : 0;
   const top = now.find(n => n.payment);
   const nowOrdered = top ? [top, ...now.filter(n => n !== top)] : now;
-  const beamId = next.find(n => n.orb && n.id === 'x-fare')?.id ?? next.find(n => n.orb)?.id;
 
   return (
     <div className="screen">
@@ -277,10 +267,10 @@ export function Spaces() {
           </div>
         </section>
 
-        <section className="band" aria-labelledby="h-next">
+        <section className="band band-next" aria-labelledby="h-next">
           <div className="band-head"><h2 className="h-next" id="h-next">Next</h2><p>the agents have these</p></div>
           <div className="next-list">
-            {next.map(n => <NextRow key={n.id} item={n} beam={n.id === beamId} />)}
+            {next.map(n => <NextRow key={n.id} item={n} />)}
           </div>
         </section>
         <p ref={live} className="sr" role="status" aria-live="polite" />
@@ -312,7 +302,7 @@ export function Spaces() {
       <div className={`scrim ${laterOpen ? 'open' : ''}`} hidden={!laterOpen} onClick={() => setLaterOpen(false)} />
       <div className={`sheet ${laterOpen ? 'open' : ''}`} role="dialog" aria-modal="true" aria-labelledby="later-h" hidden={!laterOpen} onKeyDown={e => e.key === 'Escape' && setLaterOpen(false)}>
         <div className="bezel"><div className="well">
-          <h3 className="h-later" id="later-h" style={{ fontSize: 30 }}>Later</h3>
+          <h3 className="h-later" id="later-h" style={{ fontSize: 36 }}>Later</h3>
           <p>Resting. Each one comes back up when it said it would.</p>
           {later.map(l => (
             <div key={l.id} className="lrow">

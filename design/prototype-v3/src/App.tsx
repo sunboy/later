@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Liquid } from 'liquid-gooey';
 import { AppProvider, useApp, type Screen } from './store';
 import { Spaces } from './screens/Spaces';
@@ -9,6 +9,7 @@ import { Templates } from './screens/Templates';
 import { Approve } from './screens/Approve';
 import { Icon } from './icons';
 import { Wordmark } from './Wordmark';
+import { PALETTES, ThemeProvider, useTheme, useToken } from './theme';
 
 const BASES: Screen[] = ['spaces', 'today', 'capture', 'templates'];
 const SCREENS: { id: Screen; label: string; note: string }[] = [
@@ -20,15 +21,9 @@ const SCREENS: { id: Screen; label: string; note: string }[] = [
   { id: 'approve', label: 'Approval', note: 'press and hold' },
 ];
 
-function useToken(name: string) {
-  const [v, setV] = useState('');
-  useEffect(() => { setV(getComputedStyle(document.documentElement).getPropertyValue(name).trim()); }, [name]);
-  return v;
-}
-
 function CaptureMenu({ open, setOpen }: { open: boolean; setOpen: (f: (o: boolean) => boolean) => void }) {
   const { go } = useApp();
-  const fill = useToken('--raise-2');
+  const fill = useToken('--act');
   const items: { label: string; icon: 'mic' | 'type' | 'forward'; y: number }[] = [
     { label: 'Speak', icon: 'mic', y: -62 },
     { label: 'Type', icon: 'type', y: -118 },
@@ -81,31 +76,53 @@ function Phone() {
         <CaptureMenu open={menu} setOpen={setMenu} />
       </nav>
       {app.screen === 'story' && <Story key={app.storySpace ?? 'house'} />}
-      {app.screen === 'approve' && <div className="screen" style={{ background: 'var(--ground)', zIndex: 45 }}><Approve /></div>}
+      {app.screen === 'approve' && <div className="screen" style={{ background: 'var(--paper)', zIndex: 45 }}><Approve /></div>}
     </div>
   );
 }
 
 function Left() {
+  const { palette } = useTheme();
+  const p = PALETTES.find(x => x.id === palette)!;
   return (
       <aside className="stage-left" aria-label="About this direction">
         <Wordmark size={46} />
-        <p className="lede">Colour is light, and light means something is alive or needs you. Everything else is quiet, layered black. Later has no light at all.</p>
+        <p className="lede">Now, Next, Later: what needs you, what the agents are doing, and what is resting until its time. Three colours, each with one job.</p>
         <ul className="legend">
-          <li><span className="lamp ember" /><span><b>Ember</b>. Needs you: one warm light, on the thing that most needs a decision.</span></li>
-          <li><span className="lamp prism" /><span><b>Prism</b>. An agent is working. Shown only while one really is.</span></li>
-          <li><span className="lamp flare" /><span><b>Flare</b>. Done, or back on time. One pop that fades.</span></li>
-          <li><span className="lamp unlit" /><span><b>Unlit</b>. Later. Narrow, light and at rest.</span></li>
+          <li><span className="chip-sw a" /><span><b>Needs you.</b> Now tiles, the one action on each, anything you must hold to confirm.</span></li>
+          <li><span className="chip-sw b" /><span><b>The agents and Later.</b> What they hold, the night horizon things sink into, the stories they play you.</span></li>
+          <li><span className="chip-sw p" /><span><b>Done or back.</b> A brief mark when something lands, never a resting state.</span></li>
         </ul>
+        <p className="fine">{p.name}. {p.line}.</p>
       </aside>
   );
 }
 
 function Right() {
   const app = useApp();
+  const t = useTheme();
   return (
       <aside className="stage-right" aria-label="Prototype controls">
-        <nav className="switcher" aria-label="Screens">
+        <div className="panel">
+          <h2 id="pal-h">Palette</h2>
+          <div className="palettes" role="group" aria-labelledby="pal-h">
+            {PALETTES.map(p => (
+              <button key={p.id} className="pal" data-palette-swatch={p.id} aria-pressed={t.palette === p.id} onClick={() => t.setPalette(p.id)}>
+                <span className="sw" aria-hidden="true"><i className={`sw-${p.id}-a`} /><i className={`sw-${p.id}-b`} /><i className={`sw-${p.id}-p`} /></span>
+                {p.name}
+              </button>
+            ))}
+          </div>
+          <div className="themeseg" role="group" aria-label="Theme">
+            <button aria-pressed={t.theme === 'light'} onClick={() => t.setTheme('light')}>Light</button>
+            <button aria-pressed={t.theme === 'dark'} onClick={() => t.setTheme('dark')}>Dark</button>
+          </div>
+          <div className="toggle">
+            <span><b>Agents running</b>Off pauses the agents: their orbs stop and Next shows paused.</span>
+            <button className="switch" role="switch" aria-checked={app.running} aria-label="Agents running" onClick={() => app.setRunning(!app.running)} />
+          </div>
+        </div>
+        <nav className="panel switcher" aria-label="Screens">
           {SCREENS.map(s => (
             <button key={s.id} aria-current={app.screen === s.id} onClick={() => {
               if (s.id === 'story') app.openStory('house');
@@ -114,17 +131,14 @@ function Right() {
             }}>{s.label}<small>{s.note}</small></button>
           ))}
         </nav>
-        <div className="toggle">
-          <span><b>Agents running</b>Off pauses every orb, beam and working bot.</span>
-          <button className="switch" role="switch" aria-checked={app.running} aria-label="Agents running" onClick={() => app.setRunning(!app.running)} />
-        </div>
-        <p className="fine">Prototype with example data. Flick a Now tile down to set it aside; try “In 15 seconds”. Tap a ring to play that Space.</p>
+        <p className="fine">Example data. Flick a Now tile down to set it aside, and try “In 15 seconds”. Tap a ring to play that Space.</p>
       </aside>
   );
 }
 
 export function App() {
   return (
+    <ThemeProvider>
     <AppProvider>
       <main className="stage">
         <Left />
@@ -132,5 +146,6 @@ export function App() {
         <Right />
       </main>
     </AppProvider>
+    </ThemeProvider>
   );
 }
