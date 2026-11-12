@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { BotAvatar } from 'bot-avatars';
+import { Crew } from '../Mascot';
 import { ThinkingOrb } from 'thinking-orbs';
 import { AGENTS, SPACES, space } from '../data';
 import { Icon } from '../icons';
@@ -72,7 +72,7 @@ export function Story() {
     setTimeout(next, reducedMotion() ? 600 : 1500);
   };
   const later = () => { if (atEnd) return; setTally(t => ({ ...t, later: t.later + 1 })); next(); };
-  const close = () => app.go('spaces');
+  const close = () => app.go('today');
 
   // when a payment inside the story is approved, count it and move on
   useEffect(() => {
@@ -201,7 +201,7 @@ export function Story() {
           </>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
-          <BotAvatar className="bot" type={agent.avatar} size={32} state={app.running && card?.live ? 'working' : 'default'} paused={!app.running} aria-hidden="true" />
+          <span className="on-b"><Crew who={agent.id} size={34} state={!app.running ? 'rest' : card?.live ? 'working' : 'idle'} /></span>
           <span className="fine">{agent.name} prepared {queue.length === 1 ? 'this' : 'these'}{card?.live && app.running && !atEnd ? `. ${card.source}.` : '.'}</span>
         </div>
       </div>

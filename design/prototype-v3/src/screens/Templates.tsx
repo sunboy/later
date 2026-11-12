@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BorderBeam } from 'border-beam';
-import { BotAvatar } from 'bot-avatars';
+import { Crew } from '../Mascot';
 import { MORE_TEMPLATES, TEMPLATE } from '../data';
 import { Icon } from '../icons';
 import { usePrefersReducedMotion } from '../motion';
@@ -61,8 +61,8 @@ export function Templates() {
             <div className="crew">
               {TEMPLATE.agents.map(a => (
                 <div key={a.name}>
-                  {/* not running yet: a still bot */}
-                  <BotAvatar className="bot" type={a.avatar} size={32} paused aria-hidden="true" />
+                  {/* not running yet: the crew member rests */}
+                  <Crew who={a.who} size={34} state="rest" />
                   <span>{a.name}<small>{a.job}</small></span>
                 </div>
               ))}

@@ -1,0 +1,250 @@
+<title>Later: mascot concepts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,300..600&family=Mona+Sans:wdth,wght@75..125,200..900&display=swap">
+<style>
+/* Layout: a contact sheet. Three concept columns, each a light panel over a dark panel with identical content, then one verdict table. */
+:root {
+  --page: #ebe6df; --paper: #f7f3ee; --ink: #1e2740; --ink-2: #4f566b; --ink-3: #5e6374; --line: rgba(30,39,64,.14);
+  --a: #a24b2d; --b: #1f2a44; --pop: #d6e46a; --on-pop: #1f2a44; --card: #ffffff;
+  --f-sans: 'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; --page: #0b0f1a; --paper: #121828; --ink: #eeebe4; --ink-2: #b0b5c6; --ink-3: #9299ad; --line: rgba(238,235,228,.13); --a: #e39472; --b: #1c2438; --card: #1b2236; } }
+:root[data-theme="dark"] { color-scheme: dark; --page: #0b0f1a; --paper: #121828; --ink: #eeebe4; --ink-2: #b0b5c6; --ink-3: #9299ad; --line: rgba(238,235,228,.13); --a: #e39472; --b: #1c2438; --card: #1b2236; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font-family: var(--f-sans); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-block: 36px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+header { display: grid; gap: 10px; max-width: 70ch; }
+h1 { margin: 0; font-size: clamp(34px, 5vw, 54px); line-height: .95; font-weight: 880; font-variation-settings: 'wdth' 120; letter-spacing: -.03em; text-wrap: balance; }
+h1 span { font-weight: 340; font-variation-settings: 'wdth' 78; }
+header p { margin: 0; color: var(--ink-2); font-size: 16px; }
+.cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+@media (max-width: 1020px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.concept { display: grid; gap: 12px; min-width: 0; }
+.c-head { display: grid; gap: 4px; padding: 0 4px; }
+.c-head h2 { margin: 0; font-size: 27px; font-weight: 800; font-variation-settings: 'wdth' 112; letter-spacing: -.02em; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pick { font-size: 12.5px; font-weight: 680; letter-spacing: 0; font-variation-settings: 'wdth' 100; padding: 4px 9px; border-radius: 8px; background: var(--pop); color: var(--on-pop); }
+.c-head p { margin: 0; color: var(--ink-2); font-size: 14px; min-height: 4.3em; }
+.concept.chosen .pl { box-shadow: 0 0 0 2px var(--ink); }
+
+/* panels carry their own fixed theme so light and dark sit side by side */
+.pl { border-radius: 24px; padding: 18px 16px; display: grid; gap: 18px; background: var(--p-bg); color: var(--p-ink); min-width: 0;
+  --m-ground: var(--p-bg); --m-hole: var(--p-bg); --m-pop: #d6e46a; }
+.pl.light { --p-bg: #f7f3ee; --p-card: #ffffff; --p-ink: #1e2740; --p-ink2: #5e6374; --p-line: rgba(30,39,64,.12); --m-body: #1f2a44; --m-2: #8990a6; --m-3: #cfccc9; --m-a: #b0532f; }
+.pl.dark { --p-bg: #121828; --p-card: #1e2640; --p-ink: #eeebe4; --p-ink2: #9ea4b8; --p-line: rgba(238,235,228,.11); --m-body: #eeebe4; --m-2: #7d86a1; --m-3: #39435f; --m-a: #e08a63; }
+.pl h3 { margin: 0 0 8px; font-size: 12.5px; font-weight: 560; color: var(--p-ink2); }
+.hero { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; }
+.hero-m { display: grid; justify-items: center; gap: 6px; width: 176px; max-width: 100%; }
+.hero-m svg { width: 168px; height: 168px; max-width: 100%; }
+.hero-m span { font-family: var(--f-mono); font-size: 11px; color: var(--p-ink2); font-variation-settings: 'wdth' 88; }
+.small { display: grid; gap: 12px; min-width: 0; }
+.tabbar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) 48px; align-items: center; gap: 2px; padding: 6px 8px; border-radius: 16px; background: var(--p-card); box-shadow: 0 1px 0 var(--p-line); font-size: 10px; color: var(--p-ink2); text-align: center; --m-hole: var(--p-card); --m-ground: var(--p-card); }
+.tabbar b { color: var(--p-ink); font-weight: 600; }
+.tiny { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tiny small { font-family: var(--f-mono); font-size: 10.5px; color: var(--p-ink2); font-variation-settings: 'wdth' 88; }
+.states { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 4px; }
+.states div, .crewrow div { display: grid; justify-items: center; gap: 4px; font-size: 11.5px; color: var(--p-ink2); text-align: center; line-height: 1.2; }
+.crewrow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.crewrow b { color: var(--p-ink); font-weight: 620; font-size: 12.5px; }
+.assign { position: relative; padding-top: 27px; }
+.tile { position: relative; z-index: 2; display: grid; gap: 2px; padding: 12px 14px; border-radius: 18px; background: var(--p-card); box-shadow: 0 1px 0 var(--p-line), 0 10px 18px -14px rgba(0,0,0,.35); }
+.tile b { font-size: 14.5px; font-weight: 700; }
+.tile small { font-size: 12.5px; color: var(--p-ink2); }
+.assign .m { position: absolute; right: 18px; top: 0; z-index: 1; --m-hole: var(--p-bg); }
+.assign.over .m { z-index: 3; top: -2px; }
+
+/* verdict */
+.verdict { background: var(--card); border-radius: 24px; padding: 20px; display: grid; gap: 14px; }
+.verdict h2 { margin: 0; font-size: 24px; font-weight: 800; font-variation-settings: 'wdth' 110; letter-spacing: -.02em; }
+.verdict p { margin: 0; color: var(--ink-2); max-width: 75ch; }
+.scroll-x { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 13.5px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 10px; border-top: 1px solid var(--line); }
+thead th { border-top: 0; font-weight: 700; font-size: 14px; }
+tbody th { font-weight: 560; color: var(--ink-2); width: 22%; }
+td.win { font-weight: 620; }
+.note { font-size: 12.5px; color: var(--ink-3); }
+/* Later mascot family. Shared by the concept sheet and prototype-v3 (src/mascot.css is a copy).
+   Parts are plain vector shapes; every state is a class on the svg. Colours come from four local tokens:
+   --m-body (the card), --m-hole (what shows through the eye slots), --m-2 / --m-3 (cards beneath),
+   plus the app's --m-a (needs you) and --m-pop (done). --m-ground paints the horizon a resting character sinks behind. */
+.m { display: block; overflow: visible; flex: none; }
+.m * { transform-box: fill-box; transform-origin: center; }
+.m .body { fill: var(--m-body); }
+.m .c2 { fill: var(--m-2); }
+.m .c3 { fill: var(--m-3); }
+.m .fold { fill: var(--m-2); transform-origin: 100% 100%; }
+.m .eye { fill: var(--m-hole); }
+.m .smile, .m .ln { fill: none; stroke: var(--m-hole); stroke-linecap: round; }
+.m .smile { stroke-width: 2.6; display: none; }
+.m .ln { stroke-width: 1.8; display: none; stroke-dasharray: 20; }
+.m .tabA { fill: var(--m-a); }
+.m .horizon { fill: var(--m-ground); stroke: none; display: none; }
+.m .hz { fill: none; stroke: var(--m-2); stroke-width: 1.4; stroke-linecap: round; display: none; }
+.m.st-rest { overflow: hidden; }
+.m.st-rest .hz { display: block; }
+.m .all, .m .top, .m .c2, .m .c3, .m .tabA, .m .eye, .m .fold { transition: translate .45s cubic-bezier(.34,1.4,.64,1), rotate .45s cubic-bezier(.34,1.4,.64,1), scale .3s, fill .3s, opacity .4s; }
+
+/* ---- the Deck (chosen): chief is a stack, crew are single cards ---- */
+.deck.st-idle .top { animation: m-breathe 4.2s ease-in-out infinite; }
+.deck.st-idle .eye, .deck.st-waiting .eye, .deck.st-listening .eye { animation: m-blink 5.2s infinite; }
+.deck.st-listening .top { translate: 0 -1.5px; }
+.deck.st-listening .fold { animation: m-ear 1.1s ease-in-out infinite alternate; }
+.deck.st-listening .c2 { animation: m-meter .46s ease-in-out infinite alternate; }
+.deck.st-listening .c3 { animation: m-meter2 .33s ease-in-out infinite alternate; }
+.deck.st-thinking .c2 { animation: m-shufL 1.3s ease-in-out infinite; }
+.deck.st-thinking .c3 { animation: m-shufR 1.3s ease-in-out infinite; }
+.deck.st-thinking .eye { animation: m-look 2.6s ease-in-out infinite; }
+.deck.st-working .eye { scale: 1 .36; animation: m-scan 1s ease-in-out infinite alternate; }
+.deck.st-working .ln { display: block; animation: m-write 1.7s linear infinite; }
+.deck.st-working .ln.b { animation-delay: .5s; }
+.deck.st-working .top { animation: m-breathe 1.7s ease-in-out infinite; }
+.deck .tabA { translate: 0 6px; }
+.deck.st-waiting .tabA { translate: 0 -7px; animation: m-nudge 2.4s cubic-bezier(.34,1.4,.64,1) infinite; }
+.deck.st-done .c2, .deck.st-done .under { fill: var(--m-pop); }
+.deck.st-done .eye { display: none; }
+.deck.st-done .smile { display: block; }
+.deck.st-done .top { animation: m-snap .6s cubic-bezier(.34,1.4,.64,1); }
+.deck.st-rest .all { translate: 0 11px; opacity: .6; animation: m-breathe 6s ease-in-out infinite; }
+.deck.st-rest .eye { scale: 1 .16; }
+.deck.st-rest .horizon { display: block; }
+.deck.st-error .top { transform-box: view-box; transform-origin: 8px 35px; rotate: 7deg; animation: m-shake 3.2s ease-in-out infinite; }
+.deck.st-error .c2 { rotate: -5deg; }
+.deck.st-error .eye.r { scale: 1 .42; }
+.deck.st-error .under { fill: var(--m-a); }
+
+@keyframes m-breathe { 50% { translate: 0 -0.9px; } }
+@keyframes m-blink { 0%, 94%, 100% { scale: 1 1; } 96.5% { scale: 1 .1; } }
+@keyframes m-ear { from { scale: 1.05; } to { scale: 1.5; } }
+@keyframes m-meter { from { translate: 0 0; } to { translate: 0 2.4px; } }
+@keyframes m-meter2 { from { translate: 0 .4px; } to { translate: 0 3.6px; } }
+@keyframes m-shufL { 0%, 100% { translate: 0 0; } 40% { translate: -7px -1px; } 60% { translate: -7px -1px; } }
+@keyframes m-shufR { 0%, 45%, 100% { translate: 0 0; } 70% { translate: 7px -1px; } 85% { translate: 7px -1px; } }
+@keyframes m-look { 0%, 100% { translate: -1.7px -2.2px; } 50% { translate: 1.7px -2.2px; } }
+@keyframes m-scan { from { translate: -2.6px 0; } to { translate: 2.6px 0; } }
+@keyframes m-write { 0% { stroke-dashoffset: 20; } 55%, 100% { stroke-dashoffset: 0; } }
+@keyframes m-nudge { 0%, 70%, 100% { translate: 0 -7px; } 80% { translate: 0 -10.5px; } }
+@keyframes m-snap { 0% { scale: .86; } 100% { scale: 1; } }
+@keyframes m-shake { 0%, 84%, 100% { rotate: 7deg; } 88% { rotate: 10deg; } 92% { rotate: 5deg; } 96% { rotate: 8.5deg; } }
+
+@media (prefers-reduced-motion: reduce) { .m, .m * { animation: none !important; transition: none !important; } }
+
+/* ---- Floats ---- */
+.flt .mast { stroke: var(--m-body); stroke-width: 2.4; stroke-linecap: round; }
+.flt .lamp { fill: var(--m-2); }
+.flt .stripe { fill: var(--m-hole); }
+.flt .water { fill: var(--m-ground); opacity: .84; }
+.flt .rip { fill: none; stroke: var(--m-2); stroke-width: 1.4; opacity: 0; }
+.flt .bob { transform-box: view-box; transform-origin: 24px 31px; animation: f-bob 3.4s ease-in-out infinite; }
+.flt.st-listening .rip { animation: f-rip 1.4s ease-out infinite; }
+.flt.st-thinking .bob { animation: f-sway 2.2s ease-in-out infinite; }
+.flt.st-thinking .lamp { animation: f-lamp .8s steps(2) infinite; fill: var(--m-body); }
+.flt.st-working .bob { animation: f-tow 1.6s ease-in-out infinite alternate; }
+.flt.st-waiting .lamp { fill: var(--m-a); }
+.flt.st-waiting .bob { animation: f-dip 2.2s cubic-bezier(.34,1.4,.64,1) infinite; }
+.flt.st-done .lamp { fill: var(--m-pop); stroke: var(--m-body); stroke-width: 1; }
+.flt.st-done .bob { animation: f-hop 1.8s cubic-bezier(.34,1.4,.64,1) infinite; }
+.flt.st-rest .bob { animation: none; translate: 0 17px; opacity: .6; }
+.flt.st-error .bob { animation: none; rotate: 66deg; translate: 0 5px; }
+@keyframes f-bob { 0%,100% { translate: 0 0; rotate: -3deg; } 50% { translate: 0 -1.8px; rotate: 3deg; } }
+@keyframes f-rip { from { scale: .4; opacity: .9; } to { scale: 2.2; opacity: 0; } }
+@keyframes f-sway { 0%,100% { rotate: -10deg; } 50% { rotate: 10deg; } }
+@keyframes f-lamp { to { opacity: .2; } }
+@keyframes f-tow { from { translate: -4px 0; rotate: 8deg; } to { translate: 4px 0; rotate: 8deg; } }
+@keyframes f-dip { 0%,60%,100% { translate: 0 0; } 75% { translate: 0 7px; } 88% { translate: 0 -2.5px; } }
+@keyframes f-hop { 0%,70%,100% { translate: 0 0; } 82% { translate: 0 -6px; } }
+/* ---- Hands ---- */
+.hnd .ringc { fill: none; stroke: var(--m-3); stroke-width: 2.4; }
+.hnd .hh, .hnd .mh { transform-box: view-box; transform-origin: 24px 24px; stroke: var(--m-body); stroke-linecap: round; transition: rotate .5s cubic-bezier(.34,1.4,.64,1); }
+.hnd .hh { stroke-width: 5; rotate: -60deg; } .hnd .mh { stroke-width: 4; rotate: 60deg; }
+.hnd .piv { fill: var(--m-body); }
+.hnd .g { transform-box: view-box; transform-origin: 24px 24px; }
+.hnd.st-idle .mh { animation: h-tick 4s steps(1) infinite; }
+.hnd.st-listening .hh { rotate: -90deg; } .hnd.st-listening .mh { rotate: 90deg; }
+.hnd.st-listening .g { animation: h-pulse .5s ease-in-out infinite alternate; }
+.hnd.st-thinking .mh { animation: h-spin 1.3s linear infinite; }
+.hnd.st-working .mh { animation: h-spin 1.8s linear infinite; } .hnd.st-working .hh { animation: h-spin 7s linear infinite; }
+.hnd.st-waiting .hh, .hnd.st-waiting .mh { rotate: 0deg; stroke: var(--m-a); } .hnd.st-waiting .piv { fill: var(--m-a); }
+.hnd.st-waiting .g { animation: h-nudge 2s cubic-bezier(.34,1.4,.64,1) infinite; }
+.hnd.st-done .hh { rotate: -45deg; } .hnd.st-done .mh { rotate: 45deg; } .hnd.st-done .g { translate: -2px 7px; } .hnd.st-done .ringc { stroke: var(--m-pop); stroke-width: 3.4; }
+.hnd.st-rest .hh { rotate: 165deg; } .hnd.st-rest .mh { rotate: 195deg; } .hnd.st-rest { opacity: .55; }
+.hnd.st-error .hh { rotate: -90deg; } .hnd.st-error .mh { rotate: 90deg; } .hnd.st-error .g { animation: h-shake 2.6s infinite; }
+@keyframes h-tick { 0% { rotate: 60deg; } 50% { rotate: 66deg; } }
+@keyframes h-spin { from { rotate: 0deg; } to { rotate: 360deg; } }
+@keyframes h-pulse { from { scale: .82; } to { scale: 1.08; } }
+@keyframes h-nudge { 0%,70%,100% { translate: 0 0; } 82% { translate: 0 -3px; } }
+@keyframes h-shake { 0%,80%,100% { translate: 0 0; } 85% { translate: -2px 0; } 90% { translate: 2px 0; } 95% { translate: -1px 0; } }
+</style>
+<div class="wrap">
+  <header>
+    <h1>Later <span>mascot concepts</span></h1>
+    <p>One chief replaces the plus button and is the way in to talk, type and capture. Its crew are the agents working in your Spaces. Three families, each built from simple vector parts, shown in every state, at 24 px and large, on light and dark. Not aliens, not animals or people, not plain geometric figures.</p>
+  </header>
+  <div class="cols" id="cols"></div>
+  <section class="verdict">
+    <h2>The Deck wins, because it is made of the app.</h2>
+    <p>The chief is a stack of cards and each crew member is one card dealt from it. Putting someone on a Space is dealing a card into that Space, and the chief’s stack gets thinner while they are out. Nothing about it needs explaining, and nothing about it belongs to another product. The eyes are slots cut through the card, so the colour behind them carries meaning: clay rises behind the chief only when something needs you, citrus shows only when something lands.</p>
+    <div class="scroll-x"><table>
+      <thead><tr><th></th><th>The Deck</th><th>Floats</th><th>Hands</th></tr></thead>
+      <tbody>
+        <tr><th>Unique against Town, Grok Bot, Dots</th><td class="win">Yes. A character made of the product’s own material.</td><td>Partly. Quirky objects with faces sit close to Town.</td><td>Partly. Lines on a dot sit close to Dots.</td></tr>
+        <tr><th>Reads at 24 px</th><td class="win">Yes. Stack silhouette and two slots.</td><td>Weak. Lamp and stripe blur.</td><td class="win">Yes. Two strokes.</td></tr>
+        <tr><th>Has presence at 200 px</th><td class="win">Yes. Fold, slots, card edges.</td><td>Yes.</td><td>No. It is an icon, however large.</td></tr>
+        <tr><th>Chief and crew</th><td class="win">Structural. The crew are cards from the chief’s stack.</td><td>By size only.</td><td>Weak. A hand without a face is not a colleague.</td></tr>
+        <tr><th>States</th><td class="win">All eight are distinct in a still frame.</td><td>Thinking and idle look alike when still.</td><td>Done and idle are close; error needs colour.</td></tr>
+        <tr><th>Assigned to a Space</th><td class="win">The card is tucked into the Space’s own stack.</td><td>Moored on the tile edge. Charming, arbitrary.</td><td>Pinned like a dial. Reads as a clock widget.</td></tr>
+        <tr><th>Cheap to build and animate</th><td class="win">Rectangles and one path. Transforms only.</td><td>Needs a water mask per surface.</td><td class="win">Three elements.</td></tr>
+        <tr><th>Next to money and mail</th><td class="win">Paper, slips, receipts. Calm.</td><td>Playful. A bobbing toy beside a payment is wrong.</td><td>Neutral, but a spinning clock reads as a loader.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Working names. The chief is Keep; the crew are Wren (tab), Scout (clipped corner), Juno (arch) and Ledger (receipt edge). The floats lost because the sea is a metaphor the palette suggested, not one the product owns. The hands lost because they are a status indicator, not a family. What survives from Hands: the done state should read as a tick at a glance, which the Deck gets from its closed, smiling slots and the citrus card beneath.</p>
+  </section>
+</div>
+<script>
+const STATES = [['idle','Idle'],['listening','Listening'],['thinking','Thinking'],['working','Working'],['waiting','Waiting on you'],['done','Done'],['rest','Resting, later'],['error','Error']];
+const svg = (cls, st, size, inner) => `<svg class="m ${cls} st-${st}" viewBox="0 0 48 48" width="${size}" height="${size}" aria-hidden="true">${inner}</svg>`;
+const HORIZON = '<path class="horizon" d="M0 39Q24 35 48 39V48H0Z"/><path class="hz" d="M1 39Q24 35 47 39"/>';
+const CREW = {
+  wren: 'M18 8h12a7 7 0 0 1 7 7v18a7 7 0 0 1-7 7H18a7 7 0 0 1-7-7V15a7 7 0 0 1 7-7ZM13 12V8.5a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4V12Z',
+  scout: 'M18 8h10l9 9v16a7 7 0 0 1-7 7H18a7 7 0 0 1-7-7V15a7 7 0 0 1 7-7Z',
+  juno: 'M11 21a13 13 0 0 1 26 0v12a7 7 0 0 1-7 7H18a7 7 0 0 1-7-7Z',
+  ledger: 'M18 8h12a7 7 0 0 1 7 7v25l-3.25-3-3.25 3-3.25-3-3.25 3-3.25-3-3.25 3-3.25-3L11 40V15a7 7 0 0 1 7-7Z',
+};
+const deck = {
+  chief: (st, s) => svg('deck', st, s, `<g class="all"><rect class="c3" x="13" y="19" width="22" height="24" rx="7"/><rect class="c2 under" x="10.5" y="14" width="27" height="25" rx="7.5"/><rect class="tabA" x="12" y="5" width="24" height="18" rx="6.5"/><g class="top"><path class="body" d="M16.5 5H31L40 14V26.5A8.5 8.5 0 0 1 31.5 35H16.5A8.5 8.5 0 0 1 8 26.5V13.5A8.5 8.5 0 0 1 16.5 5Z"/><path class="fold" d="M31 5L40 14H34.5A3.5 3.5 0 0 1 31 10.5Z"/><rect class="eye l" x="17.6" y="14.5" width="3.6" height="8.6" rx="1.8"/><rect class="eye r" x="26" y="14.5" width="3.6" height="8.6" rx="1.8"/><path class="smile" d="M16.8 21q2.6-5 5.2 0M25.2 21q2.6-5 5.2 0"/><path class="ln a" d="M15 27.5h18"/><path class="ln b" d="M15 30.8h11"/></g></g>${HORIZON}`),
+  crew: (k, st, s) => svg('deck crew', st, s, `<g class="all"><rect class="tabA" x="14" y="9" width="20" height="14" rx="5"/><g class="top"><path class="body" d="${CREW[k]}"/><rect class="eye l" x="18.4" y="17" width="3.2" height="7.6" rx="1.6"/><rect class="eye r" x="26.2" y="17" width="3.2" height="7.6" rx="1.6"/><path class="smile" d="M17.6 23q2.4-4.6 4.8 0M25.4 23q2.4-4.6 4.8 0"/><path class="ln a" d="M16 29h16"/><path class="ln b" d="M16 32.2h9"/></g></g>${HORIZON}`),
+};
+const FL = { wren: '<circle class="body" cx="24" cy="27" r="10"/>', scout: '<rect class="body" x="20" y="9" width="8" height="33" rx="4"/>', juno: '<rect class="body" x="13" y="18" width="22" height="19" rx="6"/>', ledger: '<path class="body" d="M24 14l11 12-11 14-11-14Z"/>' };
+const water = '<path class="water" d="M-4 31q6-3 12 0t12 0 12 0 12 0 12 0V54H-4Z"/><circle class="rip" cx="24" cy="31" r="8"/>';
+const floats = {
+  chief: (st, s) => svg('flt', st, s, `<g class="bob"><line class="mast" x1="24" y1="13" x2="24" y2="6"/><circle class="lamp" cx="24" cy="5" r="3"/><path class="body" d="M24 11c8 0 12 7 12 15s-5 15-12 15-12-7-12-15 4-15 12-15Z"/><rect class="stripe" x="12.6" y="23" width="22.8" height="4.5"/><circle class="eye" cx="20" cy="18" r="1.7"/><circle class="eye" cx="28" cy="18" r="1.7"/></g>${water}`),
+  crew: (k, st, s) => svg('flt crew', st, s, `<g class="bob"><circle class="lamp" cx="24" cy="${k === 'scout' ? 6 : k === 'wren' ? 14 : k === 'juno' ? 15 : 11}" r="2.4"/>${FL[k]}<circle class="eye" cx="${k === 'scout' ? 22.4 : 20.5}" cy="24" r="1.4"/><circle class="eye" cx="${k === 'scout' ? 25.6 : 27.5}" cy="24" r="1.4"/></g>${water}`),
+};
+const hands = {
+  chief: (st, s) => svg('hnd', st, s, `<circle class="ringc" cx="24" cy="24" r="19"/><g class="g"><line class="hh" x1="24" y1="24" x2="24" y2="14"/><line class="mh" x1="24" y1="24" x2="24" y2="8.5"/><circle class="piv" cx="24" cy="24" r="3.4"/></g>`),
+  crew: (k, st, s) => svg('hnd crew', st, s, `<g class="g"><line class="mh" x1="24" y1="24" x2="24" y2="${{ wren: 9, scout: 6, juno: 12, ledger: 10 }[k]}" style="stroke-width:${{ wren: 5, scout: 3, juno: 7, ledger: 4 }[k]}"/><circle class="piv" cx="24" cy="24" r="${{ wren: 4, scout: 3, juno: 5, ledger: 6 }[k]}"/></g>`),
+};
+const CONCEPTS = [
+  { id: 'deck', name: 'The Deck', chosen: true, fam: deck, idea: 'Made of the app’s own material. The chief is a stack of cards; each crew member is one card dealt from it. The eyes are slots cut through the card. It leans, lifts a corner to listen, shuffles to think and sinks below the horizon to rest.', assign: '' },
+  { id: 'floats', name: 'Floats', fam: floats, idea: 'Made of the app’s idea of time as a tide: things sink into Later and rise back. The chief is a marker buoy on the waterline; the crew are smaller floats. A float dips when something bites.', assign: 'over' },
+  { id: 'hands', name: 'Hands', fam: hands, idea: 'Made of time itself. The chief is a pair of clock hands on a pivot; the crew are single hands. The hands point, sweep, hang at half past six to rest, and close into a tick when done.', assign: 'over' },
+];
+const names = [['wren', 'Wren', 'working'], ['scout', 'Scout', 'waiting'], ['juno', 'Juno', 'done'], ['ledger', 'Ledger', 'rest']];
+const panel = (c, theme) => `<div class="pl ${theme}">
+  <div class="hero"><div class="hero-m" data-cycle="${c.id}">${c.fam.chief('idle', 168)}<span>idle</span></div>
+    <div class="small"><div><h3>In the tab bar</h3><div class="tabbar"><span><b>Today</b></span><span>Spaces</span><span>Templates</span>${c.fam.chief('idle', 44)}</div></div>
+    <div><h3>At 24 px</h3><div class="tiny">${c.fam.chief('idle', 24)}${names.map(n => c.fam.crew(n[0], 'idle', 24)).join('')}</div></div></div></div>
+  <div><h3>The chief, every state</h3><div class="states">${STATES.map(([s, l]) => `<div>${c.fam.chief(s, 58)}${l}</div>`).join('')}</div></div>
+  <div><h3>The crew</h3><div class="crewrow">${names.map(n => `<div>${c.fam.crew(n[0], n[2], 46)}<b>${n[1]}</b>${STATES.find(s => s[0] === n[2])[1].toLowerCase()}</div>`).join('')}</div></div>
+  <div><h3>Assigned to a Space</h3><div class="assign ${c.assign}">${c.fam.crew('scout', 'working', 40)}<div class="tile"><b>House move</b><small>Scout is chasing 3 replies. Reaches you by 12:00.</small></div></div></div>
+</div>`;
+document.getElementById('cols').innerHTML = CONCEPTS.map(c => `<article class="concept ${c.chosen ? 'chosen' : ''}"><div class="c-head"><h2>${c.name}${c.chosen ? '<span class="pick">Recommended</span>' : ''}</h2><p>${c.idea}</p></div>${panel(c, 'light')}${panel(c, 'dark')}</article>`).join('');
+let i = 0;
+setInterval(() => {
+  i = (i + 1) % STATES.length;
+  document.querySelectorAll('.hero-m').forEach(h => {
+    const s = h.querySelector('svg'); s.setAttribute('class', s.getAttribute('class').replace(/st-\w+/, 'st-' + STATES[i][0]));
+    h.querySelector('span').textContent = STATES[i][1].toLowerCase();
+  });
+}, 2600);
+</script>

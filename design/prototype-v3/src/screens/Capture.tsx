@@ -69,7 +69,7 @@ export function Capture() {
       <div className="vp-top">
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {phase === 'processing' && <ThinkingOrb state="composing" size={20} theme={onB} aria-hidden="true" />}
-          {phase === 'recording' ? 'Listening' : phase === 'processing' ? 'Juno is cleaning up your note' : 'Ready when you are'}
+          {phase === 'recording' ? 'Listening' : phase === 'processing' ? 'Keep is cleaning up your note' : 'Ready when you are'}
         </span>
         {phase !== 'idle' && <span className="num">{mmss(secs)}</span>}
       </div>
@@ -92,7 +92,7 @@ export function Capture() {
       <div className="scroll no-dock">
         <div className="cap-head">
           <h1>Capture</h1>
-          <p>Say it loosely. Juno and Scout do the filing.</p>
+          <p>Say it loosely. Keep files it and puts the crew on it.</p>
         </div>
 
         {showPanel && (phase === 'recording'
@@ -110,7 +110,7 @@ export function Capture() {
                 <button className="btn sm primary" type="submit" disabled={phase === 'typing-work'}>{phase === 'typing-work' ? 'Filing' : 'File it'}</button>
               </div>
             </BorderBeam>
-            {phase === 'typing-work' && <p className="fine" style={{ margin: '8px 6px 0', display: 'flex', alignItems: 'center', gap: 8 }} role="status"><ThinkingOrb state="weaving" size={20} theme={theme} aria-hidden="true" />Juno is finding the right Spaces.</p>}
+            {phase === 'typing-work' && <p className="fine" style={{ margin: '8px 6px 0', display: 'flex', alignItems: 'center', gap: 8 }} role="status"><ThinkingOrb state="weaving" size={20} theme={theme} aria-hidden="true" />Keep is finding the right Spaces.</p>}
           </form>
         )}
 

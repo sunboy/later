@@ -1,17 +1,16 @@
 // Mock content for the prototype. Everything here is example data.
 import type { OrbState } from 'thinking-orbs';
-import type { BotAvatarType } from 'bot-avatars';
 
 export type Glyph =
   | 'house' | 'cake' | 'receipt' | 'plane' | 'case' | 'rocket' | 'heart' | 'book' | 'tray' | 'laptop' | 'coins';
 
 export type AgentId = 'wren' | 'scout' | 'juno' | 'ledger';
-export interface Agent { id: AgentId; name: string; avatar: BotAvatarType }
+export interface Agent { id: AgentId; name: string; job: string }
 export const AGENTS: Record<AgentId, Agent> = {
-  wren: { id: 'wren', name: 'Wren', avatar: 'ghost' },
-  scout: { id: 'scout', name: 'Scout', avatar: 'mech' },
-  juno: { id: 'juno', name: 'Juno', avatar: 'clover' },
-  ledger: { id: 'ledger', name: 'Ledger', avatar: 'circle' },
+  wren: { id: 'wren', name: 'Wren', job: 'Plans and invites' },
+  scout: { id: 'scout', name: 'Scout', job: 'Chases replies' },
+  juno: { id: 'juno', name: 'Juno', job: 'Finds and compares' },
+  ledger: { id: 'ledger', name: 'Ledger', job: 'Tracks every fee' },
 };
 
 /** Money is integer pence, never floats. */
@@ -169,7 +168,7 @@ export interface LaterItem {
   ask?: string;
   act?: string;
   backAt?: number; // ms timestamp for the demo return
-  from?: NowItem;
+  from?: DeckCard;
 }
 
 export const NOW0: NowItem[] = [
@@ -210,25 +209,39 @@ export interface DeckCard {
   act: string;
   done: string;
   payment?: string;
+  /** layout hints from the agent: the client decides what they look like */
+  emphasis?: 'urgent';
+  deadline?: string;
+  near?: boolean;
+  backNote?: string;
 }
 export const DECK0: DeckCard[] = [
   { id: 'd1', spaceId: 'house', agent: 'scout', kind: 'Needs a reply', title: 'Can Dave see the loft on Tuesday at 10?',
     quote: 'Hi Dave, Tuesday at 10 works. The hatch is in the back bedroom and I’ll leave the ladder out. Thanks, Sam',
     kv: [['To', 'Dave Ellis, Ellis Surveying']], act: 'Queue reply to Dave', done: 'Reply queued. It sends at 09:00 unless you stop it.' },
-  { id: 'd2', spaceId: 'inbox', agent: 'wren', kind: 'Tidy', title: '14 newsletters you have not opened since August',
-    kv: [['Senders', 'Patagonia, Monocle, 12 more'], ['Keeps', 'Anything from people you reply to']], act: 'Archive all 14', done: 'Archived 14 newsletters.' },
+  { id: 'd-dep', spaceId: 'mum', agent: 'wren', kind: 'Approval', title: 'Pay the venue deposit',
+    kv: [['Amount', '£250.00'], ['To', 'The Old Mill Ltd'], ['For', '14 March, 22 guests']], deadline: 'Hold ends Friday 17:00',
+    act: 'Review and pay', done: 'Paid. Receipt filed.', payment: 'deposit' },
   { id: 'd3', spaceId: 'japan', agent: 'juno', kind: 'Digest', title: 'Fares to Tokyo dipped overnight',
     kv: [['Best', '£612 return, 3 to 17 April'], ['Was', '£744 last week'], ['Sources', '3 airline sites, checked 09:00']], act: 'Hold it for 48 hours', done: 'Held until Saturday 09:00. Nothing is paid.' },
   { id: 'd4', spaceId: 'tax', agent: 'ledger', kind: 'Quick sort', title: 'Is the £38.40 Screwfix receipt a work expense?',
     kv: [['Date', '2 November'], ['Items', 'Wall plugs, 2 shelf brackets']], note: '22 more like this are waiting in Taxes 2026.', act: 'Yes, it is', done: 'Marked as a work expense.' },
-  { id: 'd5', spaceId: 'mum', agent: 'wren', kind: 'Brief', title: 'The Old Mill can do 14 March for 22 guests',
-    kv: [['Hold', 'Until Friday 17:00'], ['Deposit', '£250.00, waiting on you']], note: 'The deposit is in Now. It needs a press and hold.', act: 'Good', done: 'Noted.' },
 ];
+export const URGENT: DeckCard = { id: 'u-school', spaceId: 'inbox', agent: 'wren', kind: 'From the school, 09:38', emphasis: 'urgent',
+  title: 'School shuts at 12:30 today. Who collects Maya?',
+  quote: 'Ellie, the heating has failed at school and they close at 12:30. Could you get Maya? I’m in the survey until 1. Sam',
+  kv: [['To', 'Ellie Reid'], ['You are', 'Busy 11:30 to 13:00']], act: 'Queue the ask to Ellie', done: 'Queued to Ellie. It sends in 60 seconds unless you stop it.' };
+export const FINISHED: Record<string, { status: string; card?: DeckCard; ring?: string }> = {
+  'x-tax': { status: 'Done. 41 of 58 matched, 17 need your eye', ring: 'tax',
+    card: { id: 'd-tax17', spaceId: 'tax', agent: 'ledger', kind: 'Quick sort', title: '17 October payments did not match',
+      kv: [['Matched', '41 of 58'], ['Largest', 'Screwfix, £38.40'], ['Oldest', '2 October']], act: 'Start sorting the 17', done: 'Ledger will show them one at a time.' } },
+  'x-fare': { status: 'Done. £612 is still the best of 5 sites', ring: 'japan' },
+};
 export const DAYLINE = [
   { t: '09:00', what: 'Your yes reaches Dave', sub: 'House move' },
   { t: '14:00', what: 'The Old Mill confirms 14 March', sub: 'Mum’s 70th' },
   { t: '16:00', what: 'October is reconciled', sub: 'Taxes 2026' },
-  { t: 'Fri 07:00', what: 'Tomorrow’s deck is dealt', sub: 'About 4 cards so far' },
+  { t: 'Fri 07:00', what: 'Tomorrow’s cards and edition', sub: 'About 4 cards so far' },
 ];
 
 /* ---------- Capture ---------- */
@@ -253,8 +266,8 @@ export const TEMPLATE = {
   next: 'Chases the conveyancer, surveyor and three removal firms, and tells you when each replies.',
   later: 'Keeps the meter readings and the change-of-address list for moving day.',
   agents: [
-    { name: 'Scout', avatar: 'mech' as BotAvatarType, job: 'Chases replies' },
-    { name: 'Ledger', avatar: 'circle' as BotAvatarType, job: 'Tracks every fee' },
+    { name: 'Scout', who: 'scout' as AgentId, job: 'Chases replies' },
+    { name: 'Ledger', who: 'ledger' as AgentId, job: 'Tracks every fee' },
   ],
   reads: 'Gmail (read and draft), Calendar',
   cap: '$4.00 a month, on your key',
@@ -266,3 +279,89 @@ export const MORE_TEMPLATES = [
   { name: 'Self Assessment', by: 'Ledger, built in', now: 'Yes or no on receipts', next: 'Matching payments', later: 'Next year’s folder' },
   { name: 'Trip planning', by: 'Juno, built in', now: 'Fares worth holding', next: 'Watching prices', later: 'Visa dates' },
 ];
+
+/* ---------- The edition: a finite read, every piece with its source ---------- */
+export interface Snippet {
+  id: string;
+  source: string;
+  via: 'newsletter' | 'following';
+  topic?: string; // the interest it was followed for
+  mins: number; // length of the original
+  kind: 'gist' | 'number' | 'quote' | 'trio';
+  big?: string;
+  head: string;
+  gist: string;
+  more?: string;
+  items?: string[];
+  spaceId?: string; // why it is here
+}
+export const EDITION: Snippet[] = [
+  { id: 'e1', source: 'The Long Lease', via: 'newsletter', mins: 6, kind: 'gist', spaceId: 'house',
+    head: 'Completion dates are slipping again',
+    gist: 'Local searches are taking 19 working days, up from 12 in the spring. If your survey lands this month, ask for a completion window rather than a date.',
+    more: 'The delay is worst in councils that still post results. Two of the big conveyancers now quote a fortnight’s range as standard, and removals firms have started to price for it.' },
+  { id: 'e2', source: 'Heat Pump Diaries', via: 'following', topic: 'heat pumps', mins: 4, kind: 'number', big: '£7,500',
+    head: 'The boiler grant stays until 2028',
+    gist: 'The upgrade grant keeps its current level for three more years. Installers expect waiting lists to shorten after January.',
+    more: 'You need a valid energy certificate with no outstanding loft insulation recommendation. The installer applies, not you.' },
+  { id: 'e3', source: 'Wires Weekly', via: 'newsletter', mins: 9, kind: 'trio', spaceId: 'job',
+    head: 'Three from Wires Weekly',
+    gist: 'Hiring, an API and a number, each in a line.',
+    items: ['Monzo is opening 40 product roles in Cardiff this quarter.', 'Lattice shipped its first public API on Tuesday.', 'Form builders like Tally grew 31% this year.'] },
+  { id: 'e4', source: 'Tokyo Table', via: 'following', topic: 'Tokyo food', mins: 5, kind: 'quote', spaceId: 'japan',
+    head: '“Book counter seats the day they open: thirty days out, ten in the morning, Tokyo time.”',
+    gist: 'For 3 to 17 April, the first tables open on 4 March at 01:00 here.',
+    more: 'The piece lists eleven counters that take bookings from abroad without a hotel concierge. Juno can set the reminders.' },
+  { id: 'e5', source: 'Field & Fare', via: 'newsletter', mins: 3, kind: 'gist', spaceId: 'mum',
+    head: 'A party for seventy needs less food than you think',
+    gist: 'Caterers plan six canapés a head for a two-hour afternoon party, and one in five guests will not eat at all.',
+    more: 'For 22 guests that is about 130 pieces. The usual mistake is ordering by the hour rather than by the head.' },
+  { id: 'e6', source: 'Kiln Notes', via: 'following', topic: 'product leadership', mins: 7, kind: 'gist',
+    head: 'A roadmap is a promise about attention',
+    gist: 'Teams that publish what they will not look at this quarter ship more of what they said they would.',
+    more: 'The author kept a “not now” list beside the roadmap for a year. The list was read more often than the roadmap.' },
+];
+export const FOLLOWING = ['heat pumps', 'Tokyo food', 'product leadership'];
+
+/* ---------- Spaces, as places ---------- */
+export const SPACE_META: Record<string, { status: string; asOf: string }> = {
+  house: { status: 'Survey booked. Hamptons want the TA6 by Monday.', asOf: '09:12' },
+  mum: { status: 'Venue held for 14 March. Deposit waiting on you.', asOf: '07:31' },
+  job: { status: 'Ana at Lattice wants a first call this week.', asOf: '07:55' },
+  japan: { status: 'Watching fares. Best is £612 return.', asOf: '09:00' },
+  tally: { status: 'Launch email ready. 2 press replies outstanding.', asOf: '08:40' },
+  tax: { status: 'Reconciling October against 44 receipts.', asOf: '09:20' },
+  health: { status: 'Quiet until the dentist on 6 January.', asOf: 'Mon' },
+  read: { status: '9 saved pieces. No one is on it.', asOf: 'Sun' },
+  work: { status: 'You are off. Back Monday 08:30.', asOf: 'Wed' },
+  inbox: { status: 'Wakes if Mum, the bank or the school writes.', asOf: '09:30' },
+};
+
+/* ---------- Threads: one with Keep, one per Space ---------- */
+export interface Msg {
+  who: 'you' | 'crew' | 'log';
+  text: string;
+  at?: string;
+  card?: { kind: string; title: string; state: string; spaceId?: string };
+}
+export const THREADS0: Record<string, Msg[]> = {
+  keep: [
+    { who: 'you', text: 'Remind me to cancel the gym before the move.', at: 'Wed 18:02' },
+    { who: 'crew', text: 'Filed to House move. Scout has it.', card: { kind: 'Task', title: 'Cancel the gym membership', state: 'Before 19 Dec', spaceId: 'house' } },
+  ],
+  house: [
+    { who: 'log', text: 'Scout read 2 emails from Hamptons', at: '08:12' },
+    { who: 'crew', text: 'Hamptons need the signed TA6 by Monday. I have a reply drafted.', card: { kind: 'Needs a reply', title: 'Hamptons want the signed TA6 form', state: 'Waiting on you' } },
+    { who: 'you', text: 'Which removals firm is cheapest for the 19th?', at: '08:40' },
+    { who: 'crew', text: 'Bishop’s Move at £890. Kent Removals is £1,040 and better rated. Both are free on 19 December.', card: { kind: 'Decision', title: 'Pick a removals quote', state: 'In the House move ring' } },
+    { who: 'log', text: 'Scout collected a third quote', at: '09:05' },
+  ],
+  mum: [
+    { who: 'log', text: 'Wren read the venue’s email', at: '07:31' },
+    { who: 'crew', text: 'The Old Mill can do 14 March for 22. They hold it until Friday 17:00 for a £250.00 deposit.', card: { kind: 'Approval', title: 'Pay the venue deposit', state: 'Needs a press and hold' } },
+  ],
+  tax: [
+    { who: 'log', text: 'Ledger started reconciling October', at: '09:02' },
+    { who: 'crew', text: 'I will bring you only the ones I cannot match.' },
+  ],
+};

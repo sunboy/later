@@ -42,7 +42,7 @@ export function ApprovalBody({ id, compact = false }: { id: string; compact?: bo
 export function Approve() {
   const { approval, go, paid } = useApp();
   const id = approval?.id ?? 'deposit';
-  const back = approval?.back ?? 'spaces';
+  const back = approval?.back ?? 'today';
   return (
     <div className="screen">
       <div className="scroll no-dock">

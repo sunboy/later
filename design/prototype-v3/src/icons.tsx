@@ -27,6 +27,10 @@ const P: Record<string, string> = {
   stop: 'M8 8h8v8H8z',
   pause: 'M9 7v10M15 7v10',
   chev: 'M8 14l4-4 4 4',
+  clock: 'M12 20a8 8 0 100-16 8 8 0 000 16zM12 8v4.5l3 1.8',
+  chat: 'M5 6.5h14v9.5h-7.5L7.5 19.5V16H5z',
+  back: 'M14 6l-6 6 6 6',
+  send: 'M12 19V6M6.5 11.5L12 6l5.5 5.5',
   undo: 'M9 8L5 12l4 4M5 12h9a5 5 0 010 10',
 };
 

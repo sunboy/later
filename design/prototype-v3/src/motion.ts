@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 
 export const reducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -49,3 +49,34 @@ export const setT = (el: HTMLElement, s: Vec) => {
 };
 
 export const wait = (ms: number) => new Promise<void>(r => setTimeout(r, reducedMotion() ? 0 : ms));
+
+/**
+ * Layout motion for the generative behaviours. Every block marked [data-flip] is measured after each commit;
+ * when the layout signature changes, blocks slide from where they were, blocks that grew are unveiled from their
+ * old height, and new blocks rise in. The client owns this: agents only change data and hints.
+ */
+export function useFlip(scroller: RefObject<HTMLElement | null>, sig: string) {
+  const prev = useRef(new Map<string, { top: number; h: number }>());
+  const last = useRef(sig);
+  useLayoutEffect(() => {
+    const sc = scroller.current; if (!sc) return;
+    const base = sc.getBoundingClientRect().top - sc.scrollTop;
+    const now = new Map<string, { top: number; h: number }>();
+    const els = new Map<string, HTMLElement>();
+    sc.querySelectorAll<HTMLElement>('[data-flip]').forEach(el => {
+      const r = el.getBoundingClientRect();
+      now.set(el.dataset.flip!, { top: r.top - base, h: r.height }); els.set(el.dataset.flip!, el);
+    });
+    if (last.current !== sig && prev.current.size && !reducedMotion()) {
+      now.forEach((n, id) => {
+        const o = prev.current.get(id), el = els.get(id)!;
+        if (!o) { el.animate([{ opacity: 0, transform: 'translateY(16px) scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: 460, easing: 'cubic-bezier(.3,1.25,.4,1)' }); return; }
+        const dy = o.top - n.top, dh = n.h - o.h;
+        if (Math.abs(dy) > 1) el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 560, easing: 'cubic-bezier(.3,1.2,.4,1)' });
+        if (dh > 2) el.animate([{ clipPath: `inset(-30px -30px ${dh}px -30px)` }, { clipPath: 'inset(-30px -30px -40px -30px)' }], { duration: 520, easing: 'cubic-bezier(.22,1,.36,1)' });
+        else if (dh < -2) el.animate([{ opacity: 0.2 }, { opacity: 1 }], { duration: 420, easing: 'ease-out' });
+      });
+    }
+    prev.current = now; last.current = sig;
+  });
+}
