@@ -20,6 +20,7 @@
   /* Pop, lime: the single thing to do now. At most one per screen. */
   --lime: #D3F544;
   --lime-deep: #93B30C;
+  --lime-hover: #DDFA66;
   /* Neutrals derived from ultramarine */
   --ink: #15164A;
   --ink-2: #4E5080;
@@ -138,7 +139,7 @@ svg { display: block; }
 }
 .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
 .btn-pop { background: var(--lime); color: var(--ink); }
-.btn-pop:hover { background: #DDFA66; }
+.btn-pop:hover { background: var(--lime-hover); }
 .btn-blue { background: var(--blue); color: var(--on-blue); }
 .btn-blue:hover { background: var(--blue-lite); }
 .btn-ghost { background: var(--paper); color: var(--ink); }
@@ -181,7 +182,8 @@ svg { display: block; }
   z-index: calc(10 - var(--i));
   transition: transform .35s var(--spring), opacity .25s;
 }
-.edge.leaving { opacity: 0; transform: translateY(0) scale(.98); }
+.edge.leaving { animation: edge-out .3s ease-in forwards; }
+@keyframes edge-out { to { opacity: 0; transform: translateY(0) scale(.98); } }
 .card {
   position: relative; z-index: 20;
   background: var(--paper);
@@ -547,7 +549,6 @@ svg { display: block; }
   <section class="frames" aria-label="Three screens">
     <!-- 1. Spaces -->
     <div class="frame" id="spaces">
-      <p class="frame-label">Desk <span>all your Spaces</span></p>
       <div class="phone">
         <div class="screen" id="desk-screen">
           <div class="screen-head">
@@ -631,11 +632,11 @@ svg { display: block; }
           <button class="capture" aria-label="Capture a thought"><svg><use href="#i-mic"/></svg></button>
         </nav>
       </div>
+      <p class="frame-label">Desk <span>all your Spaces</span></p>
     </div>
 
     <!-- 2. Today -->
     <div class="frame today" id="today">
-      <p class="frame-label">Today <span>one deck from every Space</span></p>
       <div class="phone">
         <div class="screen today-screen" id="today-screen">
           <div class="today-top">
@@ -664,17 +665,17 @@ svg { display: block; }
           <button class="capture" aria-label="Capture a thought"><svg><use href="#i-mic"/></svg></button>
         </nav>
       </div>
+      <p class="frame-label">Today <span>one deck from every Space</span></p>
     </div>
 
     <!-- 3. Templates -->
     <div class="frame templates" id="templates">
-      <p class="frame-label">Templates <span>stacks you can pick up</span></p>
       <div class="phone">
         <div class="screen">
           <div class="tpl-field">
             <div class="screen-head" style="margin-bottom:0">
               <h2 class="screen-title">Pick up a stack</h2>
-              <p class="screen-sub">Someone else's setup becomes a new Space. You see the first cards it would deal you before you take it.</p>
+              <p class="screen-sub">Someone else’s setup becomes a new Space. You see the first cards it would deal you before you take it.</p>
             </div>
           </div>
           <div class="feature">
@@ -728,6 +729,7 @@ svg { display: block; }
           <button class="capture" aria-label="Capture a thought"><svg><use href="#i-mic"/></svg></button>
         </nav>
       </div>
+      <p class="frame-label">Templates <span>stacks you can pick up</span></p>
     </div>
   </section>
 
@@ -751,7 +753,7 @@ svg { display: block; }
       <p class="type-sample">Funnel Display</p>
       <p>Chunky and slightly squared, so a short ask on a card reads like a label printed on it. Funnel Sans, its sibling, carries detail and meta.</p>
       <h3 style="margin-top:18px">What is risky</h3>
-      <p>Thickness is a blunt signal: four small cards look heavier than one urgent one. The overview is busy with nine buttons, and drag-to-defer must never feel like deleting.</p>
+      <p>Thickness is a blunt signal: four small cards look heavier than one urgent one. The overview carries seven buttons at once, and drag-to-defer must never feel like deleting.</p>
     </div>
   </section>
 </main>

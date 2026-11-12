@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Instrument+Sans:wght@400..700&display=swap">
 <style>
 /* Hallmark floor: custom direction "Now, Next, Later" (no dealt theme). Signature: a Space set down into Later and risen back on time. */
+/* Waived: 38iii, the three widths in Now, Next, Later are the type signature; 24b, spacing follows a 2px optical grid inside phone frames. */
 /* Critique line: colour says when, glyph and shape say which; width of type says how far away. */
 /* Layout: three 390px phones on a horizon; each Space screen reads day (Now) to dusk (Next) to night (Later). */
 :root {
@@ -217,6 +218,16 @@ svg { display: block; }
 .tile:not(.span2) .act { min-height: 42px; font-size: 14px; }
 .tile-args { margin: 0; display: grid; grid-template-columns: repeat(3, auto); grid-auto-flow: column; grid-template-rows: auto auto; justify-content: space-between; gap: 1px 12px; font-size: 13.5px; padding: 9px 12px; border-radius: 14px; background: var(--sun-ink-1); font-variant-numeric: tabular-nums; }
 .tile-args dt { opacity: .72; font-size: 12px; }
+.tile.row { display: grid; grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "top act" "ask act"; gap: 6px 12px; align-items: center; padding: 12px 12px 12px 14px; }
+.tile.row .tile-top { grid-area: top; }
+.tile.row .tile-ask { grid-area: ask; font-size: 16px; font-stretch: 100%; }
+.tile.row .act, .tile.row .done-line { grid-area: act; margin: 0; min-height: 44px; font-size: 14px; max-width: 128px; }
+.tile.row .sink span { display: none; }
+.tile.row .sink { width: 32px; height: 32px; min-width: 32px; padding: 0; justify-content: center; }
+.tile.row .glyph { width: 32px; height: 32px; border-radius: 10px; }
+.tile.row .glyph .ico { width: 17px; height: 17px; }
+.tile.row .tile-name small { display: none; }
+.tile.row .tile-name { font-size: 15px; padding-top: 6px; }
 .tile-args dd { margin: 0; font-weight: 650; }
 .tile-meta { margin: 0; font-size: 13px; opacity: .8; }
 .act {
@@ -363,11 +374,11 @@ svg { display: block; }
 }
 .dcard[data-pos="1"] { transform: translateY(16px) scale(.94); opacity: .85; }
 .dcard[data-pos="2"] { transform: translateY(30px) scale(.88); opacity: .5; }
-.dcard[data-pos="3"], .dcard[data-pos="4"] { transform: translateY(30px) scale(.86); opacity: 0; }
+.js .dcard[data-pos="3"], .js .dcard[data-pos="4"] { transform: translateY(30px) scale(.86); opacity: 0; }
 .dcard[data-pos="gone"] { opacity: 0; pointer-events: none; }
-.dcard.out-right { transform: translateX(120%) rotate(8deg) !important; opacity: 0 !important; }
-.dcard.out-left { transform: translateX(-120%) rotate(-8deg) !important; opacity: 0 !important; }
-.dcard.out-down { transform: translateY(70%) scale(.6) !important; opacity: 0 !important; }
+.js .dcard.out-right { transform: translateX(120%) rotate(8deg) !important; opacity: 0 !important; }
+.js .dcard.out-left { transform: translateX(-120%) rotate(-8deg) !important; opacity: 0 !important; }
+.js .dcard.out-down { transform: translateY(70%) scale(.6) !important; opacity: 0 !important; }
 .dc-face { background: radial-gradient(120% 100% at 0% 0%, var(--sun-glow) 0%, var(--sun) 60%); color: var(--on-sun); padding: 18px 18px 18px; display: grid; gap: 12px; }
 .dc-face.held { background: var(--night); color: var(--on-night); }
 .dc-face.held .glyph { background: var(--night-raise-a); color: var(--on-night); }
@@ -398,13 +409,14 @@ svg { display: block; }
 .lp b { display: block; font-size: 14px; }
 .lp span { color: var(--on-night-2); font-variant-numeric: tabular-nums; }
 .lp:hover { background: var(--night-deep); }
+.js .deck-end { opacity: 0; transform: scale(.96); pointer-events: none; }
 .deck-end {
   position: absolute; inset: 0; border-radius: 30px; background: var(--night); color: var(--on-night);
-  padding: 28px 24px; display: grid; align-content: end; gap: 10px; opacity: 0; transform: scale(.96);
-  transition: opacity .5s var(--ease-set), transform .5s var(--ease-rise); pointer-events: none;
+  padding: 28px 24px; display: grid; align-content: end; gap: 10px;
+  transition: opacity .5s var(--ease-set), transform .5s var(--ease-rise);
   overflow: hidden;
 }
-.deck-end.show { opacity: 1; transform: none; pointer-events: auto; }
+.js .deck-end.show { opacity: 1; transform: none; pointer-events: auto; }
 .deck-end h2 { margin: 0; font-family: var(--f-display); font-stretch: 62%; font-weight: 400; font-size: 52px; line-height: .95; }
 .deck-end h2 b { color: var(--pop); font-weight: 600; }
 .deck-end p { margin: 0; color: var(--on-night-2); font-size: 15px; max-width: 30ch; }
@@ -431,7 +443,8 @@ svg { display: block; }
 .tp-head { padding: 14px 20px 0; display: grid; gap: 6px; }
 .tp-head h1 { margin: 0; font-family: var(--f-display); font-stretch: 100%; font-weight: 800; font-size: 36px; line-height: 1; letter-spacing: -0.015em; }
 .tp-head p { margin: 0; color: var(--ink-2); font-size: 15px; }
-.search { margin: 14px 14px 0; display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 46px; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink-3); }
+.search { margin: 14px 14px 0; display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 46px; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink-2); }
+.search input::placeholder { color: var(--ink-2); }
 .search input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; color: var(--ink); font-size: 15px; outline: none; }
 .search:focus-within { box-shadow: inset 0 0 0 2px var(--focus); }
 .feature { margin: 16px 14px 0; border-radius: 30px; overflow: hidden; background: var(--card); box-shadow: 0 0 0 1px var(--line), 0 20px 34px -24px var(--night-shadow); }
@@ -647,18 +660,18 @@ svg { display: block; }
           <div class="status">07:48</div>
           <header class="tp-head">
             <h1>Templates</h1>
-            <p>Start a Space from someone else's setup. Each one is described by its rhythm.</p>
+            <p>Start a Space from someone else’s setup. Each one is described by its rhythm.</p>
           </header>
           <label class="search" for="tp-search"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><input id="tp-search" type="search" placeholder="Moving, trips, a big birthday"></label>
 
           <article class="feature" aria-labelledby="f-h">
             <div class="f-top">
-              <span class="by"><span class="avatar" aria-hidden="true">PR</span>Priya Raman's setup, used for her move to Leeds</span>
+              <span class="by"><span class="avatar" aria-hidden="true">PR</span>Priya Raman’s setup, used for her move to Leeds</span>
               <h2 id="f-h">Moving house</h2>
               <p>From offer accepted to the first night in.</p>
             </div>
             <dl class="rhythm">
-              <div class="rh r-now"><dt>Now</dt><dd>One card each Monday with that week's decisions: quotes, dates, sign-offs.</dd></div>
+              <div class="rh r-now"><dt>Now</dt><dd>One card each Monday with that week’s decisions: quotes, dates, sign-offs.</dd></div>
               <div class="rh r-next"><dt>Next</dt><dd>Chases the conveyancer, surveyor and three removal firms, and tells you when each replies.</dd></div>
               <div class="rh r-later"><dt>Later</dt><dd>Keeps the meter readings and the change-of-address list for moving day.</dd></div>
             </dl>
@@ -679,9 +692,9 @@ svg { display: block; }
           <div class="tlist" id="tlist"></div>
 
           <section class="share" aria-labelledby="sh-h">
-            <h2 id="sh-h">Share Mum's 70th as a template</h2>
+            <h2 id="sh-h">Share Mum’s 70th as a template</h2>
             <p>Names, addresses and amounts are stripped first. You see exactly what leaves before anything does.</p>
-            <button class="btn-share">Preview what's shared</button>
+            <button class="btn-share">Preview what’s shared</button>
           </section>
         </div>
         <nav class="tabbar" aria-label="Main">
@@ -699,7 +712,7 @@ svg { display: block; }
   <section class="dir" aria-labelledby="dir-h">
     <div class="dir-name">
       <h2 id="dir-h"><span class="a">Now,</span> <span class="b">Next,</span> <span class="c">Later</span></h2>
-      <p><strong>The one idea.</strong> The app is a horizon. Day at the top, night at the bottom. You set a thing down and it sinks into Later; it rises again at the time you chose. "Later" is the verb the whole app uses.</p>
+      <p><strong>The one idea.</strong> The app is a horizon. Day at the top, night at the bottom. You set a thing down and it sinks into Later; it rises again at the time you chose. “Later” is the verb the whole app uses.</p>
       <p><strong>Type.</strong> Archivo, on its width axis. Now is set wide and heavy, Next at normal width, Later narrow and light, so distance in time is drawn as width; the wordmark recedes letter by letter. Instrument Sans carries everything you read.</p>
       <p><strong>Spaces apart.</strong> Colour says when, never which. A Space is told by its glyph and its shape: square for a project, round for an area, stacked for a list.</p>
     </div>
@@ -718,6 +731,7 @@ svg { display: block; }
 </main>
 
 <script>
+document.documentElement.classList.add('js');
 (() => {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ico = (id, cls = 'ico') => `<svg class="${cls}" aria-hidden="true"><use href="#i-${id}"/></svg>`;
@@ -725,7 +739,7 @@ svg { display: block; }
 
   /* ---------------- Spaces data ---------------- */
   const S = [
-    { id: 'mum', name: "Mum's 70th", kind: 'project', glyph: 'cake', band: 'now', agent: 'Wren', at: '07:31',
+    { id: 'mum', name: "Mum’s 70th", kind: 'project', glyph: 'cake', band: 'now', agent: 'Wren', at: '07:31',
       ask: 'Approve the venue deposit', args: [['To', 'The Old Mill Ltd'], ['Amount', '£250.00'], ['Reference', 'MUM70-DEP']],
       act: 'Approve £250.00', done: 'Paid. Receipt filed.',
       next: { status: 'Confirming 14 March with The Old Mill', eta: '14:00', day: 'Today', p: .45 } },
@@ -784,8 +798,9 @@ svg { display: block; }
   const phone = document.getElementById('ph-spaces');
 
   function tileHTML(s, i, total) {
-    const span = i === 0 || (i === total - 1 && (total - 1) % 2 === 1) ? ' span2' : '';
-    const args = s.args && span ? `<dl class="tile-args">${s.args.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` : '';
+    const tail = i > 0 && i === total - 1 && (total - 1) % 2 === 1;
+    const span = i === 0 ? ' span2' : tail ? ' span2 row' : '';
+    const args = s.args && i === 0 ? `<dl class="tile-args">${s.args.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` : '';
     const meta = s.meta && span ? `<p class="tile-meta">${s.meta}</p>` : '';
     const who = s.backNote ? `<small class="back-note">${ico('rise')}${s.backNote}</small>` : `<small>${s.agent}, ${s.at === 'now' ? 'just now' : s.at}</small>`;
     const foot = s.isDone
@@ -821,7 +836,7 @@ svg { display: block; }
     document.getElementById('dock-txt').innerHTML = `<b>${later.length} resting</b><br>${soonest ? 'one back in seconds' : 'next back Friday 08:00'}`;
     document.getElementById('dock-glyphs').innerHTML = later.slice().reverse().slice(0, 5).map(s => glyph(s)).join('');
     document.getElementById('sp-counts').innerHTML =
-      `Thursday 12 November. <b>${now.length} need you</b>, ${next.length} on the way, ${later.length} resting.`;
+      `Thu 12 Nov. <b>${now.length} need you</b>, ${next.length} on the way, ${later.length} resting.`;
   }
   render();
 
@@ -1035,7 +1050,7 @@ svg { display: block; }
   /* ---------------- Today deck ---------------- */
   const CARDS = [
     { space: 'house', type: 'Needs a reply', title: 'Can Dave see the loft on Tuesday at 10?',
-      body: `<span class="lbl">Scout's draft, in your voice</span><p class="quote">Hi Dave, Tuesday at 10 works. The hatch is in the back bedroom and I'll leave the ladder out. Thanks, Sam</p><dl class="kv"><dt>To</dt><dd>Dave Ellis, Ellis Surveying</dd></dl>`,
+      body: `<span class="lbl">Scout’s draft, in your voice</span><p class="quote">Hi Dave, Tuesday at 10 works. The hatch is in the back bedroom and I’ll leave the ladder out. Thanks, Sam</p><dl class="kv"><dt>To</dt><dd>Dave Ellis, Ellis Surveying</dd></dl>`,
       main: 'Queue reply to Dave' },
     { space: 'mum', type: 'Approval', title: 'Pay the venue deposit',
       body: `<span class="lbl">Exactly what will be paid</span><dl class="kv"><dt>To</dt><dd>The Old Mill Ltd</dd><dt>Amount</dt><dd>£250.00</dd><dt>Reference</dt><dd>MUM70-DEP</dd><dt>From</dt><dd>Joint account ending 4471</dd></dl><span class="lbl">The hold on 14 March expires Friday 17:00.</span>`,
@@ -1052,9 +1067,9 @@ svg { display: block; }
   ];
   const DAY = [
     { t: '09:00', k: 'sun', what: 'Your yes reaches Dave', sub: 'House move' },
-    { t: '14:00', k: 'night', what: 'The Old Mill confirms 14 March', sub: "Mum's 70th" },
+    { t: '14:00', k: 'night', what: 'The Old Mill confirms 14 March', sub: "Mum’s 70th" },
     { t: '18:00', k: 'night', what: 'Three titles for episode 14', sub: 'YouTube channel' },
-    { t: 'Fri 07:30', k: 'moon', what: 'Tomorrow\'s deck is dealt', sub: 'About 4 cards so far', day: 'tomorrow' },
+    { t: 'Fri 07:30', k: 'moon', what: 'Tomorrow’s deck is dealt', sub: 'About 4 cards so far', day: 'tomorrow' },
   ];
   const deck = document.getElementById('deck'), deckbar = document.getElementById('deckbar'), dl = document.getElementById('dl');
   let idx = 0, deckBusy = false;
@@ -1094,7 +1109,7 @@ svg { display: block; }
     return (a ? days[a] * 2400 : 0) + h * 100 + m;
   }
   function drawDeck() {
-    deck.innerHTML = CARDS.map(cardHTML).join('') + `<div class="deck-end" id="deck-end"><span class="moon" aria-hidden="true"></span><h2>That's the deck. <b>Nothing</b> needs you until 14:00.</h2><p>The agents have the rest. They will bring it back up when it is ready.</p><button class="reset" id="reset">Deal it again</button></div>`;
+    deck.innerHTML = CARDS.map(cardHTML).join('') + `<div class="deck-end" id="deck-end"><span class="moon" aria-hidden="true"></span><h2>That’s the deck. <b>Nothing</b> needs you until 14:00.</h2><p>The agents have the rest. They will bring it back up when it is ready.</p><button class="reset" id="reset">Deal it again</button></div>`;
     positions();
   }
   function positions() {
