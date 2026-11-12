@@ -1,12 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
-  DECK0, FINISHED, LATER0, NEXT0, PAYMENTS, RETURNS, STORIES, THREADS0, URGENT, SPACES, AGENTS, space,
+  BILLS, DECK0, FINISHED, LATER0, NEXT0, NOTE, RAMBLE, RECEIPTS, RETURNS, SENDS, STORIES, THREADS0, URGENT, SPACES, AGENTS, space,
   type AgentId, type DeckCard, type LaterItem, type Msg, type NextItem, type StoryCard,
 } from './data';
 import type { MState } from './Mascot';
 
-export type Screen = 'today' | 'spaces' | 'story' | 'capture' | 'templates' | 'approve';
-export type SimEvent = 'urgent' | 'finish' | 'deadline' | 'evening' | 'clear' | 'reset';
+export type Screen = 'today' | 'spaces' | 'story' | 'templates' | 'approve';
+export type SimEvent = 'urgent' | 'finish' | 'deadline' | 'merge' | 'read' | 'evening' | 'clear' | 'assign' | 'reset';
+
+/** The 30-second window every send waits in after the hold. Stop is always one tap. */
+export const WINDOW_MS = 30_000;
+export interface OutRow { id: string; at: number; status: 'pending' | 'sent' | 'stopped'; card?: DeckCard; doneAt?: number }
 
 interface State {
   screen: Screen;
@@ -16,16 +20,21 @@ interface State {
   handled: number;
   next: NextItem[]; // what the crew are doing
   finished: string[]; // next rows showing their result before they leave
+  leaving: string[]; // rows on their way out
+  outbox: OutRow[];
   later: LaterItem[];
   stories: Record<string, StoryCard[]>;
   staff: Record<string, AgentId | null>; // which crew member is on each Space
   threads: Record<string, Msg[]>;
+  proposals: Record<string, { spaces: string[]; filed: boolean }>;
   chief: { open: boolean; thread: string | null; busy: boolean };
+  rec: null | 'listening' | 'tidying';
   phase: 'day' | 'evening';
   running: boolean; // agents running (mock). Off pauses every working effect.
-  paid: string[];
+  paid: string[]; // bills you marked as paid
+  stack: null | { phase: 'arriving' | 'merged'; count: number }; // the receipts group
   flash: { ids: string[]; at: number } | null; // the "done / returned" pop
-  event: { type: SimEvent | 'assign'; at: number; id?: string } | null; // last simulated event, for entrance motion
+  event: { type: SimEvent | 'send' | 'stop'; at: number; id?: string; note?: string } | null; // last event, for entrance motion
 }
 
 interface Api extends State {
@@ -38,15 +47,23 @@ interface Api extends State {
   toLater: (id: string, returnIndex: number) => void;
   allToMorning: () => void;
   bringBack: (id: string, onTime: boolean) => void;
-  approve: (id: string) => void;
+  holdSend: (id: string) => void;
+  stopSend: (id: string) => void;
+  markPaid: (id: string) => void;
   decideStory: (spaceId: string, cardId: string, how: 'done' | 'seen') => void;
   pop: (id: string) => void;
   simulate: (e: SimEvent) => void;
+  openStack: () => void;
   openChief: (thread?: string | null) => void;
   closeChief: () => void;
   say: (thread: string, text: string) => void;
+  startRec: () => void;
+  stopRec: (secs: number) => void;
+  moveProposal: (pid: string, i: number) => void;
+  fileProposal: (pid: string, on: boolean) => void;
   assign: (spaceId: string, who: AgentId) => void;
   chiefState: MState;
+  crewOut: number;
 }
 
 const Ctx = createContext<Api | null>(null);
@@ -54,13 +71,14 @@ export const useApp = () => useContext(Ctx)!;
 
 const initial = (screen: Screen = 'today'): State => ({
   screen, storySpace: null, approval: null,
-  deck: DECK0, handled: 0, next: NEXT0, finished: [], later: LATER0, stories: structuredClone(STORIES),
+  deck: DECK0, handled: 0, next: NEXT0, finished: [], leaving: [], outbox: [], later: LATER0, stories: structuredClone(STORIES),
   staff: Object.fromEntries(SPACES.map(s => [s.id, s.id === 'read' ? null : s.agent])),
-  threads: structuredClone(THREADS0), chief: { open: false, thread: null, busy: false },
-  phase: 'day', running: true, paid: [], flash: null, event: null,
+  threads: structuredClone(THREADS0), proposals: {}, chief: { open: false, thread: null, busy: false }, rec: null,
+  phase: 'day', running: true, paid: [], stack: null, flash: null, event: null,
 });
 
 const flash = (...ids: string[]) => ({ ids, at: Date.now() });
+const log = (p: State, sid: string, text: string): Record<string, Msg[]> => ({ ...p.threads, [sid]: [...(p.threads[sid] ?? []), { who: 'log', text, at: 'now' }] });
 
 /** An agent finishes: its row shows the result, hands a card to Now if it has one, and its ring gains a segment. */
 function finish(p: State, id: string): State {
@@ -73,7 +91,8 @@ function finish(p: State, id: string): State {
   return {
     ...p, stories, finished: [...p.finished, id],
     next: p.next.map(n => n.id === id ? { ...n, orb: null, status: f.status, progress: undefined, eta: 'Now', day: f.card ? 'added to Now' : 'nothing for you' } : n),
-    deck: f.card && !p.deck.some(c => c.id === f.card!.id) ? [...p.deck, f.card] : p.deck,
+    deck: f.card && !p.deck.some(c => c.id === f.card!.id) ? [...p.deck.slice(0, 1), f.card, ...p.deck.slice(1)] : p.deck,
+    threads: log(p, row.spaceId, `${AGENTS[row.agent].name} finished: ${f.status.replace(/^Done\. /, '')}`),
     flash: flash(id, 'ring-' + (f.ring ?? ''), 'chief'), event: { type: 'finish', at: Date.now(), id },
   };
 }
@@ -88,58 +107,83 @@ function bringBackState(p: State, id: string, onTime: boolean): State {
   return { ...p, later: p.later.filter(x => x.id !== id), deck: [back, ...p.deck], handled: Math.max(0, p.handled - (l.from ? 1 : 0)), flash: flash(id) };
 }
 
+/** The window ran out: the send goes. */
+function release(p: State, id: string): State {
+  const o = p.outbox.find(x => x.id === id && x.status === 'pending'); if (!o) return p;
+  const s = SENDS[id];
+  const follow: NextItem | null = id === 'ellie'
+    ? { id: 'x-school', spaceId: 'inbox', agent: 'wren', status: 'Watching for Ellie’s reply', orb: 'searching', eta: 'Soon', day: 'on reply' }
+    : id === 'dave' ? { id: 'x-dave', spaceId: 'house', agent: 'scout', status: 'Watching for Dave to confirm Tuesday', orb: null, eta: 'Tue', day: '10:00' } : null;
+  const stories = { ...p.stories };
+  for (const k of Object.keys(stories)) stories[k] = stories[k].map(c => c.send === id ? { ...c, state: 'done' } : c);
+  return {
+    ...p, stories,
+    outbox: p.outbox.map(x => x.id === id ? { ...x, status: 'sent', doneAt: Date.now() } : x),
+    next: follow && !p.next.some(n => n.id === follow.id) ? [...p.next, follow] : p.next,
+    threads: log(p, s.spaceId, `${s.sentLine} after the 30-second window`),
+    flash: flash('out-' + id, 'chief'),
+  };
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [s, set] = useState<State>(() => initial());
   const ref = useRef(s); ref.current = s;
+  const timers = useRef<number[]>([]);
+  const later = (fn: () => void, ms: number) => { timers.current.push(window.setTimeout(fn, ms)); };
 
   const pop = useCallback((id: string) => set(p => ({ ...p, flash: flash(id) })), []);
 
-  // Mock agent engine: Ledger reconciles, finishes, and hands a card back. Due Later items return on time.
+  // Mock engine: Ledger reconciles and finishes; due Later items return on time; sends leave their window.
   useEffect(() => {
     let tick = 0;
     const t = setInterval(() => {
-      const cur = ref.current;
-      const due = cur.later.find(l => l.backAt && l.backAt <= Date.now());
+      const cur = ref.current, now = Date.now();
+      const due = cur.later.find(l => l.backAt && l.backAt <= now);
       if (due) set(p => bringBackState(p, due.id, true));
-      if (!cur.running || ++tick % 3) return;
+      const go = cur.outbox.find(o => o.status === 'pending' && now - o.at >= WINDOW_MS);
+      if (go) set(p => release(p, go.id));
+      const old = cur.outbox.filter(o => o.status !== 'pending' && o.doneAt && now - o.doneAt > 4600);
+      if (old.length) set(p => ({ ...p, outbox: p.outbox.filter(o => !old.some(x => x.id === o.id)) }));
+      if (!cur.running || ++tick % 6) return;
       const tax = cur.next.find(n => n.id === 'x-tax');
       if (tax && tax.progress && tax.orb) {
         const [a, b] = tax.progress;
         if (a + 1 < b - 17) set(p => ({ ...p, next: p.next.map(n => n.id === 'x-tax' ? { ...n, progress: [a + 1, b] } : n) }));
         else set(p => finish(p, 'x-tax'));
       }
-    }, 500);
-    return () => clearInterval(t);
+    }, 250);
+    return () => { clearInterval(t); timers.current.forEach(clearTimeout); };
   }, []);
 
-  // a finished row stays long enough to be read, then leaves Next
+  // a finished row stays long enough to be read, then folds away and leaves Next
   useEffect(() => {
     if (!s.finished.length) return;
-    const t = setTimeout(() => set(p => ({ ...p, next: p.next.filter(n => !p.finished.includes(n.id)), finished: [] })), 4200);
-    return () => clearTimeout(t);
+    const ids = s.finished;
+    const a = setTimeout(() => set(p => ({ ...p, leaving: [...p.leaving, ...ids] })), 3900);
+    const b = setTimeout(() => set(p => ({ ...p, next: p.next.filter(n => !ids.includes(n.id)), finished: p.finished.filter(f => !ids.includes(f)), leaving: p.leaving.filter(f => !ids.includes(f)) })), 4400);
+    return () => { clearTimeout(a); clearTimeout(b); };
   }, [s.finished]);
 
   const api = useMemo<Api>(() => {
     const hot = s.deck.some(c => c.emphasis === 'urgent' || c.near);
-    const chiefState: MState = s.chief.busy ? 'thinking' : hot ? 'waiting' : !s.deck.length ? 'rest' : 'idle';
+    const crewOut = new Set(s.next.filter(n => n.orb && s.running && !s.finished.includes(n.id)).map(n => n.agent)).size;
+    const chiefState: MState = s.rec === 'listening' ? 'listening' : s.rec === 'tidying' || s.chief.busy ? 'thinking' : hot ? 'waiting' : !s.deck.length && !s.stack ? 'rest' : 'idle';
     return {
-      ...s, pop, chiefState,
+      ...s, pop, chiefState, crewOut,
       go: screen => set(p => ({ ...p, screen })),
       openStory: id => set(p => ({ ...p, screen: 'story', storySpace: id })),
       openApproval: (id, back) => set(p => ({ ...p, screen: 'approve', approval: { id, back } })),
       setRunning: running => set(p => ({ ...p, running })),
       actDeck: id => set(p => {
         const card = p.deck.find(c => c.id === id); if (!card) return p;
-        const follow: NextItem | null = id === 'd1'
-          ? { id: 'x-loft', spaceId: 'house', agent: 'scout', status: 'Yes queued to Dave Ellis. You can still stop it', orb: null, eta: '09:00', day: 'Today' }
-          : id === 'u-school' ? { id: 'x-school', spaceId: 'inbox', agent: 'wren', status: 'Ask queued to Ellie. Watching for her reply', orb: 'searching', eta: 'Soon', day: 'on reply' } : null;
-        return { ...p, deck: p.deck.filter(c => c.id !== id), handled: p.handled + 1,
-          next: follow && !p.next.some(n => n.id === follow.id) ? [follow, ...p.next] : p.next, flash: flash(follow?.id ?? '', 'chief') };
+        return { ...p, deck: p.deck.filter(c => c.id !== id), handled: p.handled + 1, flash: flash('chief') };
       }),
       restore: (card, how) => set(p => ({
         ...p, deck: [card, ...p.deck.filter(c => c.id !== card.id)], handled: Math.max(0, p.handled - 1),
         later: how === 'later' ? p.later.filter(l => l.id !== card.id) : p.later,
-        next: p.next.filter(n => !(card.id === 'd1' && n.id === 'x-loft') && !(card.id === 'u-school' && n.id === 'x-school')),
+        paid: card.bill ? p.paid.filter(b => b !== card.bill) : p.paid,
+        stories: card.bill ? Object.fromEntries(Object.entries(p.stories).map(([k, v]) => [k, v.map(c => c.bill === card.bill ? { ...c, state: 'seen' as const } : c)])) : p.stories,
+        next: p.next.filter(n => !(card.bill === 'deposit' && n.id === 'x-mill')),
       })),
       toLater: (id, ri) => set(p => {
         const r = RETURNS[ri]; const from = p.deck.find(c => c.id === id); if (!from) return p;
@@ -151,79 +195,161 @@ export function AppProvider({ children }: { children: ReactNode }) {
         later: [...p.deck.map(c => ({ id: c.id, spaceId: c.spaceId, wake: RETURNS[1].wake, from: c })), ...p.later],
       })),
       bringBack: (id, onTime) => set(p => bringBackState(p, id, onTime)),
-      approve: id => set(p => {
-        const pay = PAYMENTS[id];
+      holdSend: id => set(p => {
+        if (p.outbox.some(o => o.id === id && o.status === 'pending')) return p;
+        const card = p.deck.find(c => c.send === id);
+        return {
+          ...p, deck: p.deck.filter(c => c.send !== id), handled: p.handled + (card ? 1 : 0),
+          outbox: [{ id, at: Date.now(), status: 'pending', card }, ...p.outbox.filter(o => o.id !== id)],
+          event: { type: 'send', at: Date.now(), id }, flash: flash('out-' + id),
+        };
+      }),
+      stopSend: id => set(p => {
+        const o = p.outbox.find(x => x.id === id && x.status === 'pending'); if (!o) return p;
+        return {
+          ...p, outbox: p.outbox.map(x => x.id === id ? { ...x, status: 'stopped', doneAt: Date.now() } : x),
+          deck: o.card && !p.deck.some(c => c.id === o.card!.id) ? [{ ...o.card, backNote: 'Stopped. Nothing was sent' }, ...p.deck] : p.deck,
+          handled: Math.max(0, p.handled - (o.card ? 1 : 0)),
+          threads: log(p, SENDS[id].spaceId, `You stopped the send to ${SENDS[id].short}. Nothing went`),
+          event: { type: 'stop', at: Date.now(), id },
+        };
+      }),
+      markPaid: id => set(p => {
+        const b = BILLS[id];
         const stories = { ...p.stories };
-        for (const k of Object.keys(stories)) stories[k] = stories[k].map(c => c.payment === id ? { ...c, state: 'done' } : c);
-        const had = p.deck.some(c => c.payment === id);
+        for (const k of Object.keys(stories)) stories[k] = stories[k].map(c => c.bill === id ? { ...c, state: 'done' } : c);
+        const had = p.deck.some(c => c.bill === id);
         const follow: NextItem | null = id === 'deposit'
-          ? { id: 'x-mill', spaceId: pay.spaceId, agent: 'wren', status: 'Confirming 14 March with The Old Mill', orb: 'composing', eta: '14:00', day: 'Today' }
+          ? { id: 'x-mill', spaceId: b.spaceId, agent: 'wren', status: 'Asking The Old Mill to confirm 14 March', orb: 'composing', eta: '14:00', day: 'Today' }
           : null;
         return {
-          ...p, stories, paid: [...p.paid, id],
-          deck: p.deck.filter(c => c.payment !== id), handled: p.handled + (had ? 1 : 0),
+          ...p, stories, paid: [...p.paid.filter(x => x !== id), id],
+          deck: p.deck.filter(c => c.bill !== id), handled: p.handled + (had ? 1 : 0),
           next: follow && !p.next.some(n => n.id === follow.id) ? [follow, ...p.next] : p.next,
-          flash: follow ? flash(follow.id, 'chief') : p.flash,
+          threads: log(p, b.spaceId, `You marked ${b.title.toLowerCase().replace(/^pay /, 'the ')} as paid`),
+          flash: flash(follow?.id ?? '', 'chief'),
         };
       }),
       decideStory: (spaceId, cardId, how) => set(p => ({
         ...p,
         stories: { ...p.stories, [spaceId]: (p.stories[spaceId] ?? []).map(c => c.id === cardId && c.state !== 'done' ? { ...c, state: how } : c) },
       })),
+      openStack: () => set(p => {
+        if (!p.stack) return p;
+        const top: DeckCard = { id: 'd-receipts', spaceId: 'tax', agent: 'ledger', kind: 'Quick sort', group: 'receipts',
+          title: `${p.stack.count} receipts to sort, one at a time`, kv: [['Smallest', '£7.20, Robert Dyas'], ['Largest', '£54.00, B&Q']],
+          act: 'Start with the Screwfix one', done: 'Ledger will show them one at a time.' };
+        return { ...p, stack: null, deck: [top, ...p.deck] };
+      }),
       simulate: e => set(p => {
         const at = Date.now();
-        if (e === 'reset') return { ...initial(p.screen === 'story' || p.screen === 'approve' ? 'today' : p.screen) };
-        const base = { ...p, screen: (p.screen === 'spaces' ? 'spaces' : 'today') as Screen, chief: { ...p.chief, open: false } };
+        if (e === 'reset') { timers.current.forEach(clearTimeout); timers.current = []; return { ...initial(p.screen === 'story' || p.screen === 'approve' ? 'today' : p.screen), event: { type: 'reset', at } }; }
+        const base: State = { ...p, screen: (e === 'assign' ? 'spaces' : 'today') as Screen, chief: { ...p.chief, open: false }, rec: null };
         if (e === 'urgent') {
-          if (p.deck.some(c => c.id === URGENT.id)) return { ...base, flash: flash(URGENT.id), event: { type: e, at } };
+          if (p.deck.some(c => c.id === URGENT.id)) return { ...base, flash: flash(URGENT.id), event: { type: e, at, id: URGENT.id, note: 'Already on top. It pulses so you see it.' } };
           return { ...base, deck: [URGENT, ...p.deck], later: p.later.filter(l => l.id !== 'l-inbox'),
-            stories: { ...p.stories, inbox: [{ id: 'i1', kind: 'From the school', big: '12:30', title: URGENT.title, rows: [['To', 'Ellie Reid']], source: 'From the school’s email at 09:38', act: URGENT.act, done: URGENT.done, state: 'new' }] },
-            flash: flash(URGENT.id, 'ring-inbox'), event: { type: e, at, id: URGENT.id } };
+            stories: { ...p.stories, inbox: [{ id: 'i1', kind: 'From the school', big: '12:30', title: URGENT.title, rows: [['To', 'Ellie Reid']], source: 'From the school’s email at 09:38', act: 'Review and text Ellie', done: 'Texted.', send: 'ellie', state: 'new' }] },
+            flash: flash(URGENT.id, 'ring-inbox', 'deal'), event: { type: e, at, id: URGENT.id, note: 'Dealt from Keep as a hero card. Next folded to a line, the edition to a strip, Inbox woke from Later.' } };
         }
         if (e === 'finish') {
           const open = p.next.filter(n => n.orb && FINISHED[n.id] && !p.finished.includes(n.id));
           const id = (open.find(n => FINISHED[n.id].card) ?? open[0])?.id;
-          return id ? finish(base, id) : base;
+          if (!id) return { ...base, event: { type: e, at, note: 'No one is mid-run. Start again to watch it.' } };
+          const q = finish(base, id);
+          return { ...q, event: { ...q.event!, note: `${AGENTS[p.next.find(n => n.id === id)!.agent].name}’s row became its result${FINISHED[id].card ? ', handed Now a card and gave its ring a segment' : ''}. It leaves in 4 seconds.` } };
         }
         if (e === 'deadline') {
           let q = base;
           if (!q.deck.some(c => c.id === 'd-dep') && q.later.some(l => l.id === 'd-dep')) q = bringBackState(q, 'd-dep', false);
-          const dep = q.deck.find(c => c.id === 'd-dep'); if (!dep) return q;
+          const dep = q.deck.find(c => c.id === 'd-dep');
+          if (!dep) return { ...q, event: { type: e, at, note: 'The deposit is already marked paid.' } };
           const near: DeckCard = { ...dep, near: true, deadline: 'Hold ends in 2 hours', backNote: undefined };
           const rest = q.deck.filter(c => c.id !== 'd-dep');
           const lead = rest.filter(c => c.emphasis === 'urgent');
-          return { ...q, deck: [...lead, near, ...rest.filter(c => c.emphasis !== 'urgent')], flash: flash('d-dep', 'ring-mum'), event: { type: e, at, id: 'd-dep' } };
+          return { ...q, deck: [...lead, near, ...rest.filter(c => c.emphasis !== 'urgent')], flash: flash('d-dep', 'ring-mum'),
+            event: { type: e, at, id: 'd-dep', note: 'The deposit rose through the stack and grew. The pay slip inside did not change.' } };
         }
-        if (e === 'evening') return { ...base, phase: p.phase === 'evening' ? 'day' : 'evening', event: { type: e, at } };
-        if (e === 'clear') return { ...base, handled: p.handled + p.deck.length, deck: [], flash: flash('chief'), event: { type: e, at } };
+        if (e === 'merge') {
+          if (p.stack) return { ...base, flash: flash('stack'), event: { type: e, at, note: 'Already one stack.' } };
+          later(() => set(x => x.stack ? { ...x, stack: { ...x.stack, phase: 'merged' } } : x), 1500);
+          const had = p.deck.some(c => c.id === 'd4');
+          return { ...base, deck: p.deck.filter(c => c.id !== 'd4'), stack: { phase: 'arriving', count: RECEIPTS.length + (had ? 1 : 0) },
+            threads: log(p, 'tax', `Ledger found ${RECEIPTS.length} more receipts like the Screwfix one`),
+            event: { type: e, at, note: 'Three receipts landed one by one, then merged with the Screwfix card into one counted stack.' } };
+        }
+        if (e === 'read') return { ...base, event: { type: e, at, id: 'e2', note: 'One read opened in place. The rest of the edition receded.' } };
+        if (e === 'evening') {
+          const on = p.phase !== 'evening';
+          return { ...base, phase: on ? 'evening' : 'day', event: { type: e, at, note: on ? 'The edition moved above the deck on the night surface. Cards shrank to their compact form.' : 'Back to the day order.' } };
+        }
+        if (e === 'clear') return { ...base, handled: p.handled + p.deck.length + (p.stack ? 1 : 0), deck: [], stack: null, flash: flash('chief'), event: { type: e, at, note: 'The deck closed to one line. The edition took the page, in larger type. Keep rests.' } };
+        if (e === 'assign') {
+          if (p.staff.read) return { ...base, flash: flash('staff-read'), event: { type: e, at, note: 'Juno is already on Reading list.' } };
+          later(() => set(x => assignState(x, 'read', 'juno')), 650);
+          return { ...base, event: { type: e, at, note: 'Keep dealt Juno into Reading list. The tile moved from Later to Next.' } };
+        }
         return p;
       }),
       openChief: (thread = null) => set(p => ({ ...p, chief: { ...p.chief, open: true, thread } })),
-      closeChief: () => set(p => ({ ...p, chief: { ...p.chief, open: false } })),
+      closeChief: () => set(p => ({ ...p, chief: { ...p.chief, open: false }, rec: null })),
       say: (thread, text) => {
         set(p => ({ ...p, chief: { ...p.chief, busy: true }, threads: { ...p.threads, [thread]: [...(p.threads[thread] ?? []), { who: 'you', text, at: 'now' }] } }));
-        setTimeout(() => set(p => {
+        later(() => set(p => {
+          const who = thread === 'keep' ? null : p.staff[thread];
           const reply: Msg = thread === 'keep'
-            ? { who: 'crew', text: 'Filed to House move. Scout has it, and it will come up in Now when it needs you.', card: { kind: 'Task', title: text.length > 44 ? text.slice(0, 42) + '…' : text, state: 'Filed just now', spaceId: 'house' } }
-            : { who: 'crew', text: `On it. The answer will land in Now, not here, so you do not have to watch this thread.` };
-          return { ...p, chief: { ...p.chief, busy: false }, threads: { ...p.threads, [thread]: [...(p.threads[thread] ?? []), reply] }, flash: flash('chief') };
+            ? { who: 'crew', text: 'Filed to House move. Scout has it, and it comes to Now when it needs you.', card: { kind: 'Task', title: text.length > 44 ? text.slice(0, 42) + '…' : text, state: 'Filed just now', spaceId: 'house' } }
+            : { who: 'crew', text: who ? `${AGENTS[who].name} here. On it. The answer lands in Now, not here, so you need not watch this thread.` : 'No one is on this Space yet. Ask Keep to put someone on it.' };
+          const threads = { ...p.threads, [thread]: [...(p.threads[thread] ?? []), reply] };
+          if (thread === 'keep') threads.house = [...(threads.house ?? []), { who: 'log', text: `Keep filed “${text.length > 40 ? text.slice(0, 38) + '…' : text}” here for Scout`, at: 'now' }];
+          return { ...p, chief: { ...p.chief, busy: false }, threads, flash: flash('chief') };
+        }), 1500);
+      },
+      startRec: () => set(p => ({ ...p, rec: 'listening', chief: { ...p.chief, open: true, thread: null } })),
+      stopRec: secs => {
+        set(p => ({ ...p, rec: 'tidying' }));
+        later(() => set(p => {
+          const pid = 'v' + Date.now();
+          const msgs: Msg[] = [
+            { who: 'you', text: NOTE.clean, at: 'now', voice: { secs, raw: RAMBLE } },
+            { who: 'crew', text: 'Three things in that. Here is where I would put each. Move any that are wrong.', proposal: { id: pid, filed: false } },
+          ];
+          return { ...p, rec: null, chief: { ...p.chief, open: true, thread: 'keep' }, threads: { ...p.threads, keep: [...p.threads.keep, ...msgs] },
+            proposals: { ...p.proposals, [pid]: { spaces: NOTE.cards.map(c => c.spaceId), filed: false } }, flash: flash('chief') };
         }), 1700);
       },
-      assign: (spaceId, who) => set(p => ({
-        ...p, staff: { ...p.staff, [spaceId]: who },
-        threads: { ...p.threads, [spaceId]: [...(p.threads[spaceId] ?? []), { who: 'log', text: `Keep put ${AGENTS[who].name} on ${space(spaceId).name}`, at: 'now' }] },
-        flash: flash('staff-' + spaceId), event: { type: 'assign', at: Date.now(), id: spaceId },
-      })),
+      moveProposal: (pid, i) => set(p => {
+        const pr = p.proposals[pid]; if (!pr || pr.filed) return p;
+        const order = ['house', 'mum', 'inbox'];
+        const spaces = pr.spaces.map((sid, j) => j === i ? order[(order.indexOf(sid) + 1) % order.length] : sid);
+        return { ...p, proposals: { ...p.proposals, [pid]: { ...pr, spaces } } };
+      }),
+      fileProposal: (pid, on) => set(p => {
+        const pr = p.proposals[pid]; if (!pr) return p;
+        let threads = p.threads;
+        if (on) pr.spaces.forEach((sid, i) => { threads = { ...threads, [sid]: [...(threads[sid] ?? []), { who: 'log', text: `Keep filed “${NOTE.cards[i].title}” here${p.staff[sid] ? ` for ${AGENTS[p.staff[sid]!].name}` : ''}`, at: 'now' }] }; });
+        return { ...p, threads, proposals: { ...p.proposals, [pid]: { ...pr, filed: on } }, flash: on ? flash('chief') : p.flash };
+      }),
+      assign: (spaceId, who) => set(p => assignState(p, spaceId, who)),
     };
   }, [s, pop]);
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
 }
 
+function assignState(p: State, spaceId: string, who: AgentId): State {
+  const job: NextItem | null = spaceId === 'read' ? { id: 'x-read', spaceId, agent: who, status: 'Sorting your 9 saved pieces by Space', orb: 'searching', eta: 'Sun', day: 'in the edition' } : null;
+  return {
+    ...p, staff: { ...p.staff, [spaceId]: who },
+    next: job && !p.next.some(n => n.id === job.id) ? [...p.next, job] : p.next,
+    threads: log(p, spaceId, `Keep put ${AGENTS[who].name} on ${space(spaceId).name}`),
+    flash: flash('staff-' + spaceId), event: { type: 'assign', at: Date.now(), id: spaceId, note: p.event?.note },
+  };
+}
+
 /** A local clock, so only the components that show a countdown re-render. */
 export function useClock(on: boolean, ms = 500) {
   const [t, setT] = useState(() => Date.now());
-  useEffect(() => { if (!on) return; const i = setInterval(() => setT(Date.now()), ms); return () => clearInterval(i); }, [on, ms]);
+  useEffect(() => { if (!on) return; setT(Date.now()); const i = setInterval(() => setT(Date.now()), ms); return () => clearInterval(i); }, [on, ms]);
   return t;
 }
 

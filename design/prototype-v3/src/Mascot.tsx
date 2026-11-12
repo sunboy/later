@@ -2,14 +2,18 @@ import './mascot.css';
 import type { AgentId } from './data';
 
 /** The Deck: Later's mascot family. The chief (Keep) is a stack of cards; each crew member is one card dealt from it.
-    Plain vector parts; every state is a class. See design/mascots/concepts.html for the full sheet. */
+    Plain vector parts; every state is a class. See design/mascots/concepts.html for the full sheet.
+
+    This file is the only place the artwork lives. Every screen draws the chief and crew through <Chief> and <Crew>,
+    so the drawing can be swapped without touching a screen. The contract is the props: state, size, and for the chief
+    `out`, how many crew are away working (each one away is an under-card missing from the stack). */
 export type MState = 'idle' | 'listening' | 'thinking' | 'working' | 'waiting' | 'done' | 'rest' | 'error';
 
 const HORIZON = <><path className="horizon" d="M0 39Q24 35 48 39V48H0Z" /><path className="hz" d="M1 39Q24 35 47 39" /></>;
 
-export function Chief({ state = 'idle', size = 48 }: { state?: MState; size?: number }) {
+export function Chief({ state = 'idle', size = 48, out = 0 }: { state?: MState; size?: number; out?: number }) {
   return (
-    <svg className={`m deck st-${state}`} viewBox="0 0 48 48" width={size} height={size} aria-hidden="true" focusable="false">
+    <svg className={`m deck chief st-${state} out-${Math.min(3, out)}`} viewBox="0 0 48 48" width={size} height={size} aria-hidden="true" focusable="false">
       <g className="all">
         <rect className="c3" x="13" y="19" width="22" height="24" rx="7" />
         <rect className="c2 under" x="10.5" y="14" width="27" height="25" rx="7.5" />

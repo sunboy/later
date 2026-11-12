@@ -1,10 +1,10 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { AGENTS, SPACES, SPACE_META, type AgentId, type Space } from '../data';
 import { Icon } from '../icons';
 import { Crew, type MState } from '../Mascot';
 import { Wordmark } from '../Wordmark';
 import { useApp, useFlash } from '../store';
-import { reducedMotion } from '../motion';
+import { reducedMotion, useFlip, usePrefersReducedMotion } from '../motion';
 
 /** A crew member assigned to a Space is its card, tucked into the top of the Space's tile. */
 function Tucked({ spaceId, who, state }: { spaceId: string; who: AgentId; state: MState }) {
@@ -35,12 +35,13 @@ function SpaceTile({ s, group }: { s: Space; group: 'now' | 'next' | 'later' }) 
   const flash = useFlash('staff-' + s.id);
   const meta = SPACE_META[s.id];
   const state: MState = !app.running ? 'rest' : group === 'now' ? 'waiting' : job?.orb ? 'working' : group === 'later' ? 'rest' : 'idle';
-  const open = () => cards.length ? app.openStory(s.id) : app.openChief(s.id);
+  const live = cards.filter(c => c.state !== 'done').length;
+  const Main = cards.length ? 'button' : 'div';
   return (
-    <div className={`sp-tile g-${group} ${flash ? 'flash' : ''}`}>
+    <div className={`sp-tile g-${group} ${flash ? 'flash' : ''}`} data-flip={'t-' + s.id} id={'tile-' + s.id}>
       {who && <Tucked spaceId={s.id} who={who} state={state} />}
       <div className="sp-card">
-        <button className="sp-main" onClick={open} aria-label={`${s.name}. ${meta.status}`}>
+        <Main className="sp-main" onClick={cards.length ? () => app.openStory(s.id) : undefined} aria-label={cards.length ? `${s.name}. ${meta.status}. Play its cards` : undefined}>
           <span className="glyph"><Icon name={s.glyph} size={17} /></span>
           <span className="sp-text">
             <b>{s.name}</b>
@@ -49,13 +50,11 @@ function SpaceTile({ s, group }: { s: Space; group: 'now' | 'next' | 'later' }) 
           </span>
           {group === 'now' && fresh > 0 && <span className="sp-count"><b>{fresh}</b>need you</span>}
           {group === 'next' && job && <span className="sp-count quiet"><b>{job.eta}</b>reaches you</span>}
-        </button>
-        <div className="sp-foot">
-          {who
-            ? <button onClick={() => app.openChief(s.id)}><Icon name="chat" size={15} />Thread with {AGENTS[who].name}</button>
-            : <button className="put" onClick={() => app.assign(s.id, 'juno')}>Ask Keep to put Juno on it</button>}
-          {cards.length > 0 && <button onClick={() => app.openStory(s.id)}>Play {cards.filter(c => c.state !== 'done').length || 'the'} {cards.filter(c => c.state !== 'done').length === 1 ? 'card' : 'cards'}</button>}
-        </div>
+        </Main>
+        {(!who || cards.length > 0) && <div className="sp-foot">
+          {!who && <button className="put" onClick={() => app.assign(s.id, 'juno')}>Ask Keep to put Juno on it</button>}
+          {cards.length > 0 && <button onClick={() => app.openStory(s.id)}><Icon name="chev" size={14} />Play {live || 'the'} {live === 1 ? 'card' : 'cards'}</button>}
+        </div>}
       </div>
     </div>
   );
@@ -63,15 +62,24 @@ function SpaceTile({ s, group }: { s: Space; group: 'now' | 'next' | 'later' }) 
 
 export function Spaces() {
   const app = useApp();
-  const ASK = ['Needs a reply', 'Approval', 'Decision', 'From the school'];
+  const ASK = ['Needs a reply', 'Approval', 'Ready to pay', 'Decision', 'From the school'];
   const needs = (id: string) => (app.stories[id] ?? []).some(c => c.state === 'new' && ASK.includes(c.kind)) || app.deck.some(c => c.spaceId === id && (c.emphasis === 'urgent' || c.near));
+  const scroller = useRef<HTMLDivElement>(null);
+  const reduced = usePrefersReducedMotion();
+  useFlip(scroller, [...SPACES.map(s => s.id + (needs(s.id) ? 'n' : app.next.some(n => n.spaceId === s.id) ? 'x' : 'l') + (app.staff[s.id] ?? ''))].join('|'));
+  // Keep assigning someone: bring that tile into view so the deal is seen
+  useEffect(() => {
+    const ev = app.event; if (!ev || ev.type !== 'assign' || Date.now() - ev.at > 400) return;
+    const el = scroller.current?.querySelector('#tile-read') as HTMLElement | null, sc = scroller.current;
+    if (el && sc) sc.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 200), behavior: reduced ? 'auto' : 'smooth' });
+  }, [app.event, reduced]);
   const now = SPACES.filter(s => needs(s.id));
   const next = SPACES.filter(s => !needs(s.id) && app.next.some(n => n.spaceId === s.id));
   const later = SPACES.filter(s => !now.includes(s) && !next.includes(s));
   const crew = (Object.keys(AGENTS) as AgentId[]).map(a => ({ a, on: SPACES.filter(s => app.staff[s.id] === a) }));
   return (
     <div className="screen">
-      <div className="scroll no-dock">
+      <div className="scroll no-dock" ref={scroller}>
         <div className="sp-head">
           <Wordmark size={30} />
           <span className="avatar-me" aria-label="Your profile, Sam Reid">SR</span>

@@ -17,45 +17,76 @@ export const AGENTS: Record<AgentId, Agent> = {
 export const gbp = (pence: number) =>
   '£' + (pence / 100).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-export interface Payment {
+/** A bill Later found. Later never pays: it shows the exact details and opens your bank or the payee's page. */
+export interface Bill {
   id: string;
-  kind: 'pay' | 'send';
-  hold: string; // the press-and-hold label, naming recipient and amount
-  doneLine: string;
+  spaceId: string;
+  agent: AgentId;
+  title: string;
+  payee: string;
+  amount: number; // pence
+  reference: string;
+  account: string;
+  due: string;
+  opens: string; // what the open button opens
+  source: string;
+  paidLine: string;
+}
+export const BILLS: Record<string, Bill> = {
+  deposit: {
+    id: 'deposit', spaceId: 'mum', agent: 'wren', title: 'Pay the venue deposit',
+    payee: 'The Old Mill Ltd', amount: 25000, reference: 'MUM70-DEP', account: '20-45-77, ending 3391',
+    due: 'Hold ends Friday 17:00', opens: 'your bank', source: 'from the venue’s email at 07:31',
+    paidLine: 'Marked as paid. Wren will ask The Old Mill to confirm 14 March.',
+  },
+  survey: {
+    id: 'survey', spaceId: 'house', agent: 'scout', title: 'Pay the survey fee',
+    payee: 'Hallam Surveyors Ltd', amount: 124000, reference: 'HSL-22ASHBY', account: '40-11-62, ending 0918',
+    due: 'Due Friday 14 November', opens: 'Hallam’s payment page', source: 'from the quote PDF and 2 emails',
+    paidLine: 'Marked as paid. Scout will file the receipt when it arrives.',
+  },
+};
+
+/** Something that sends. Always a press and hold on the fixed approval form, then a 30-second window to stop it. */
+export interface Send {
+  id: string;
   spaceId: string;
   agent: AgentId;
   title: string;
   to: string;
-  account: string;
-  amount: number; // pence
-  reference: string;
+  address: string;
   from: string;
-  when: string;
+  subject?: string;
+  body: string;
   source: string;
   hash: string; // argument hash the approval binds to
+  hold: string;
+  short: string; // who it goes to, for the window row
+  sentLine: string;
 }
-
-export const PAYMENTS: Record<string, Payment> = {
-  deposit: {
-    id: 'deposit', kind: 'pay', hold: 'Hold to pay £250.00 to The Old Mill',
-    doneLine: 'Paid £250.00 to The Old Mill Ltd. Receipt filed to Mum’s 70th.', spaceId: 'mum', agent: 'wren', title: 'Pay the venue deposit',
-    to: 'The Old Mill Ltd', account: 'Sort code 20-45-77, account ending 3391', amount: 25000,
-    reference: 'MUM70-DEP', from: 'Joint account ending 4471', when: 'Today, as soon as you approve',
-    source: 'from the venue’s email at 07:31', hash: '7f3a 91c0 e2b4',
+export const SENDS: Record<string, Send> = {
+  dave: {
+    id: 'dave', spaceId: 'house', agent: 'scout', title: 'Reply to Dave about the loft',
+    to: 'Dave Ellis, Ellis Surveying', address: 'dave@ellissurveying.co.uk', from: 'sam.reid@gmail.com',
+    subject: 'Re: Loft access on Tuesday',
+    body: 'Hi Dave, Tuesday at 10 works. The hatch is in the back bedroom and I’ll leave the ladder out. Thanks, Sam',
+    source: 'drafted by Scout from Dave’s email at 07:40', hash: '4e1b 77c2 d093',
+    hold: 'Hold to send to Dave Ellis', short: 'Dave Ellis', sentLine: 'Sent to Dave Ellis',
   },
-  survey: {
-    id: 'survey', kind: 'pay', hold: 'Hold to pay £1,240.00 to Hallam',
-    doneLine: 'Paid £1,240.00 to Hallam Surveyors Ltd. Receipt filed to House move.', spaceId: 'house', agent: 'scout', title: 'Pay the survey fee',
-    to: 'Hallam Surveyors Ltd', account: 'Sort code 40-11-62, account ending 0918', amount: 124000,
-    reference: 'HSL-22ASHBY', from: 'Joint account ending 4471', when: 'Friday 14 November',
-    source: 'from the quote PDF and 2 emails', hash: 'c41d 07aa 5e19',
+  ellie: {
+    id: 'ellie', spaceId: 'inbox', agent: 'wren', title: 'Ask Ellie to collect Maya',
+    to: 'Ellie Reid', address: '+44 7700 900461 (text)', from: 'Your phone number',
+    body: 'Ellie, the heating has failed at school and they close at 12:30. Could you get Maya? I’m in the survey until 1. Sam',
+    source: 'drafted by Wren from the school’s email at 09:38', hash: '91aa 3c0e 6f52',
+    hold: 'Hold to text Ellie Reid', short: 'Ellie Reid', sentLine: 'Texted Ellie Reid',
   },
-  send: {
-    id: 'send', kind: 'send', hold: 'Hold to send to 318 people', spaceId: 'tally', agent: 'scout',
-    doneLine: 'Scheduled for 10:00 to 318 subscribers. You can stop it until 09:59.',
-    title: 'Send the launch email', to: '318 subscribers on the Tally list', account: 'Subject: Tally is out today',
-    amount: 0, reference: 'hello@tally.page', from: 'hello@tally.page', when: 'Today at 10:00',
-    source: 'from the draft you wrote with Scout on Tuesday', hash: '2be8 f6d1 9a03',
+  launch: {
+    id: 'launch', spaceId: 'tally', agent: 'scout', title: 'Send the launch email',
+    to: '318 subscribers on the Tally list', address: 'list: tally-launch (318)', from: 'hello@tally.page',
+    subject: 'Tally is out today',
+    body: 'Tally is out today. It turns any form into a tally you can share. The first 100 of you get a year free with the code EARLY.',
+    source: 'the draft you wrote with Scout on Tuesday', hash: '2be8 f6d1 9a03',
+    hold: 'Hold to send to 318 people', short: '318 subscribers', sentLine: 'Sent to 318 subscribers',
   },
 };
 
@@ -89,8 +120,9 @@ export interface StoryCard {
   source: string;
   act: string;
   done: string;
-  /** reversible actions may use swipe-up; payments open the hold-to-pay confirm */
-  payment?: string;
+  /** reversible actions may use swipe-up; a bill opens the fixed pay slip, a send opens the fixed approval */
+  bill?: string;
+  send?: string;
   live?: { state: OrbState; text: string };
   state: 'new' | 'seen' | 'done';
 }
@@ -102,17 +134,17 @@ export const STORIES: Record<string, StoryCard[]> = {
       rows: [['From', 'Leah Grant, Hamptons'], ['Draft', 'Attached, signed by both of us. Could you confirm it arrived?', true]],
       source: 'From Leah’s email at 08:12', act: 'Queue reply to Leah', done: 'Queued in Drafts. Nothing sends until you press send.',
       live: { state: 'searching', text: 'Scout is reading 2 more emails from Hamptons' } }),
-    sc({ id: 'h2', kind: 'Approval', big: '£1,240.00', title: 'Pay the survey fee',
-      rows: [['To', 'Hallam Surveyors Ltd'], ['From', 'Joint account ending 4471'], ['When', 'Friday 14 November']],
-      source: 'From the quote PDF and 2 emails', act: 'Review the payment', done: 'Paid.', payment: 'survey' }),
+    sc({ id: 'h2', kind: 'Ready to pay', big: '£1,240.00', title: 'Pay the survey fee',
+      rows: [['To', 'Hallam Surveyors Ltd'], ['Reference', 'HSL-22ASHBY'], ['Due', 'Friday 14 November']],
+      source: 'From the quote PDF and 2 emails', act: 'See how to pay', done: 'Marked as paid.', bill: 'survey' }),
     sc({ id: 'h3', kind: 'Decision', big: '£890', title: 'Pick a removals quote',
       rows: [['Cheapest', 'Bishop’s Move, £890'], ['Best rated', 'Kent Removals, £1,040'], ['19 Dec', 'Both are free']],
       source: 'From 3 quotes Scout collected', act: 'Choose Bishop’s Move', done: 'Scout will ask Bishop’s Move to hold 19 December.' }),
   ],
   mum: [
-    sc({ id: 'm1', kind: 'Approval', big: '£250.00', title: 'Pay the venue deposit',
-      rows: [['To', 'The Old Mill Ltd'], ['Reference', 'MUM70-DEP'], ['Hold expires', 'Friday 17:00']],
-      source: 'From the venue’s email at 07:31', act: 'Review the payment', done: 'Paid.', payment: 'deposit' }),
+    sc({ id: 'm1', kind: 'Ready to pay', big: '£250.00', title: 'Pay the venue deposit',
+      rows: [['To', 'The Old Mill Ltd'], ['Reference', 'MUM70-DEP'], ['Hold ends', 'Friday 17:00']],
+      source: 'From the venue’s email at 07:31', act: 'See how to pay', done: 'Marked as paid.', bill: 'deposit' }),
     sc({ id: 'm2', kind: 'To do', big: '3 missing', title: 'Invitations are ready to go',
       rows: [['Ready', '19 of 22 addresses'], ['Reply by', 'Monday 30 November']],
       source: 'From your contacts and Mum’s list', act: 'Ask Wren to find the 3', done: 'Wren will ask Ellie for the missing addresses.',
@@ -134,23 +166,12 @@ export const STORIES: Record<string, StoryCard[]> = {
   ],
   tally: [
     sc({ id: 't1', kind: 'Approval', big: '318', title: 'Send the launch email to 318 subscribers',
-      rows: [['Subject', 'Tally is out today'], ['From', 'hello@tally.page'], ['When', 'Today at 10:00']],
-      source: 'Draft written with you on Tuesday', act: 'Review before sending', done: 'Scheduled.', payment: 'send' }),
+      rows: [['Subject', 'Tally is out today'], ['From', 'hello@tally.page'], ['Goes', '30 seconds after you hold']],
+      source: 'Draft written with you on Tuesday', act: 'Review before sending', done: 'Sent.', send: 'launch' }),
   ],
 };
 
 /* ---------- Spaces screen bands ---------- */
-export interface NowItem {
-  id: string;
-  spaceId: string;
-  ask: string;
-  act: string;
-  done: string;
-  depth: number; // cards in this small stack
-  at: string;
-  payment?: string;
-  backNote?: string;
-}
 export interface NextItem {
   id: string;
   spaceId: string;
@@ -171,11 +192,6 @@ export interface LaterItem {
   from?: DeckCard;
 }
 
-export const NOW0: NowItem[] = [
-  { id: 'n-dep', spaceId: 'mum', ask: 'Approve the venue deposit', act: 'Review £250.00', done: 'Paid. Receipt filed.', depth: 2, at: '07:31', payment: 'deposit' },
-  { id: 'n-loft', spaceId: 'house', ask: 'Loft access for the surveyor, Tue 10:00?', act: 'Queue a yes', done: 'Yes queued to Dave Ellis.', depth: 3, at: '07:40' },
-  { id: 'n-ana', spaceId: 'job', ask: 'Ana at Lattice wants a first call', act: 'Offer Thu 14:30', done: 'Reply queued to Ana.', depth: 2, at: '07:55' },
-];
 export const NEXT0: NextItem[] = [
   { id: 'x-fare', spaceId: 'japan', agent: 'juno', status: 'Comparing fares on 3 sites', orb: 'searching', eta: '12:00', day: 'Today' },
   { id: 'x-tax', spaceId: 'tax', agent: 'ledger', status: 'Reconciling October', orb: 'solving', eta: '16:00', day: 'Today', progress: [26, 58] },
@@ -208,7 +224,10 @@ export interface DeckCard {
   note?: string;
   act: string;
   done: string;
-  payment?: string;
+  bill?: string;
+  send?: string;
+  /** cards of one group merge into one counted stack */
+  group?: string;
   /** layout hints from the agent: the client decides what they look like */
   emphasis?: 'urgent';
   deadline?: string;
@@ -218,19 +237,25 @@ export interface DeckCard {
 export const DECK0: DeckCard[] = [
   { id: 'd1', spaceId: 'house', agent: 'scout', kind: 'Needs a reply', title: 'Can Dave see the loft on Tuesday at 10?',
     quote: 'Hi Dave, Tuesday at 10 works. The hatch is in the back bedroom and I’ll leave the ladder out. Thanks, Sam',
-    kv: [['To', 'Dave Ellis, Ellis Surveying']], act: 'Queue reply to Dave', done: 'Reply queued. It sends at 09:00 unless you stop it.' },
-  { id: 'd-dep', spaceId: 'mum', agent: 'wren', kind: 'Approval', title: 'Pay the venue deposit',
-    kv: [['Amount', '£250.00'], ['To', 'The Old Mill Ltd'], ['For', '14 March, 22 guests']], deadline: 'Hold ends Friday 17:00',
-    act: 'Review and pay', done: 'Paid. Receipt filed.', payment: 'deposit' },
+    kv: [['To', 'Dave Ellis, Ellis Surveying']], act: 'Review and send', done: 'Sent to Dave.', send: 'dave' },
+  { id: 'd-dep', spaceId: 'mum', agent: 'wren', kind: 'Ready to pay', title: 'Pay the venue deposit',
+    kv: [], note: 'For 14 March, 22 guests. Later never pays: pay it from your bank, then mark it paid.', deadline: 'Hold ends Friday 17:00',
+    act: 'Open your bank', done: 'Marked as paid.', bill: 'deposit' },
   { id: 'd3', spaceId: 'japan', agent: 'juno', kind: 'Digest', title: 'Fares to Tokyo dipped overnight',
     kv: [['Best', '£612 return, 3 to 17 April'], ['Was', '£744 last week'], ['Sources', '3 airline sites, checked 09:00']], act: 'Hold it for 48 hours', done: 'Held until Saturday 09:00. Nothing is paid.' },
   { id: 'd4', spaceId: 'tax', agent: 'ledger', kind: 'Quick sort', title: 'Is the £38.40 Screwfix receipt a work expense?',
-    kv: [['Date', '2 November'], ['Items', 'Wall plugs, 2 shelf brackets']], note: '22 more like this are waiting in Taxes 2026.', act: 'Yes, it is', done: 'Marked as a work expense.' },
+    kv: [['Date', '2 November'], ['Items', 'Wall plugs, 2 shelf brackets']], note: '22 more like this are waiting in Taxes 2026.', act: 'Yes, it is', done: 'Marked as a work expense.', group: 'receipts' },
 ];
 export const URGENT: DeckCard = { id: 'u-school', spaceId: 'inbox', agent: 'wren', kind: 'From the school, 09:38', emphasis: 'urgent',
   title: 'School shuts at 12:30 today. Who collects Maya?',
   quote: 'Ellie, the heating has failed at school and they close at 12:30. Could you get Maya? I’m in the survey until 1. Sam',
-  kv: [['To', 'Ellie Reid'], ['You are', 'Busy 11:30 to 13:00']], act: 'Queue the ask to Ellie', done: 'Queued to Ellie. It sends in 60 seconds unless you stop it.' };
+  kv: [['To', 'Ellie Reid, by text'], ['You are', 'Busy 11:30 to 13:00']], act: 'Review and text Ellie', done: 'Texted Ellie.', send: 'ellie' };
+/** Ledger finds more receipts like d4: they arrive one by one, then merge into one counted stack. */
+export const RECEIPTS = [
+  { id: 'r1', what: 'Wickes', amount: '£12.99', date: '4 Nov' },
+  { id: 'r2', what: 'B&Q', amount: '£54.00', date: '6 Nov' },
+  { id: 'r3', what: 'Robert Dyas', amount: '£7.20', date: '9 Nov' },
+];
 export const FINISHED: Record<string, { status: string; card?: DeckCard; ring?: string }> = {
   'x-tax': { status: 'Done. 41 of 58 matched, 17 need your eye', ring: 'tax',
     card: { id: 'd-tax17', spaceId: 'tax', agent: 'ledger', kind: 'Quick sort', title: '17 October payments did not match',
@@ -244,7 +269,7 @@ export const DAYLINE = [
   { t: 'Fri 07:00', what: 'Tomorrow’s cards and edition', sub: 'About 4 cards so far' },
 ];
 
-/* ---------- Capture ---------- */
+/* ---------- Voice, inside Keep ---------- */
 export const RAMBLE =
   'okay so um the removal people, Bishop’s, need to know about the piano by Friday, and I should ask Mum whether Auntie Pat is coming to the party because that changes the numbers, oh and remind me to cancel the gym before the move, it’s the one on Kentish Town Road';
 export const NOTE = {
@@ -343,6 +368,10 @@ export interface Msg {
   text: string;
   at?: string;
   card?: { kind: string; title: string; state: string; spaceId?: string };
+  /** a voice note you left: the cleaned note, with what you said kept beside it */
+  voice?: { secs: number; raw: string };
+  /** Keep's proposal for where captured cards go; filed stays in the thread */
+  proposal?: { id: string; filed: boolean };
 }
 export const THREADS0: Record<string, Msg[]> = {
   keep: [
@@ -358,7 +387,7 @@ export const THREADS0: Record<string, Msg[]> = {
   ],
   mum: [
     { who: 'log', text: 'Wren read the venue’s email', at: '07:31' },
-    { who: 'crew', text: 'The Old Mill can do 14 March for 22. They hold it until Friday 17:00 for a £250.00 deposit.', card: { kind: 'Approval', title: 'Pay the venue deposit', state: 'Needs a press and hold' } },
+    { who: 'crew', text: 'The Old Mill can do 14 March for 22. They hold it until Friday 17:00 for a £250.00 deposit.', card: { kind: 'Ready to pay', title: 'Pay the venue deposit', state: 'In Now, ready for you to pay from your bank' } },
   ],
   tax: [
     { who: 'log', text: 'Ledger started reconciling October', at: '09:02' },

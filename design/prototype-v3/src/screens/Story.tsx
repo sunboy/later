@@ -5,7 +5,7 @@ import { AGENTS, SPACES, space } from '../data';
 import { Icon } from '../icons';
 import { useApp } from '../store';
 import { useTheme } from '../theme';
-import { ApprovalBody } from './Approve';
+import { ApprovalBody, PaySlip } from './Approve';
 import { reducedMotion } from '../motion';
 
 const DUR = 7000;
@@ -30,7 +30,7 @@ export function Story() {
   const cardRef = useRef<HTMLDivElement>(null);
   const live = useRef<HTMLParagraphElement>(null);
   const card = cards.find(c => c.id === queue[idx]);
-  const isPay = !!card?.payment;
+  const isPay = !!card?.send || !!card?.bill; // sends and bills never act from a gesture
   const hold = paused || confirming || !!acted;
 
   const next = useCallback(() => {
@@ -63,7 +63,7 @@ export function Story() {
 
   const act = () => {
     if (!card || atEnd) return;
-    if (card.payment) { setConfirming(true); return; } // money and sending never act from a gesture
+    if (card.send || card.bill) { setConfirming(true); return; } // money and sending never act from a gesture
     if (card.state === 'done') { next(); return; }
     app.decideStory(sid, card.id, 'done');
     setTally(t => ({ ...t, done: t.done + 1 }));
@@ -74,14 +74,15 @@ export function Story() {
   const later = () => { if (atEnd) return; setTally(t => ({ ...t, later: t.later + 1 })); next(); };
   const close = () => app.go('today');
 
-  // when a payment inside the story is approved, count it and move on
+  // when a send inside the story is held, or a bill marked paid, count it and move on
+  const settled = !!card && ((!!card.bill && app.paid.includes(card.bill)) || (!!card.send && app.outbox.some(o => o.id === card.send && o.status === 'sent')));
   useEffect(() => {
-    if (card?.payment && app.paid.includes(card.payment) && confirming) {
+    if (settled && confirming) {
       setTally(t => ({ ...t, done: t.done + 1 }));
       const t = setTimeout(next, 1800);
       return () => clearTimeout(t);
     }
-  }, [app.paid]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [settled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* gestures: tap sides to move, hold to pause, swipe up for reversible actions only */
   const pd = useRef<{ x: number; y: number; id: number; held: boolean; timer: number } | null>(null);
@@ -155,14 +156,20 @@ export function Story() {
               <div><b className="num">{queue.length}</b><span>seen</span></div>
             </div>
           </div>
-        ) : confirming && card?.payment ? (
+        ) : confirming && card?.send ? (
           <div className="confirm-inline" onPointerDown={e => e.stopPropagation()}>
-            <ApprovalBody id={card.payment} compact />
+            <ApprovalBody id={card.send} compact />
+          </div>
+        ) : confirming && card?.bill ? (
+          <div className="confirm-inline bill" onPointerDown={e => e.stopPropagation()}>
+            <p className="ci-kind">Ready to pay, {card.source.toLowerCase()}</p>
+            <h3 className="ci-title">{card.title}</h3>
+            <PaySlip id={card.bill} />
           </div>
         ) : card && (
           <>
             <div className="tapzones" aria-hidden="true"><span /><span /></div>
-            <div ref={cardRef} className={`scard bezel ${card.payment && card.state !== 'done' ? 'needs' : ''} ${acted === card.id ? 'acted' : ''}`}>
+            <div ref={cardRef} className={`scard bezel ${isPay && card.state !== 'done' ? 'needs' : ''} ${acted === card.id ? 'acted' : ''}`}>
               <article className="well" aria-label={`Card ${idx + 1} of ${queue.length}`}>
                 <div className="kind"><span>{card.kind}</span><span className="num">{idx + 1} of {queue.length}</span></div>
                 <div className="big" style={card.big.startsWith('£') ? { fontWeight: 400, fontSize: 44 } : undefined}>{card.big}</div>
@@ -187,12 +194,12 @@ export function Story() {
           </div>
         ) : confirming ? (
           <div className="acts" style={{ gridTemplateColumns: '1fr' }}>
-            <button className="btn quiet" onClick={() => { setConfirming(false); }}>{card && app.paid.includes(card.payment!) ? 'Carry on' : 'Back to the card'}</button>
+            <button className="btn quiet" onClick={() => { setConfirming(false); }}>{settled ? 'Carry on' : 'Back to the card'}</button>
           </div>
         ) : card && (
           <>
             <div className="hint" aria-hidden="true">
-              {isPay ? <>Payments and sends need a press and hold</> : <><Icon name="chev" size={16} />Swipe up to {card.act.charAt(0).toLowerCase() + card.act.slice(1)}</>}
+              {card.send ? <>Sends need a press and hold</> : card.bill ? <>You pay bills from your bank. Later never pays</> : <><Icon name="chev" size={16} />Swipe up to {card.act.charAt(0).toLowerCase() + card.act.slice(1)}</>}
             </div>
             <div className="acts">
               <button className="btn" onClick={later}>Not now</button>
