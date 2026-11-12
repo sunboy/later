@@ -536,3 +536,5 @@ input { font: inherit; color: inherit; }
   *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
 }
 .ph-crew { display: grid; place-items: center; width: 34px; height: 34px; }
+.roll { animation: roll .5s var(--sp-grow); }
+@keyframes roll { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }

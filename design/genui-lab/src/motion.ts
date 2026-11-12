@@ -41,7 +41,7 @@ export function spring(stiffness = 260, damping = 24, mass = 1): Spring {
 export const SPRING = {
   move: () => spring(230, 26),
   grow: () => spring(200, 21),
-  deal: () => spring(190, 17),
+  deal: () => spring(210, 25),
   soft: () => spring(140, 22),
 };
 

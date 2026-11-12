@@ -78,7 +78,7 @@
     frame(T) {
       const dt = Math.min(64, T - (this._last || T)); this._last = T;
       const k = this.still ? 1 : 1 - Math.exp(-dt / 140);
-      this.hover += (this.hoverT - this.hover) * k;
+      this.hover = this.still ? 0 : this.hover + (this.hoverT - this.hover) * k;
       this.render(this.still ? 0 : T - this.t0, this.still ? 0 : T, dt);
     }
     /* svg holding the word: returns { svg, letters: [{ g, ch, x, w, ... }] } */

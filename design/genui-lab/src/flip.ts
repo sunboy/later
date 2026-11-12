@@ -36,10 +36,9 @@ export function useInnerFlip<T extends HTMLElement>(dep: string) {
       const sx = r.width ? o.width / r.width : 1, sy = r.height ? o.height / r.height : 1;
       if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.02 && Math.abs(sy - 1) < 0.02) return;
       const scale = Math.abs(sx - 1) > 0.02 || Math.abs(sy - 1) > 0.02;
-      el.animate([
-        { transformOrigin: '0 0', transform: `translate(${dx}px, ${dy}px)${scale ? ` scale(${sx}, ${sy})` : ''}`, opacity: scale ? 0.6 : 1 },
-        { transformOrigin: '0 0', transform: 'none', opacity: 1 },
-      ], { duration: sp.duration, easing: sp.easing });
+      // slide from the old place; a piece that changed shape fades up rather than stretching its text
+      el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: sp.duration, easing: sp.easing });
+      if (scale) el.animate([{ opacity: 0.15 }, { opacity: 1 }], { duration: 420, delay: 60, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards' });
     });
   });
   return ref;

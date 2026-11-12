@@ -57,6 +57,8 @@ export function App() {
   useEffect(() => { const mq = window.matchMedia('(max-width: 719px)'); const on = () => setNarrow(mq.matches); mq.addEventListener('change', on); return () => mq.removeEventListener('change', on); }, []);
 
   const scroller = useRef<HTMLDivElement>(null);
+  const shownRef = useRef(shown);
+  shownRef.current = shown;
   const keepRef = useRef<HTMLDivElement>(null);
   const token = useRef(0);
 
@@ -99,8 +101,16 @@ export function App() {
     setKeep('working');
     setMode({ kind: 'answer', req: req.id, ref: ref?.id });
     const spec = (ref ?? req).spec;
+    const prev = new Map(shownRef.current.spec.blocks.map(b => [b.id, JSON.stringify(b)]));
+    const kept = spec.blocks.filter(b => prev.get(b.id) === JSON.stringify(b)).length;
+    const changed = spec.blocks.filter(b => prev.has(b.id) && prev.get(b.id) !== JSON.stringify(b)).length;
+    const added = spec.blocks.length - kept - changed;
+    const removed = [...prev.keys()].filter(id => !spec.blocks.some(b => b.id === id)).length;
     present(spec, 'deal', 'Keep sent', { top: !ref });
-    setBubble(`Composed ${spec.blocks.length} blocks. An example view, written in advance.`);
+    const parts = ref
+      ? [kept && `kept ${kept}`, changed && `changed ${changed}`, added && `added ${added}`, removed && `removed ${removed}`].filter(Boolean).join(', ')
+      : `${spec.blocks.length} blocks`;
+    setBubble(`${ref ? 'Same view, ' : 'Composed '}${parts}. Written in advance for this prototype.`);
     await wait(spec.blocks.length * 85 + SPRING.deal().duration);
     if (t !== token.current) return;
     setKeep('done'); setBusy(false);
@@ -193,7 +203,7 @@ export function App() {
         ) : space ? (
           <>
             <span className="glyph"><Icon name={space.glyph} size={18} /></span>
-            <div className="ph-title"><b>{space.name}</b><small>{curStep ? curStep.date : 'Test view'}, with {CREW_NAME[space.crew]}</small></div>
+            <div className="ph-title"><b>{space.name}</b><small key={curStep?.date ?? 'test'} className="roll">{curStep ? curStep.date : 'Test view'}, with {CREW_NAME[space.crew]}</small></div>
             <span className="ph-crew"><Crew who={space.crew} size={30} state={crewMood} /></span>
           </>
         ) : null}

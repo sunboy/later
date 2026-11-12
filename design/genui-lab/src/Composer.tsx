@@ -48,17 +48,21 @@ export function Composer({ rev, items, arrival, dealFrom, hot, onHot, specOpen }
     const reduced = reducedMotion();
     const kids = Array.from(el.querySelectorAll<HTMLElement>(':scope > [data-bid]'));
     kids.forEach(k => k.getAnimations({ subtree: true }).forEach(a => { if (a.id === 'flip') a.cancel(); }));
-    const base = el.getBoundingClientRect();
+    const box = el.getBoundingClientRect();
     const move = SPRING.move(), grow = SPRING.grow(), deal = SPRING.deal();
     const from = dealFrom.current?.getBoundingClientRect();
     let entering = 0;
     const seen = new Set<string>();
+    const nowIds = new Set(kids.map(k => k.dataset.bid!));
+    const exits = before ? [...before.keys()].filter(id => !nowIds.has(id)).length : 0;
+    // leaving blocks clear the stage first, then new ones arrive; moves and resizes run at once
+    const base = exits ? 190 : 40;
 
     kids.forEach(k => {
       const id = k.dataset.bid!;
       seen.add(id);
       const r = k.getBoundingClientRect();
-      const n = { x: r.left - base.left, y: r.top - base.top, w: r.width, h: r.height };
+      const n = { x: r.left - box.left, y: r.top - box.top, w: r.width, h: r.height };
       const o = before?.get(id);
       const skin = k.querySelector<HTMLElement>(':scope > .skin');
       const body = k.querySelector<HTMLElement>(':scope > .body');
@@ -71,10 +75,10 @@ export function Composer({ rev, items, arrival, dealFrom, hot, onHot, specOpen }
             { transform: `translate(${dx}px, ${dy}px) scale(.18) rotate(${i % 2 ? 9 : -9}deg)`, opacity: 0 },
             { opacity: 1, offset: 0.25 },
             { transform: 'none', opacity: 1 },
-          ], { duration: deal.duration, easing: deal.easing, delay: 80 + i * 85, fill: 'backwards', id: 'flip' });
+          ], { duration: deal.duration, easing: deal.easing, delay: base + i * 85, fill: 'backwards', id: 'flip' });
         } else {
           k.animate([{ transform: 'translateY(22px) scale(.94)', opacity: 0 }, { transform: 'none', opacity: 1 }],
-            { duration: grow.duration, easing: grow.easing, delay: 120 + i * 70, fill: 'backwards', id: 'flip' });
+            { duration: grow.duration, easing: grow.easing, delay: base + i * 70, fill: 'backwards', id: 'flip' });
         }
         return;
       }
@@ -106,7 +110,7 @@ export function Composer({ rev, items, arrival, dealFrom, hot, onHot, specOpen }
         g.classList.add('ghost');
         Object.assign(g.style, { position: 'absolute', left: `${s.x}px`, top: `${s.y}px`, width: `${s.w}px`, height: `${s.h}px`, margin: '0', gridColumn: 'auto' });
         gl.appendChild(g);
-        const a = g.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(14px) scale(.9)' }], { duration: 300, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' });
+        const a = g.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(14px) scale(.9)' }], { duration: 220, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' });
         a.onfinish = () => g.remove();
       });
     }

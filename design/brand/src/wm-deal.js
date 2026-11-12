@@ -20,7 +20,7 @@
         o.g.removeAttribute('transform');
         o.g.setAttribute('class', 'ltr');
       }
-      this.pop = el('rect', { x: W * 0.62, y: -60, width: 560, height: H + 120, rx: 70, fill: 'var(--wm-done)' }, svg);
+      this.pop = el('rect', { x: W * 0.84, y: -60, width: 520, height: H + 120, rx: 70, fill: 'var(--wm-done)' }, svg);
       svg.insertBefore(this.pop, root);
       this.dealAt = -1e9;
       this.addEventListener('click', () => { this.dealAt = LaterWM.now(); });
@@ -69,7 +69,7 @@
         o.g.setAttribute('transform', `rotate(${ang.toFixed(3)} ${cx} ${cy}) translate(${dx.toFixed(1)} ${(dy + lift).toFixed(1)})`);
         o.card.style.opacity = faces.toFixed(3);
       }
-      this.pop.setAttribute('transform', `translate(${(-popY * 0.5).toFixed(1)} ${popY.toFixed(1)}) rotate(${(-popY / 150 * 9).toFixed(2)} ${W * 0.62 + 280} ${H + 60})`);
+      this.pop.setAttribute('transform', `translate(${(-popY * 0.5).toFixed(1)} ${popY.toFixed(1)}) rotate(${(-popY / 150 * 9).toFixed(2)} ${W * 0.84 + 260} ${H + 60})`);
       this.pop.style.opacity = popO;
     }
   }

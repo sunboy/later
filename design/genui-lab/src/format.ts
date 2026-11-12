@@ -10,7 +10,7 @@ export const gbp = (minor: number, always = false) => {
 export const money = (m: Money) => gbp(m.minor);
 
 export function fmt(v: number, f: 'money' | 'count' | 'days' | 'percent') {
-  if (f === 'money') return gbp(Math.round(v));
+  if (f === 'money') return gbp(Math.round(v / 100) * 100);
   if (f === 'percent') return `${Math.round(v)}%`;
   return Math.round(v).toLocaleString('en-GB');
 }
