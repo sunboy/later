@@ -1,0 +1,3 @@
+node_modules
+# the built prototype is the deliverable; keep it tracked despite the root dist/ rule
+!dist/

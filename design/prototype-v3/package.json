@@ -1,0 +1,29 @@
+{
+  "name": "later-prototype-v3",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "border-beam": "^1.4.1",
+    "bot-avatars": "^0.2.2",
+    "liquid-gooey": "^0.2.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "thinking-orbs": "^0.3.2",
+    "voice-glow": "^0.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "18.3",
+    "@types/react-dom": "18.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "5.6",
+    "vite": "^6.4.6",
+    "vite-plugin-singlefile": "^2.3.4"
+  }
+}
