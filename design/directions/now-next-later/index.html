@@ -111,7 +111,7 @@ svg { display: block; }
 .intro p { margin: 0; max-width: 40ch; color: var(--ink-2); font-size: 17px; }
 
 .stage { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px 36px; align-items: flex-start; }
-.shot { margin: 0; display: grid; gap: 14px; width: 390px; max-width: 100%; }
+.shot { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; width: 390px; max-width: 100%; min-width: 0; }
 .shot figcaption { font-size: 14px; color: var(--ink-2); padding-inline: 8px; }
 .shot figcaption strong { color: var(--ink); font-weight: 650; }
 
