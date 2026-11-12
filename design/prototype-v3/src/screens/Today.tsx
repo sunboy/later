@@ -358,7 +358,7 @@ export function Today() {
   const cleared = !deck.length && !app.stack;
   const size: Size = urgent || deck[0]?.near ? 'hero' : evening ? 'compact' : 'regular';
   const edMode = cleared ? 'full' : urgent && !edOpen ? 'strip' : 'normal';
-  const nextLine = (urgent || evening || cleared) && !nextOpen && next.length > 0 && !app.finished.length;
+  const rowsOpen = (nextOpen && !urgent) || app.finished.length > 0;
   const readLoud = evening || cleared || !!open;
   useEffect(() => { setEdOpen(false); setNextOpen(false); }, [urgent, evening, cleared]);
   useEffect(() => { if (app.event?.type === 'reset') { setOpen(null); setRead([]); setLess([]); setFollow(FOLLOWING); setEditFollow(false); } }, [app.event]);
@@ -391,7 +391,7 @@ export function Today() {
       { duration: 620, delay: 80 + i * 70, easing: 'cubic-bezier(.2,.9,.3,1.1)', fill: 'backwards' }));
   }, [edMode, reduced]);
 
-  useFlip(scroller, [phase, deck.map(c => c.id + (c.near ? '!' : '')).join(','), size, edMode, nextLine, next.map(n => n.id).join(','),
+  useFlip(scroller, [phase, deck.map(c => c.id + (c.near ? '!' : '')).join(','), size, edMode, rowsOpen, next.map(n => n.id).join(','),
     app.finished.join(','), open, outbox.map(o => o.id + o.status).join(','), app.stack?.phase ?? '-', less.join(','), follow.join(','), editFollow].join('|'));
 
   const toggle = (id: string) => { setOpen(o => o === id ? null : id); setRead(r => r.includes(id) ? r : [...r, id]); };
@@ -438,7 +438,8 @@ export function Today() {
 
   const now = (
     <section className="band" aria-labelledby="h-now" data-flip="now" key="now">
-      <div className="band-head"><h2 className="h-now" id="h-now">Now</h2><p>{cleared ? 'clear' : urgent ? 'needs you first' : 'needs you'}</p>
+      <div className="sec-head"><h2 id="h-now">{cleared ? 'Nothing needs you' : urgent ? 'Needs you first' : 'Needs you'}</h2>
+        {!cleared && <span className="sec-count num">{Math.min(app.handled + 1, app.handled + deck.length)} of {app.handled + deck.length}</span>}
         <div className="progress" aria-hidden="true">
           {Array.from({ length: Math.min(8, app.handled + deck.length) }, (_, i) => <span key={i} className={i < app.handled ? 'done' : i === app.handled ? 'cur' : ''} />)}
         </div>
@@ -448,18 +449,23 @@ export function Today() {
     </section>
   );
   const sending = outbox.length > 0;
+  /* the crew's work is one quiet line; it opens into its rows on a tap, or by itself when a run lands */
+  const crewNames = [...new Set(next.map(n => n.agent))].map(a => AGENTS[a].name);
+  const names = crewNames.length > 1 ? `${crewNames.slice(0, -1).join(', ')} and ${crewNames[crewNames.length - 1]}` : crewNames[0];
+  const firstEta = next.find(n => n.orb && !app.finished.includes(n.id))?.eta ?? next[0]?.eta;
   const nextBand = (next.length > 0 || sending) && (
-    <section className="band" aria-labelledby="h-next" data-flip="next" key="next">
-      <div className="band-head"><h2 className="h-next" id="h-next">Next</h2><p>{evening ? 'the crew work on overnight' : 'the crew have these'}</p></div>
+    <section className={`crew-band ${rowsOpen ? 'open' : ''}`} aria-label="What the crew are doing" data-flip="next" key="next">
       {/* the send window is never folded away */}
       {sending && <div className="next-list out-list">{outbox.map(o => <OutboxRow key={o.id} id={o.id} />)}</div>}
-      {next.length > 0 && (nextLine ? (
-        <button className="next-line" data-flip="next-line" onClick={() => setNextOpen(true)} aria-label={`${next.length} on the way. Show them`}>
-          <span className="crew-pile">{next.slice(0, 3).map(n => <Crew key={n.id} who={n.agent} size={30} state={n.orb && app.running ? 'working' : 'idle'} />)}</span>
-          <span><b>{next.length} on the way.</b> First reaches you at {next.find(n => n.orb)?.eta ?? next[0].eta}.</span>
+      {next.length > 0 && <>
+        <button className="crew-line" onClick={() => setNextOpen(v => !v)} aria-expanded={rowsOpen}>
+          <span className="crew-pile">{[...new Set(next.map(n => n.agent))].slice(0, 3).map(a => <Crew key={a} who={a} size={28} state={!app.running ? 'rest' : next.some(n => n.agent === a && app.finished.includes(n.id)) ? 'done' : next.some(n => n.agent === a && n.orb) ? 'working' : 'idle'} />)}</span>
+          <span>{app.finished.length ? <><b>{AGENTS[next.find(n => app.finished.includes(n.id))!.agent].name} just finished.</b> {next.length - app.finished.length} still going.</>
+            : <>{names} {crewNames.length > 1 ? 'are' : 'is'} on {next.length} thing{next.length === 1 ? '' : 's'}{evening ? ' overnight' : ''}. Next reaches you at <b className="num">{firstEta}</b>.</>}</span>
           <Icon name="chev" size={16} />
         </button>
-      ) : <div className="next-list">{next.map(n => <NextRow key={n.id} item={n} />)}</div>)}
+        {rowsOpen && <div className="next-list" data-flip="next-rows">{next.map(n => <NextRow key={n.id} item={n} />)}</div>}
+      </>}
     </section>
   );
   const dropped = (sn: Snippet) => sn.via === 'following' && !!sn.topic && !follow.includes(sn.topic);
@@ -513,17 +519,20 @@ export function Today() {
         <p ref={live} className="sr" role="status" aria-live="polite" />
       </div>
 
+      {/* Later is a gesture, not a band: this small drawer is only what is resting and when it comes back */}
       <button className={`dock ${settle ? 'settle' : ''} ${evening ? 'tall' : ''}`} onClick={() => setLaterOpen(true)} aria-label={`Later: ${later.length} resting. Open the list`}>
-        <span className="h-later">Later</span>
-        <span className="txt"><b>{later.length} resting</b><br />{soon ? <span className="soon">One back in {secs} second{secs === 1 ? '' : 's'}</span> : evening ? 'Tomorrow 07:00: 4 cards and a new edition' : 'Next back Monday 08:30'}</span>
-        <span className="glyphs" aria-hidden="true">{later.slice(0, 4).map(l => <span key={l.id} className="glyph"><Icon name={space(l.spaceId).glyph} size={13} /></span>)}</span>
-        <Icon name="chev" size={18} />
+        <span className="dock-row">
+          <span className="glyphs" aria-hidden="true">{later.slice(0, 3).map(l => <span key={l.id} className="glyph"><Icon name={space(l.spaceId).glyph} size={12} /></span>)}</span>
+          <span className="txt"><b>{later.length} set aside</b> {soon ? <span className="soon">One back in {secs} second{secs === 1 ? '' : 's'}</span> : <>Next back Monday 08:30</>}</span>
+          <Icon name="chev" size={16} />
+        </span>
+        {evening && <span className="dock-eve">Tomorrow at 07:00: {deck.length} card{deck.length === 1 ? '' : 's'} and a new edition</span>}
       </button>
 
       <div className={`scrim ${sheetFor ? 'open' : ''}`} hidden={!sheetFor} onClick={cancel} />
       <div className={`sheet ${sheetFor ? 'open' : ''}`} role="dialog" aria-modal="true" aria-labelledby="ret-h" hidden={!sheetFor} onKeyDown={e => e.key === 'Escape' && cancel()}>
         <div className="bezel"><div className="well">
-          <h3 className="h-later" id="ret-h">Set it down until</h3>
+          <h3 className="h-later" id="ret-h">Set it aside until</h3>
           <p>It rests in Later and comes back up on its own.</p>
           {RETURNS.map((r, i) => (
             <button key={r.label} className={`opt ${r.demo ? 'try' : ''}`} onClick={() => choose(i)} autoFocus={i === 0}>
@@ -537,7 +546,7 @@ export function Today() {
       <div className={`scrim ${laterOpen ? 'open' : ''}`} hidden={!laterOpen} onClick={() => setLaterOpen(false)} />
       <div className={`sheet ${laterOpen ? 'open' : ''}`} role="dialog" aria-modal="true" aria-labelledby="later-h" hidden={!laterOpen} onKeyDown={e => e.key === 'Escape' && setLaterOpen(false)}>
         <div className="bezel"><div className="well">
-          <h3 className="h-later" id="later-h" style={{ fontSize: 36 }}>Later</h3>
+          <h3 className="h-later" id="later-h">Set aside</h3>
           <p>Resting. Each one comes back up when it said it would.</p>
           <div className="later-scroll">
             {later.map(l => (

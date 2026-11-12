@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
-  BILLS, DECK0, FINISHED, LATER0, NEXT0, NOTE, RAMBLE, RECEIPTS, RETURNS, SENDS, STORIES, THREADS0, URGENT, SPACES, AGENTS, space,
+  BILLS, DECK0, FINISHED, LATER0, NEXT0, NOTE, RAMBLE, RECEIPTS, RETURNS, SENDS, STORIES, THREADS0, URGENT, SPACES, ALL_SPACES, MORE_STORIES, GARDEN_CARDS, AGENTS, space,
   type AgentId, type DeckCard, type LaterItem, type Msg, type NextItem, type StoryCard,
 } from './data';
 import type { MState } from './Mascot';
 
 export type Screen = 'today' | 'spaces' | 'story' | 'templates' | 'approve';
-export type SimEvent = 'urgent' | 'finish' | 'deadline' | 'merge' | 'read' | 'evening' | 'clear' | 'assign' | 'reset';
+export type SimEvent = 'urgent' | 'finish' | 'deadline' | 'merge' | 'read' | 'evening' | 'clear' | 'assign' | 'grow' | 'settle' | 'reset';
 
 /** The 30-second window every send waits in after the hold. Stop is always one tap. */
 export const WINDOW_MS = 30_000;
@@ -15,6 +15,8 @@ export interface OutRow { id: string; at: number; status: 'pending' | 'sent' | '
 interface State {
   screen: Screen;
   storySpace: string | null;
+  storyFrom: string | null; // the card a story opens at, when opened from a stack
+  many: boolean; // the 30-Space demo
   approval: { id: string; back: Screen } | null;
   deck: DeckCard[]; // Now: what needs a decision
   handled: number;
@@ -39,7 +41,9 @@ interface State {
 
 interface Api extends State {
   go: (s: Screen) => void;
-  openStory: (spaceId: string) => void;
+  openStory: (spaceId: string, from?: string) => void;
+  setMany: (on: boolean) => void;
+  setAside: (spaceId: string, cardId: string) => void;
   openApproval: (id: string, back: Screen) => void;
   setRunning: (on: boolean) => void;
   actDeck: (id: string) => void;
@@ -69,10 +73,10 @@ interface Api extends State {
 const Ctx = createContext<Api | null>(null);
 export const useApp = () => useContext(Ctx)!;
 
-const initial = (screen: Screen = 'today'): State => ({
-  screen, storySpace: null, approval: null,
-  deck: DECK0, handled: 0, next: NEXT0, finished: [], leaving: [], outbox: [], later: LATER0, stories: structuredClone(STORIES),
-  staff: Object.fromEntries(SPACES.map(s => [s.id, s.id === 'read' ? null : s.agent])),
+const initial = (screen: Screen = 'today', many = false): State => ({
+  screen, storySpace: null, storyFrom: null, many, approval: null,
+  deck: DECK0, handled: 0, next: NEXT0, finished: [], leaving: [], outbox: [], later: LATER0, stories: structuredClone({ ...MORE_STORIES, ...STORIES }),
+  staff: Object.fromEntries(ALL_SPACES.map(s => [s.id, s.id === 'read' ? null : s.agent])),
   threads: structuredClone(THREADS0), proposals: {}, chief: { open: false, thread: null, busy: false }, rec: null,
   phase: 'day', running: true, paid: [], stack: null, flash: null, event: null,
 });
@@ -171,7 +175,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return {
       ...s, pop, chiefState, crewOut,
       go: screen => set(p => ({ ...p, screen })),
-      openStory: id => set(p => ({ ...p, screen: 'story', storySpace: id })),
+      openStory: (id, from) => set(p => ({ ...p, screen: 'story', storySpace: id, storyFrom: from ?? null })),
+      setMany: many => set(p => ({ ...p, many, event: { type: 'reset', at: Date.now(), note: many ? 'Thirty Spaces on the desk. Stacks stay large; quiet Spaces pack three to a row.' : 'Back to twelve Spaces.' } })),
+      setAside: (sid, cid) => set(p => ({
+        ...p, stories: { ...p.stories, [sid]: (p.stories[sid] ?? []).map(c => c.id === cid && c.state === 'new' ? { ...c, state: 'seen' as const } : c) },
+        threads: log(p, sid, 'You set a card aside until tomorrow'),
+      })),
       openApproval: (id, back) => set(p => ({ ...p, screen: 'approve', approval: { id, back } })),
       setRunning: running => set(p => ({ ...p, running })),
       actDeck: id => set(p => {
@@ -243,8 +252,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }),
       simulate: e => set(p => {
         const at = Date.now();
-        if (e === 'reset') { timers.current.forEach(clearTimeout); timers.current = []; return { ...initial(p.screen === 'story' || p.screen === 'approve' ? 'today' : p.screen), event: { type: 'reset', at } }; }
-        const base: State = { ...p, screen: (e === 'assign' ? 'spaces' : 'today') as Screen, chief: { ...p.chief, open: false }, rec: null };
+        if (e === 'reset') { timers.current.forEach(clearTimeout); timers.current = []; return { ...initial(p.screen === 'story' || p.screen === 'approve' ? 'today' : p.screen, p.many), event: { type: 'reset', at } }; }
+        const base: State = { ...p, screen: (e === 'assign' || e === 'grow' || e === 'settle' ? 'spaces' : 'today') as Screen, chief: { ...p.chief, open: false }, rec: null };
         if (e === 'urgent') {
           if (p.deck.some(c => c.id === URGENT.id)) return { ...base, flash: flash(URGENT.id), event: { type: e, at, id: URGENT.id, note: 'Already on top. It pulses so you see it.' } };
           return { ...base, deck: [URGENT, ...p.deck], later: p.later.filter(l => l.id !== 'l-inbox'),
@@ -287,6 +296,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (p.staff.read) return { ...base, flash: flash('staff-read'), event: { type: e, at, note: 'Juno is already on Reading list.' } };
           later(() => set(x => assignState(x, 'read', 'juno')), 650);
           return { ...base, event: { type: e, at, note: 'Keep dealt Juno into Reading list. The tile moved from Later to Next.' } };
+        }
+        if (e === 'grow') {
+          if ((p.stories.garden ?? []).some(c => c.state === 'new')) return { ...base, flash: flash('staff-garden'), event: { type: e, at, id: 'garden', note: 'Garden fence is already a stack. Start again to watch it grow.' } };
+          later(() => set(x => ({ ...x, stories: { ...x.stories, garden: structuredClone(GARDEN_CARDS) }, flash: flash('staff-garden'),
+            threads: log(x, 'garden', 'Owen replied. Scout found two things for you'), event: { type: 'grow', at: Date.now(), id: 'garden' } })), 500);
+          return { ...base, event: { type: e, at, note: 'Owen the fencer replied. Garden fence grew from a quiet crew card into a stack of two and moved up the desk.' } };
+        }
+        if (e === 'settle') {
+          const ok = (id: string) => { const q = (p.stories[id] ?? []).filter(c => c.state === 'new'); return q.length > 0 && q.every(c => !c.send && !c.bill) ? q : null; };
+          const sid = ['job', 'garden', 'japan', 'x-xmas'].find(ok) ?? SPACES.map(x => x.id).find(ok);
+          if (!sid) return { ...base, event: { type: e, at, note: 'No stack can be cleared without a send or a payment. Those always need you.' } };
+          ok(sid)!.forEach((c, i) => later(() => set(x => ({
+            ...x, flash: flash('stamp-' + c.id),
+          })), 500 + i * 1300));
+          ok(sid)!.forEach((c, i) => later(() => set(x => ({
+            ...x, stories: { ...x.stories, [sid]: (x.stories[sid] ?? []).map(y => y.id === c.id ? { ...y, state: 'done' as const } : y) },
+            threads: log(x, sid, c.done),
+          })), 1050 + i * 1300));
+          return { ...base, event: { type: e, at, id: sid, note: `You cleared ${space(sid).name}: each top card went, the next rose on a spring, and the last left it a quiet crew card.` } };
         }
         return p;
       }),

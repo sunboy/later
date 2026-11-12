@@ -2,7 +2,8 @@
 import type { OrbState } from 'thinking-orbs';
 
 export type Glyph =
-  | 'house' | 'cake' | 'receipt' | 'plane' | 'case' | 'rocket' | 'heart' | 'book' | 'tray' | 'laptop' | 'coins';
+  | 'house' | 'cake' | 'receipt' | 'plane' | 'case' | 'rocket' | 'heart' | 'book' | 'tray' | 'laptop' | 'coins'
+  | 'car' | 'leaf' | 'paw' | 'cap' | 'gift' | 'wrench' | 'music' | 'run' | 'camera' | 'pot';
 
 export type AgentId = 'wren' | 'scout' | 'juno' | 'ledger';
 export interface Agent { id: AgentId; name: string; job: string }
@@ -107,8 +108,32 @@ export const SPACES: Space[] = [
   { id: 'read', name: 'Reading list', glyph: 'book', agent: 'juno' },
   { id: 'work', name: 'Work', glyph: 'laptop', agent: 'ledger' },
   { id: 'inbox', name: 'Inbox', glyph: 'tray', agent: 'wren' },
+  { id: 'car', name: 'The car', glyph: 'car', agent: 'ledger' },
+  { id: 'garden', name: 'Garden fence', glyph: 'leaf', agent: 'scout' },
 ];
-export const space = (id: string) => SPACES.find(s => s.id === id)!;
+/** Eighteen more, for the 30-Space demo: the desk must still scan when a life has a lot going on. */
+export const MORE_SPACES: Space[] = [
+  { id: 'x-dog', name: 'Biscuit the dog', glyph: 'paw', agent: 'wren' },
+  { id: 'x-school', name: 'Maya’s school', glyph: 'cap', agent: 'wren' },
+  { id: 'x-xmas', name: 'Christmas', glyph: 'gift', agent: 'juno' },
+  { id: 'x-kitchen', name: 'Kitchen tap', glyph: 'wrench', agent: 'scout' },
+  { id: 'x-pension', name: 'Pension', glyph: 'coins', agent: 'ledger' },
+  { id: 'x-choir', name: 'Choir', glyph: 'music', agent: 'wren' },
+  { id: 'x-run', name: 'Half marathon', glyph: 'run', agent: 'juno' },
+  { id: 'x-photos', name: 'Photo books', glyph: 'camera', agent: 'juno' },
+  { id: 'x-recipes', name: 'Recipes', glyph: 'pot', agent: 'juno' },
+  { id: 'x-bills', name: 'Household bills', glyph: 'receipt', agent: 'ledger' },
+  { id: 'x-dad', name: 'Dad’s appointments', glyph: 'heart', agent: 'wren' },
+  { id: 'x-wedding', name: 'Jo’s wedding', glyph: 'cake', agent: 'wren' },
+  { id: 'x-side', name: 'Side project', glyph: 'laptop', agent: 'scout' },
+  { id: 'x-club', name: 'Book club', glyph: 'book', agent: 'juno' },
+  { id: 'x-bike', name: 'Bike repair', glyph: 'wrench', agent: 'scout' },
+  { id: 'x-council', name: 'Council tax', glyph: 'house', agent: 'ledger' },
+  { id: 'x-trip', name: 'Lakes weekend', glyph: 'plane', agent: 'juno' },
+  { id: 'x-subs', name: 'Subscriptions', glyph: 'coins', agent: 'ledger' },
+];
+export const ALL_SPACES = [...SPACES, ...MORE_SPACES];
+export const space = (id: string) => ALL_SPACES.find(s => s.id === id)!;
 
 /* ---------- Story cards (rings) ---------- */
 export interface StoryCard {
@@ -119,6 +144,8 @@ export interface StoryCard {
   rows: [string, string, boolean?][]; // label, value, is-quote
   source: string;
   act: string;
+  /** the action, short enough for a small stack on the Spaces desk */
+  short?: string;
   done: string;
   /** reversible actions may use swipe-up; a bill opens the fixed pay slip, a send opens the fixed approval */
   bill?: string;
@@ -130,46 +157,64 @@ const sc = (c: Omit<StoryCard, 'state'>): StoryCard => ({ ...c, state: 'new' });
 
 export const STORIES: Record<string, StoryCard[]> = {
   house: [
-    sc({ id: 'h1', kind: 'Needs a reply', big: 'Monday', title: 'Hamptons want the signed TA6 form',
+    sc({ id: 'h1', short: 'Queue reply', kind: 'Needs a reply', big: 'Monday', title: 'Hamptons want the signed TA6 form',
       rows: [['From', 'Leah Grant, Hamptons'], ['Draft', 'Attached, signed by both of us. Could you confirm it arrived?', true]],
       source: 'From Leah’s email at 08:12', act: 'Queue reply to Leah', done: 'Queued in Drafts. Nothing sends until you press send.',
       live: { state: 'searching', text: 'Scout is reading 2 more emails from Hamptons' } }),
-    sc({ id: 'h2', kind: 'Ready to pay', big: '£1,240.00', title: 'Pay the survey fee',
+    sc({ id: 'h2', short: 'How to pay', kind: 'Ready to pay', big: '£1,240.00', title: 'Pay the survey fee',
       rows: [['To', 'Hallam Surveyors Ltd'], ['Reference', 'HSL-22ASHBY'], ['Due', 'Friday 14 November']],
       source: 'From the quote PDF and 2 emails', act: 'See how to pay', done: 'Marked as paid.', bill: 'survey' }),
-    sc({ id: 'h3', kind: 'Decision', big: '£890', title: 'Pick a removals quote',
+    sc({ id: 'h3', short: 'Bishop’s Move', kind: 'Decision', big: '£890', title: 'Pick a removals quote',
       rows: [['Cheapest', 'Bishop’s Move, £890'], ['Best rated', 'Kent Removals, £1,040'], ['19 Dec', 'Both are free']],
       source: 'From 3 quotes Scout collected', act: 'Choose Bishop’s Move', done: 'Scout will ask Bishop’s Move to hold 19 December.' }),
   ],
   mum: [
-    sc({ id: 'm1', kind: 'Ready to pay', big: '£250.00', title: 'Pay the venue deposit',
+    sc({ id: 'm1', short: 'How to pay', kind: 'Ready to pay', big: '£250.00', title: 'Pay the venue deposit',
       rows: [['To', 'The Old Mill Ltd'], ['Reference', 'MUM70-DEP'], ['Hold ends', 'Friday 17:00']],
       source: 'From the venue’s email at 07:31', act: 'See how to pay', done: 'Marked as paid.', bill: 'deposit' }),
-    sc({ id: 'm2', kind: 'To do', big: '3 missing', title: 'Invitations are ready to go',
+    sc({ id: 'm2', short: 'Ask Wren', kind: 'To do', big: '3 missing', title: 'Invitations are ready to go',
       rows: [['Ready', '19 of 22 addresses'], ['Reply by', 'Monday 30 November']],
       source: 'From your contacts and Mum’s list', act: 'Ask Wren to find the 3', done: 'Wren will ask Ellie for the missing addresses.',
       live: { state: 'composing', text: 'Wren is drafting the invitation text' } }),
   ],
   job: [
-    sc({ id: 'j1', kind: 'Needs a reply', big: 'Thu or Fri?', title: 'Ana at Lattice wants a first call',
+    sc({ id: 'j1', short: 'Queue reply', kind: 'Needs a reply', big: 'Thu or Fri?', title: 'Ana at Lattice wants a first call',
       rows: [['From', 'Ana Ruiz, Lattice'], ['You are free', 'Thu 14:00 to 16:00, Fri 10:00 to 12:00'], ['Draft', 'Thursday at 14:30 works for me. Speak then.', true]],
       source: 'From Ana’s email at 07:55', act: 'Queue reply to Ana', done: 'Queued in Drafts with Thursday 14:30 pencilled in.' }),
-    sc({ id: 'j2', kind: 'Draft', big: 'Draft 2', title: 'Cover letter for Monzo, Product Lead',
+    sc({ id: 'j2', short: 'Keep it', kind: 'Draft', big: 'Draft 2', title: 'Cover letter for Monzo, Product Lead',
       rows: [['Length', '280 words'], ['Changed', 'Now opens with the payments launch'], ['Due', 'Sunday 15 November']],
       source: 'Built from your CV and the job advert', act: 'Keep this version', done: 'Kept. Juno will attach it to the application.' }),
   ],
   japan: [
-    sc({ id: 'p1', kind: 'Price watch', big: '£612', title: 'Flights to Tokyo dropped £132',
+    sc({ id: 'p1', short: 'Hold the fare', kind: 'Price watch', big: '£612', title: 'Flights to Tokyo dropped £132',
       rows: [['Route', 'Heathrow to Haneda, return'], ['Dates', '3 to 17 April'], ['Last week', '£744']],
       source: 'From 3 airline sites, checked 09:00', act: 'Hold the fare for 48 hours', done: 'Held until Saturday 09:00. Nothing is paid.',
       live: { state: 'searching', text: 'Juno is checking two more airlines' } }),
   ],
   tally: [
-    sc({ id: 't1', kind: 'Approval', big: '318', title: 'Send the launch email to 318 subscribers',
+    sc({ id: 't1', short: 'Review', kind: 'Approval', big: '318', title: 'Send the launch email to 318 subscribers',
       rows: [['Subject', 'Tally is out today'], ['From', 'hello@tally.page'], ['Goes', '30 seconds after you hold']],
       source: 'Draft written with you on Tuesday', act: 'Review before sending', done: 'Sent.', send: 'launch' }),
   ],
 };
+/** Cards for the 30-Space demo and for the Garden fence when Scout hears back. */
+export const MORE_STORIES: Record<string, StoryCard[]> = {
+  'x-school': [sc({ id: 'xs1', kind: 'Needs a reply', big: 'Friday', title: 'Can Maya go on the museum trip?', short: 'Say yes',
+    rows: [['Cost', 'Nothing, it is funded'], ['Form', 'Signed for you to check']], source: 'From the school office at 08:05', act: 'Say yes for Maya', done: 'Wren filled in the form. It waits in Drafts.' })],
+  'x-xmas': [sc({ id: 'xx1', kind: 'Decision', big: '3 ideas', title: 'Present for Dad, under £60', short: 'See the three',
+    rows: [['Best', 'A walking guide to the Peaks'], ['Order by', '16 December']], source: 'From Dad’s wish list and 4 shops', act: 'See the three', done: 'Juno will keep watching prices.' }),
+    sc({ id: 'xx2', kind: 'To do', big: '14', title: 'Cards to write this year', short: 'Start the list',
+      rows: [['Last year', '16'], ['Moved', '2 addresses changed']], source: 'From last year’s list', act: 'Start the list', done: 'Juno drafted the list.' })],
+  'x-kitchen': [sc({ id: 'xk1', kind: 'Decision', big: 'Tue', title: 'Plumber can fix the tap Tuesday 8:00', short: 'Book Tuesday',
+    rows: [['Quote', '£85 including the part'], ['You are', 'Free until 9:30']], source: 'From Rhys’s text at 07:12', act: 'Book Tuesday 8:00', done: 'Scout will confirm with Rhys.' })],
+  garden: [],
+};
+export const GARDEN_CARDS: StoryCard[] = [
+  sc({ id: 'g1', kind: 'Decision', big: 'Sat', title: 'The fencer can come Saturday 9:00 or Monday 8:00', short: 'Saturday 9:00',
+    rows: [['Saturday', 'You are free'], ['Monday', 'Clashes with the school run']], source: 'From Owen’s reply at 10:02', act: 'Choose Saturday 9:00', done: 'Scout will tell Owen Saturday 9:00.' }),
+  sc({ id: 'g2', kind: 'Decision', big: '12', title: 'Reuse the old concrete posts?', short: 'Reuse them',
+    rows: [['Saves', '£140 on the quote'], ['Owen says', 'Nine of twelve are sound']], source: 'From Owen’s reply at 10:02', act: 'Reuse the sound ones', done: 'Scout passed it on.' }),
+];
 
 /* ---------- Spaces screen bands ---------- */
 export interface NextItem {
@@ -349,17 +394,38 @@ export const EDITION: Snippet[] = [
 export const FOLLOWING = ['heat pumps', 'Tokyo food', 'product leadership'];
 
 /* ---------- Spaces, as places ---------- */
-export const SPACE_META: Record<string, { status: string; asOf: string }> = {
-  house: { status: 'Survey booked. Hamptons want the TA6 by Monday.', asOf: '09:12' },
-  mum: { status: 'Venue held for 14 March. Deposit waiting on you.', asOf: '07:31' },
-  job: { status: 'Ana at Lattice wants a first call this week.', asOf: '07:55' },
+/** status: what the crew is doing, in a line. back: when a resting Space next wakes. doing: background work that does not reach you today. */
+export const SPACE_META: Record<string, { status: string; asOf: string; back?: string; doing?: { status: string; eta: string } }> = {
+  house: { status: 'Survey booked. Hamptons want the TA6 by Monday.', asOf: '09:12', doing: { status: 'Watching for the survey report', eta: 'Mon' } },
+  mum: { status: 'Venue held for 14 March. Deposit waiting on you.', asOf: '07:31', doing: { status: 'Collecting the last 3 addresses', eta: 'Sat' } },
+  job: { status: 'Ana at Lattice wants a first call this week.', asOf: '07:55', doing: { status: 'Watching for Ana to confirm Thursday', eta: 'Thu' } },
   japan: { status: 'Watching fares. Best is £612 return.', asOf: '09:00' },
-  tally: { status: 'Launch email ready. 2 press replies outstanding.', asOf: '08:40' },
+  tally: { status: 'Launch email ready. 2 press replies outstanding.', asOf: '08:40', doing: { status: 'Waiting on 2 press replies', eta: 'Sat' } },
   tax: { status: 'Reconciling October against 44 receipts.', asOf: '09:20' },
-  health: { status: 'Quiet until the dentist on 6 January.', asOf: 'Mon' },
-  read: { status: '9 saved pieces. No one is on it.', asOf: 'Sun' },
-  work: { status: 'You are off. Back Monday 08:30.', asOf: 'Wed' },
-  inbox: { status: 'Wakes if Mum, the bank or the school writes.', asOf: '09:30' },
+  health: { status: 'Quiet until the dentist on 6 January.', asOf: 'Mon', back: '6 Jan' },
+  read: { status: '9 saved pieces. No one is on it.', asOf: 'Sun', back: 'No one on it' },
+  work: { status: 'You are off. Back Monday 08:30.', asOf: 'Wed', back: 'Mon 08:30' },
+  inbox: { status: 'Wakes if Mum, the bank or the school writes.', asOf: '09:30', back: 'On a message' },
+  car: { status: 'Comparing 4 insurance renewals.', asOf: '09:10', doing: { status: 'Comparing 4 insurance renewals', eta: 'Fri' } },
+  garden: { status: 'Chasing the fencer for a date.', asOf: '08:30', doing: { status: 'Chasing Owen the fencer for a date', eta: '15:00' } },
+  'x-dog': { status: 'Jabs booked for 2 December.', asOf: 'Tue', back: '2 Dec' },
+  'x-school': { status: 'The museum trip form came in.', asOf: '08:05', doing: { status: 'Watching the school inbox', eta: 'Fri' } },
+  'x-xmas': { status: 'Three ideas for Dad.', asOf: '09:00', doing: { status: 'Watching prices on three presents', eta: 'Mon' } },
+  'x-kitchen': { status: 'Rhys can come Tuesday.', asOf: '07:12', doing: { status: 'Waiting for Rhys to confirm', eta: 'Tue' } },
+  'x-pension': { status: 'Checking last year’s statement.', asOf: '09:15', doing: { status: 'Checking last year’s statement', eta: 'Mon' } },
+  'x-choir': { status: 'Rehearsals start in January.', asOf: 'Sun', back: '8 Jan' },
+  'x-run': { status: 'Building the 12-week plan.', asOf: '08:50', doing: { status: 'Building a 12-week plan', eta: 'Sat' } },
+  'x-photos': { status: 'Picking 40 from the summer.', asOf: '08:00', doing: { status: 'Picking 40 photos from the summer', eta: 'Sun' } },
+  'x-recipes': { status: 'Nothing new.', asOf: 'Fri', back: 'On a save' },
+  'x-bills': { status: 'Watching the energy tariff.', asOf: '09:05', doing: { status: 'Watching the energy tariff', eta: '1 Dec' } },
+  'x-dad': { status: 'Next is the eye clinic.', asOf: 'Mon', back: '19 Nov' },
+  'x-wedding': { status: 'Waiting for the invitation.', asOf: 'Oct', back: 'On a reply' },
+  'x-side': { status: 'Paused by you.', asOf: 'Oct', back: 'When you say' },
+  'x-club': { status: 'Finding next month’s book.', asOf: '07:40', doing: { status: 'Shortlisting next month’s book', eta: 'Thu' } },
+  'x-bike': { status: 'Done in October.', asOf: 'Oct', back: 'In spring' },
+  'x-council': { status: 'Direct debit set for the move.', asOf: 'Wed', back: '1 Dec' },
+  'x-trip': { status: 'Comparing three cottages.', asOf: '09:25', doing: { status: 'Comparing three cottages', eta: 'Sat' } },
+  'x-subs': { status: 'Nothing renews this month.', asOf: 'Mon', back: '1 Dec' },
 };
 
 /* ---------- Threads: one with Keep, one per Space ---------- */

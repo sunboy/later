@@ -54,9 +54,9 @@ export function Templates() {
             </div>
             <div className="body">
             <dl className="rhythm">
-              <div><dt className="h-now">Now</dt><dd>{TEMPLATE.now}</dd></div>
-              <div><dt className="h-next">Next</dt><dd>{TEMPLATE.next}</dd></div>
-              <div><dt className="h-later">Later</dt><dd>{TEMPLATE.later}</dd></div>
+              <div><dt>Asks you</dt><dd>{TEMPLATE.now}</dd></div>
+              <div><dt>Handles</dt><dd>{TEMPLATE.next}</dd></div>
+              <div><dt>Keeps</dt><dd>{TEMPLATE.later}</dd></div>
             </dl>
             <div className="crew">
               {TEMPLATE.agents.map(a => (
@@ -88,7 +88,7 @@ export function Templates() {
             <div key={t.name} className="trow">
               <div style={{ minWidth: 0 }}>
                 <b>{t.name}</b><small>by {t.by}</small>
-                <div className="mini"><span>Now</span><span>{t.now}</span><span>Next</span><span>{t.next}</span><span>Later</span><span>{t.later}</span></div>
+                <div className="mini"><span>Asks</span><span>{t.now}</span><span>Handles</span><span>{t.next}</span><span>Keeps</span><span>{t.later}</span></div>
               </div>
               <button className="btn sm">Look</button>
             </div>

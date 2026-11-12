@@ -1,0 +1,91 @@
+{
+  "note": "Display and text pairings for a font switcher. G uses a local WOFF2; its text face loads from Google Fonts.",
+  "pairings": [
+    {
+      "id": "A",
+      "label": "Schibsted Grotesk throughout",
+      "display": "Schibsted Grotesk",
+      "text": "Schibsted Grotesk",
+      "displayWeight": 800,
+      "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;800&display=swap",
+      "recommended": false
+    },
+    {
+      "id": "B",
+      "label": "Familjen Grotesk with Hanken Grotesk",
+      "display": "Familjen Grotesk",
+      "text": "Hanken Grotesk",
+      "displayWeight": 700,
+      "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap",
+      "recommended": true
+    },
+    {
+      "id": "C",
+      "label": "Fraunces with Albert Sans",
+      "display": "Fraunces",
+      "text": "Albert Sans",
+      "displayWeight": 600,
+      "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Albert+Sans:wght@400;500;600&display=swap",
+      "recommended": false
+    },
+    {
+      "id": "D",
+      "label": "Gabarito with Wix Madefor Text",
+      "display": "Gabarito",
+      "text": "Wix Madefor Text",
+      "displayWeight": 800,
+      "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Gabarito:wght@600;800&family=Wix+Madefor+Text:wght@400;500;600&display=swap",
+      "recommended": false
+    },
+    {
+      "id": "E",
+      "label": "Unbounded with Instrument Sans",
+      "display": "Unbounded",
+      "text": "Instrument Sans",
+      "displayWeight": 600,
+      "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Instrument+Sans:wght@400;500;600&display=swap",
+      "recommended": false
+    },
+    {
+      "id": "F",
+      "label": "Mona Sans (current)",
+      "display": "Mona Sans",
+      "text": "Mona Sans",
+      "displayWeight": 800,
+      "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;500;600;800&display=swap",
+      "recommended": false
+    },
+    {
+      "id": "G",
+      "label": "Later Display with Hanken Grotesk",
+      "display": "Later Display",
+      "text": "Hanken Grotesk",
+      "displayWeight": 700,
+      "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap",
+      "woff2": "design/brand/LaterDisplay.woff2",
+      "fontFace": {
+        "family": "Later Display",
+        "weight": 700
+      },
+      "recommended": false
+    },
+    {
+      "id": "H",
+      "label": "Young Serif with Funnel Sans (added)",
+      "display": "Young Serif",
+      "text": "Funnel Sans",
+      "displayWeight": 400,
+      "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Young+Serif&family=Funnel+Sans:wght@400;500;600&display=swap",
+      "recommended": false
+    },
+    {
+      "id": "I",
+      "label": "Funnel Display with Funnel Sans (added)",
+      "display": "Funnel Display",
+      "text": "Funnel Sans",
+      "displayWeight": 700,
+      "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Funnel+Display:wght@600;700&family=Funnel+Sans:wght@400;500;600&display=swap",
+      "recommended": false
+    }
+  ]
+}

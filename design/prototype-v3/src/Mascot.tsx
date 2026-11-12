@@ -24,7 +24,7 @@ const gap = (size: number) => (size <= 36 ? ({ ['--m-gap' as string]: 3.4 }) : u
 
 export function Chief({ state = 'idle', size = 48, out = false }: { state?: MState; size?: number; out?: boolean }) {
   return (
-    <svg className={`m deck chief st-${state} ${out ? 'out' : ''}`} viewBox="0 0 48 48" width={size} height={size} style={gap(size)} aria-hidden="true" focusable="false">
+    <svg className={`m deck chief st-${state} ${out ? 'out' : ''} ${size <= 56 ? 'sm' : ''}`} viewBox="0 0 48 48" width={size} height={size} style={gap(size)} aria-hidden="true" focusable="false">
       <g className="all">
         <rect className="card c3" {...CARD} />
         <rect className="card c2" {...CARD} />
@@ -51,7 +51,7 @@ const CUT: Record<AgentId, string> = {
 
 export function Crew({ who, state = 'idle', size = 32 }: { who: AgentId; state?: MState; size?: number }) {
   return (
-    <svg className={`m deck crew st-${state}`} viewBox="0 0 48 48" width={size} height={size} style={gap(size)} aria-hidden="true" focusable="false">
+    <svg className={`m deck crew st-${state} ${size <= 44 ? 'sm' : ''}`} viewBox="0 0 48 48" width={size} height={size} style={gap(size)} aria-hidden="true" focusable="false">
       <g className="all">
         <rect className="u" x="13" y="9" width="22" height="30" rx="3.5" />
         <g className="top">

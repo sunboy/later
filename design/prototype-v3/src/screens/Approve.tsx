@@ -113,7 +113,7 @@ export function Approve() {
     <div className="screen">
       <div className="scroll no-dock">
         <div className="topbar">
-          <button className="btn quiet sm" onClick={() => go(back)}><Icon name={sent ? 'back' : 'close'} size={16} />{sent ? 'Back to Today' : 'Not now'}</button>
+          <button className="btn quiet sm" onClick={() => go(back)}><Icon name={sent ? 'back' : 'close'} size={16} />{sent ? `Back to ${back === 'spaces' ? 'Spaces' : 'Today'}` : 'Not now'}</button>
           <span className="fine">Needs you</span>
         </div>
         <ApprovalBody id={id} />

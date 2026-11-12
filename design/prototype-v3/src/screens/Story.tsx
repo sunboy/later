@@ -19,7 +19,7 @@ export function Story() {
   const cards = app.stories[sid] ?? [];
   // the queue is fixed when the story opens: what was waiting then
   const [queue] = useState(() => cards.filter(c => c.state !== 'done').map(c => c.id));
-  const [idx, setIdx] = useState(0);
+  const [idx, setIdx] = useState(() => Math.max(0, queue.indexOf(app.storyFrom ?? '')));
   const [atEnd, setAtEnd] = useState(queue.length === 0);
   const [paused, setPaused] = useState(false);
   const [acted, setActed] = useState<string | null>(null);
