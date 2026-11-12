@@ -1,0 +1,1064 @@
+<title>Later: Stacks</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@500;700;800&family=Funnel+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Hallmark floor only (custom direction, no theme dealt) · critique: the stack is the hero; colour is ultramarine for what agents hold, rose for what waits on you, lime for the one thing to do now */
+/* Layout: three 390px phone frames on a desk, side by side at desktop and stacked on a phone, with the direction card underneath */
+:root {
+  color-scheme: light;
+  /* Primary 1, ultramarine: the agents' side. Card backs, index corners, the Today desk, structure. */
+  --blue: #2A33D8;
+  --blue-lite: #4A55EE;
+  --blue-deep: #161C93;
+  --blue-band: #3A45E8;
+  /* Primary 2, rose: your side. The edges of every card waiting on you, the Templates field. */
+  --rose: #FF9CB6;
+  --rose-deep: #E4628A;
+  --rose-wash: #FFE6EE;
+  /* Pop, lime: the single thing to do now. At most one per screen. */
+  --lime: #D3F544;
+  --lime-deep: #93B30C;
+  /* Neutrals derived from ultramarine */
+  --ink: #15164A;
+  --ink-2: #4E5080;
+  --ink-3: #7F81A8;
+  --paper: #FFFFFF;
+  --ground: #F2F1FA;
+  --ground-2: #E6E5F4;
+  --line: #D9D8EC;
+  --desk: #E9E8F6;
+  --on-blue: #FFFFFF;
+  --on-blue-2: #C9CCFF;
+  --focus: #FF4F86;
+  --shadow: rgba(21, 22, 74, 0.18);
+  --shadow-2: rgba(21, 22, 74, 0.32);
+
+  --font-display: "Funnel Display", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Funnel Sans", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+
+  --r-card: 18px;
+  --r-btn: 14px;
+  --edge: 9px;
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+}
+
+html, body { overflow-x: clip; }
+body {
+  background: var(--desk);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; transition: none; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; overflow-wrap: break-word; min-width: 0; }
+svg { display: block; }
+
+/* ============ page ============ */
+.page {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 72px;
+  display: grid;
+  gap: 40px;
+}
+.page-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.wordmark { display: flex; align-items: center; gap: 12px; }
+.wordmark-mark { width: 44px; height: 44px; position: relative; }
+.wordmark-mark i { position: absolute; inset: 0; border-radius: 10px; border: 2px solid var(--ink); }
+.wordmark-mark i:nth-child(1) { background: var(--rose); transform: translate(6px, 6px) rotate(6deg); }
+.wordmark-mark i:nth-child(2) { background: var(--blue); transform: translate(3px, 3px) rotate(-3deg); }
+.wordmark-mark i:nth-child(3) { background: var(--lime); }
+.wordmark h1 { font-family: var(--font-display); font-weight: 800; font-size: 40px; letter-spacing: -0.03em; line-height: 1; }
+.page-head p { color: var(--ink-2); max-width: 46ch; }
+
+.frames {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 390px));
+  justify-content: center;
+  gap: 36px;
+}
+.frame { display: grid; gap: 14px; min-width: 0; }
+.frame-label { font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--ink); }
+.frame-label span { color: var(--ink-3); font-weight: 500; }
+.phone {
+  position: relative;
+  width: 100%;
+  max-width: 390px;
+  height: 844px;
+  border-radius: 46px;
+  background: var(--ground);
+  box-shadow: 0 0 0 2px var(--ink), 0 0 0 9px var(--paper), 0 0 0 11px var(--ink), 0 40px 60px -30px var(--shadow-2);
+  overflow: hidden;
+  isolation: isolate;
+}
+.screen {
+  position: absolute; inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  padding: 54px 18px 118px;
+  overscroll-behavior: contain;
+}
+.screen::-webkit-scrollbar { display: none; }
+
+/* ============ shared bits ============ */
+.screen-head { display: grid; gap: 6px; margin-bottom: 18px; }
+.date { font-size: 14px; color: var(--ink-2); font-weight: 500; }
+.screen-title { font-family: var(--font-display); font-weight: 800; font-size: 36px; letter-spacing: -0.035em; line-height: 1; }
+.screen-sub { font-size: 15px; color: var(--ink-2); }
+.screen-sub b { color: var(--ink); font-weight: 700; }
+.tally { display: inline-block; font-variant-numeric: tabular-nums; }
+.tally.bump { animation: bump .45s var(--spring); }
+@keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+
+.section-title { font-family: var(--font-display); font-weight: 700; font-size: 19px; letter-spacing: -0.015em; margin: 30px 0 12px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.section-title small { font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; }
+
+/* buttons with a lip, pressed into the card */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 16px;
+  border-radius: var(--r-btn);
+  font-weight: 700; font-size: 15px;
+  border: 2px solid var(--ink);
+  box-shadow: 0 4px 0 var(--ink);
+  transform: translateY(0);
+  transition: transform .08s ease-out, box-shadow .08s ease-out, background-color .15s;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.btn-pop { background: var(--lime); color: var(--ink); }
+.btn-pop:hover { background: #DDFA66; }
+.btn-blue { background: var(--blue); color: var(--on-blue); }
+.btn-blue:hover { background: var(--blue-lite); }
+.btn-ghost { background: var(--paper); color: var(--ink); }
+.btn-ghost:hover { background: var(--ground); }
+.btn-sm { min-height: 36px; padding: 0 12px; font-size: 14px; border-radius: 11px; box-shadow: 0 3px 0 var(--ink); }
+.btn-sm:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.btn-round { width: 36px; min-height: 36px; padding: 0; border-radius: 50%; }
+.btn-round svg { width: 18px; height: 18px; }
+.btn-text { font-weight: 600; font-size: 14px; color: var(--ink-2); padding: 10px 6px; border-radius: 8px; }
+.btn-text:hover { color: var(--ink); }
+
+/* ============ card patterns: Spaces are told apart by the back of their cards ============ */
+.p-h { background: repeating-linear-gradient(0deg, var(--blue) 0 5px, var(--blue-lite) 5px 8px); }
+.p-v { background: repeating-linear-gradient(90deg, var(--blue) 0 5px, var(--blue-lite) 5px 8px); }
+.p-d { background: repeating-linear-gradient(45deg, var(--blue) 0 5px, var(--blue-lite) 5px 8px); }
+.p-d2 { background: repeating-linear-gradient(-45deg, var(--blue) 0 5px, var(--blue-lite) 5px 8px); }
+.p-dots { background: radial-gradient(circle, var(--blue-lite) 0 2px, transparent 2.5px) 0 0 / 8px 8px, var(--blue); }
+.p-bigdots { background: radial-gradient(circle, var(--blue-lite) 0 4px, transparent 4.5px) 0 0 / 14px 14px, var(--blue); }
+.p-grid { background: linear-gradient(var(--blue-lite) 2px, transparent 2px) 0 0 / 9px 9px, linear-gradient(90deg, var(--blue-lite) 2px, transparent 2px) 0 0 / 9px 9px, var(--blue); }
+.p-check { background: conic-gradient(var(--blue-lite) 25%, var(--blue) 0 50%, var(--blue-lite) 0 75%, var(--blue) 0) 0 0 / 12px 12px; }
+.p-rings { background: repeating-radial-gradient(circle at 0 100%, var(--blue) 0 4px, var(--blue-lite) 4px 7px); }
+.p-zig { background: linear-gradient(135deg, var(--blue-lite) 25%, transparent 25%) -6px 0 / 12px 12px, linear-gradient(225deg, var(--blue-lite) 25%, transparent 25%) -6px 0 / 12px 12px, var(--blue); }
+.p-diamond { background: conic-gradient(from 45deg, var(--blue-lite) 25%, var(--blue) 0 50%, var(--blue-lite) 0 75%, var(--blue) 0) 0 0 / 14px 14px; }
+.p-solid { background: var(--blue); }
+
+/* ============ the stack ============ */
+.stack { position: relative; touch-action: pan-y; }
+.deck {
+  position: relative;
+  padding-bottom: calc(var(--n, 0) * var(--edge));
+  transition: padding-bottom .35s var(--spring);
+}
+.edge {
+  position: absolute; left: 0; right: 0; top: 6px; bottom: calc(var(--n, 0) * var(--edge));
+  border-radius: var(--r-card);
+  background: var(--rose);
+  border: 2px solid var(--ink);
+  transform-origin: 50% 100%;
+  transform: translateY(calc(var(--i) * var(--edge))) scale(calc(1 - var(--i) * 0.018)) rotate(var(--tilt, 0deg));
+  z-index: calc(10 - var(--i));
+  transition: transform .35s var(--spring), opacity .25s;
+}
+.edge.leaving { opacity: 0; transform: translateY(0) scale(.98); }
+.card {
+  position: relative; z-index: 20;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: var(--r-card);
+  padding: 14px;
+  display: grid; gap: 10px;
+  box-shadow: 0 1px 0 var(--ink);
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+  will-change: transform;
+  transition: background-color .3s;
+}
+.card.rising { background: var(--rose); }
+.card.dragging { cursor: grabbing; box-shadow: 0 18px 30px -12px var(--shadow-2); }
+.card.flying { position: absolute; left: 0; right: 0; top: 0; z-index: 40; pointer-events: none; }
+.card:focus-visible { outline-offset: 3px; }
+.c-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.card > .c-head {
+  margin: -14px -14px 2px; padding: 9px 10px 9px 9px;
+  border-bottom: 2px solid var(--ink);
+  border-radius: 16px 16px 0 0;
+  color: var(--on-blue);
+}
+.card > .c-head.p-h { background: repeating-linear-gradient(0deg, var(--blue) 0 5px, var(--blue-band) 5px 8px); }
+.card > .c-head.p-v { background: repeating-linear-gradient(90deg, var(--blue) 0 5px, var(--blue-band) 5px 8px); }
+.card > .c-head.p-d { background: repeating-linear-gradient(45deg, var(--blue) 0 5px, var(--blue-band) 5px 8px); }
+.card > .c-head.p-d2 { background: repeating-linear-gradient(-45deg, var(--blue) 0 5px, var(--blue-band) 5px 8px); }
+.card > .c-head.p-dots { background: radial-gradient(circle, var(--blue-band) 0 2px, transparent 2.5px) 0 0 / 8px 8px, var(--blue); }
+.card > .c-head.p-grid { background: linear-gradient(var(--blue-band) 2px, transparent 2px) 0 0 / 9px 9px, linear-gradient(90deg, var(--blue-band) 2px, transparent 2px) 0 0 / 9px 9px, var(--blue); }
+.card > .c-head.p-check { background: conic-gradient(var(--blue-band) 25%, var(--blue) 0 50%, var(--blue-band) 0 75%, var(--blue) 0) 0 0 / 12px 12px; }
+.card > .c-head.p-rings { background: repeating-radial-gradient(circle at 0 100%, var(--blue) 0 4px, var(--blue-band) 4px 7px); }
+.card > .c-head .idx { background: var(--paper); color: var(--blue); }
+.card > .c-head .idx::after { display: none; }
+.card > .c-head .idx svg { width: 20px !important; height: 20px !important; }
+.stack-sm .card > .c-head .idx svg { width: 16px !important; height: 16px !important; }
+.c-space { text-shadow: 0 1px 0 var(--blue-deep); }
+.idx {
+  flex: none; width: 34px; height: 34px; border-radius: 10px;
+  display: grid; place-items: center;
+  border: 2px solid var(--ink);
+  color: var(--on-blue);
+  position: relative; overflow: hidden;
+}
+.idx svg { width: 20px; height: 20px; position: relative; z-index: 1; }
+.idx::after { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 2px var(--ink); }
+.idx svg { width: 16px !important; height: 16px !important; }
+.c-space { font-weight: 700; font-size: 14px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.c-count {
+  color: var(--ink);
+  flex: none; font-family: var(--font-display); font-weight: 800; font-size: 15px;
+  min-width: 28px; height: 28px; padding: 0 8px; border-radius: 14px;
+  background: var(--rose); border: 2px solid var(--ink);
+  display: grid; place-items: center; font-variant-numeric: tabular-nums;
+}
+.c-ask { font-family: var(--font-display); font-weight: 700; font-size: 17px; line-height: 1.15; letter-spacing: -0.015em; }
+.c-detail { font-size: 13.5px; color: var(--ink-2); line-height: 1.38; }
+.c-meta { font-size: 12.5px; color: var(--ink-3); }
+.c-actions { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+.c-actions .btn-text { margin-left: auto; }
+
+.stack-lg .card { padding: 16px; gap: 12px; }
+.stack-lg .card > .c-head { margin: -16px -16px 2px; padding: 10px 12px 10px 10px; }
+.stack-lg .c-ask { font-size: 24px; letter-spacing: -0.025em; line-height: 1.08; }
+.stack-lg .c-detail { font-size: 14.5px; }
+.stack-lg .idx { width: 40px; height: 40px; border-radius: 12px; }
+.stack-lg .idx svg { width: 22px; height: 22px; }
+
+.stack-sm .card { padding: 12px; gap: 9px; min-height: 160px; align-content: start; grid-template-rows: auto 1fr auto; }
+.stack-sm .card > .c-head { margin: -12px -12px 0; padding: 7px 8px 7px 7px; }
+.stack-sm .c-ask { font-size: 16px; }
+.stack-sm .c-head { gap: 8px; }
+.stack-sm .idx { width: 30px; height: 30px; border-radius: 9px; }
+.stack-sm .idx::after { inset: 6px; }
+.stack-sm .idx svg { width: 13px !important; height: 13px !important; }
+.stack-sm .idx svg { width: 17px; height: 17px; }
+.stack-sm .c-space { font-size: 13px; white-space: normal; line-height: 1.1; }
+.stack-sm .c-count { min-width: 24px; height: 24px; font-size: 13px; padding: 0 6px; }
+.stack-sm .c-actions { justify-content: space-between; gap: 6px; }
+.stack-sm .btn-sm { padding: 0 10px; }
+.stack-sm .btn-round { width: 34px; min-height: 34px; padding: 0; flex: none; }
+.card { grid-template-columns: minmax(0, 1fr); }
+
+/* the stamp an action leaves before the card goes */
+.stamp {
+  position: absolute; right: 12px; top: 46%;
+  padding: 6px 12px; border-radius: 10px;
+  border: 2.5px solid var(--blue); color: var(--blue);
+  background: var(--paper);
+  font-family: var(--font-display); font-weight: 800; font-size: 15px;
+  transform: rotate(-7deg);
+  animation: stamp .32s var(--spring) both;
+  z-index: 3;
+}
+.stack-sm .stamp { font-size: 13px; right: 8px; left: 8px; text-align: center; }
+@keyframes stamp { from { transform: rotate(-7deg) scale(1.8); opacity: 0; } to { transform: rotate(-7deg) scale(1); opacity: 1; } }
+
+/* face-down: nothing for you, the agent is working */
+.back {
+  position: relative; z-index: 20;
+  border: 2px solid var(--ink);
+  border-radius: var(--r-card);
+  color: var(--on-blue);
+  overflow: hidden;
+  display: grid;
+  cursor: default;
+}
+.back-inner { position: relative; margin: 8px; border-radius: 11px; background: var(--blue); padding: 12px; display: grid; gap: 6px; align-content: start; }
+.back-head { display: flex; gap: 8px; align-items: center; }
+.back-head svg { width: 20px; height: 20px; flex: none; }
+.back-name { font-weight: 700; font-size: 14px; }
+.back-status { font-family: var(--font-display); font-weight: 700; font-size: 16px; line-height: 1.15; }
+.back-meta { font-size: 12.5px; color: var(--on-blue-2); }
+.stack.cleared .back { animation: settle .6s var(--spring) both; }
+@keyframes settle { from { transform: translateY(-14px) rotate(-2deg); } to { transform: translateY(6px) rotate(.6deg); } }
+.stack.cleared { transform: none; }
+
+.stack-note {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--ink-2); min-height: 0; padding: 6px 4px 0;
+}
+.stack-note:empty { display: none; }
+.stack-note button { font-weight: 700; color: var(--blue); padding: 4px 6px; border-radius: 6px; }
+
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px 12px; margin-top: 22px; }
+
+/* tucked: face-down cards filed like folders */
+.tucked { display: grid; margin-top: 4px; }
+.tuck {
+  position: relative;
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  padding: 6px;
+  margin-top: -30px;
+  box-shadow: 0 -2px 0 var(--ink);
+  transition: transform .35s var(--spring);
+  text-align: left;
+  width: 100%;
+}
+.tuck:first-child { margin-top: 0; }
+.tuck:nth-child(odd) { transform: rotate(-.6deg); }
+.tuck:nth-child(even) { transform: rotate(.5deg) translateX(4px); }
+.tuck:hover, .tuck:focus-visible, .tuck.lifted { transform: translateY(-10px) rotate(0deg); z-index: 5; }
+.tuck-inner { background: var(--blue); color: var(--on-blue); border-radius: 10px; padding: 10px 12px 34px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; }
+.tuck:last-child .tuck-inner { padding-bottom: 12px; }
+.tuck-inner svg { width: 20px; height: 20px; grid-row: span 2; }
+.tuck-name { font-weight: 700; font-size: 14px; }
+.tuck-status { font-size: 13.5px; color: var(--on-blue-2); grid-column: 2 / 4; }
+.tuck-time { font-size: 12px; color: var(--on-blue-2); }
+
+/* ============ tab bar ============ */
+.tabbar {
+  position: absolute; left: 14px; right: 14px; bottom: 26px; z-index: 50;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; gap: 6px; align-items: center;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 24px;
+  padding: 6px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+.tab { text-decoration: none; display: grid; justify-items: center; gap: 2px; padding: 6px 0 5px; border-radius: 17px; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.tab svg { width: 22px; height: 22px; }
+.tab[aria-current="page"] { background: var(--blue); color: var(--on-blue); }
+.capture { width: 50px; height: 50px; border-radius: 17px; background: var(--rose); border: 2px solid var(--ink); display: grid; place-items: center; }
+.capture svg { width: 22px; height: 22px; }
+
+/* ============ Today ============ */
+.today .phone { background: var(--blue); }
+.today-screen { padding-top: 50px; color: var(--on-blue); }
+.today-screen .date { color: var(--on-blue-2); }
+.today-top { display: flex; justify-content: space-between; align-items: end; gap: 10px; margin-bottom: 18px; }
+.today-count { font-family: var(--font-display); font-weight: 800; font-size: 64px; line-height: .85; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; }
+.today-count-label { font-size: 15px; color: var(--on-blue-2); text-align: right; line-height: 1.3; }
+.today-count-label b { color: var(--on-blue); font-weight: 700; }
+.ticks { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 4px; margin-bottom: 20px; }
+.ticks i { height: 6px; border-radius: 3px; background: var(--blue-lite); transition: background-color .3s; }
+.ticks i.done { background: var(--lime); }
+.ticks i.now { background: var(--rose); }
+
+.today .stack .card { padding: 18px; gap: 14px; color: var(--ink); }
+.today .stack .card > .c-head { margin: -18px -18px 0; padding: 10px 12px 10px 10px; }
+.today .c-ask { font-size: 28px; letter-spacing: -0.03em; line-height: 1.05; }
+.today .c-detail { font-size: 14.5px; }
+.today .idx { width: 40px; height: 40px; border-radius: 12px; }
+.draft {
+  background: var(--rose-wash); border: 2px solid var(--ink); border-radius: 14px; padding: 12px 14px;
+  display: grid; gap: 6px; font-size: 14px; line-height: 1.42;
+}
+.draft-to { font-size: 12.5px; color: var(--ink-2); }
+.draft-to b { color: var(--ink); }
+.sources { display: flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--ink-3); }
+.sources svg { width: 14px; height: 14px; flex: none; }
+.today .c-actions { gap: 10px; }
+.today .edge { border-color: var(--ink); }
+.edge-tab {
+  position: absolute; right: 14px; bottom: -2px; transform: translateY(100%);
+  width: 26px; height: calc(var(--edge) + 2px); overflow: hidden;
+}
+.edge-glyphs { display: flex; gap: 6px; justify-content: flex-end; margin-top: 12px; color: var(--on-blue-2); font-size: 13px; align-items: center; }
+.edge-glyphs span { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: var(--blue-deep); color: var(--on-blue); }
+.edge-glyphs span svg { width: 15px; height: 15px; }
+.edge-glyphs em { font-style: normal; margin-right: auto; }
+.today .stack-note { color: var(--on-blue-2); }
+.today .stack-note button { color: var(--lime); }
+.today .tabbar { box-shadow: 0 4px 0 var(--blue-deep); }
+
+/* ============ Templates ============ */
+.templates .phone { background: var(--ground); }
+.tpl-field { background: var(--rose); margin: -54px -18px 0; padding: 54px 18px 20px; border-bottom: 2px solid var(--ink); }
+.tpl-field .screen-sub { color: var(--ink); }
+.feature { padding: 22px 0 4px; display: grid; gap: 16px; }
+.fan { position: relative; height: 250px; margin: 0 6px; cursor: pointer; }
+.fan .f {
+  position: absolute; left: 50%; top: 10px; width: 78%; height: 214px; margin-left: -39%;
+  border: 2px solid var(--ink); border-radius: var(--r-card); background: var(--paper);
+  padding: 14px; display: grid; gap: 8px; align-content: start;
+  transform-origin: 50% 100%;
+  transition: transform .5s var(--spring);
+  box-shadow: 0 1px 0 var(--ink);
+}
+.fan .f:nth-child(1) { transform: rotate(-9deg) translateX(-26px); background: var(--rose); }
+.fan .f:nth-child(-n+2) .f-ask { visibility: hidden; }
+.fan .f:nth-child(2) { transform: rotate(5deg) translateX(22px); background: var(--rose-wash); }
+.fan .f:nth-child(2) .f-n { text-align: right; }
+.fan .f:nth-child(3) { transform: rotate(-1deg); }
+.fan:hover .f:nth-child(1), .fan.open .f:nth-child(1) { transform: rotate(-13deg) translateX(-34px); }
+.fan:hover .f:nth-child(2), .fan.open .f:nth-child(2) { transform: rotate(10deg) translateX(32px); }
+.fan:hover .f:nth-child(3), .fan.open .f:nth-child(3) { transform: rotate(0deg) translateY(-8px); }
+.f-n { font-size: 12.5px; color: var(--on-blue-2); font-weight: 600; }
+.f-band { margin: -14px -14px 0; height: 46px; border-bottom: 2px solid var(--ink); border-radius: 16px 16px 0 0; }
+.f-head { margin: -14px -14px 4px; padding: 8px 10px 8px 8px; border-bottom: 2px solid var(--ink); border-radius: 16px 16px 0 0; color: var(--on-blue); }
+.f-band.p-h, .f-head.p-h { background: repeating-linear-gradient(0deg, var(--blue) 0 5px, var(--blue-band) 5px 8px); }
+.f-head .idx { background: var(--paper); color: var(--blue); width: 32px; height: 32px; }
+.f-head .idx::after { display: none; }
+.f-head .idx svg { width: 18px !important; height: 18px !important; }
+.f-ask { font-family: var(--font-display); font-weight: 700; font-size: 19px; line-height: 1.1; letter-spacing: -0.02em; }
+.f-detail { font-size: 13px; color: var(--ink-2); }
+.f-btn { justify-self: start; margin-top: 4px; font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 9px; border: 2px solid var(--ink); background: var(--blue); color: var(--on-blue); }
+.feature-info { display: grid; gap: 6px; }
+.feature-info h2 { font-family: var(--font-display); font-weight: 800; font-size: 26px; letter-spacing: -0.03em; line-height: 1.05; }
+.by { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ink-2); }
+.avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--blue); color: var(--on-blue); display: grid; place-items: center; font-size: 11px; font-weight: 700; border: 2px solid var(--ink); flex: none; }
+.feature-actions { display: flex; gap: 10px; align-items: center; }
+.feature-actions .btn-blue { flex: 1; }
+.deals { font-size: 14px; color: var(--ink-2); }
+.deals b { color: var(--ink); }
+
+.tpl-list { display: grid; gap: 12px; }
+.tpl {
+  display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 14px; align-items: center;
+  background: var(--paper); border: 2px solid var(--ink); border-radius: 20px; padding: 12px;
+  box-shadow: 0 3px 0 var(--ink);
+  text-align: left; width: 100%;
+}
+.mini { position: relative; height: 96px; }
+.mini i {
+  position: absolute; inset: 6px 10px 4px; border: 2px solid var(--ink); border-radius: 11px; background: var(--rose);
+  transition: transform .45s var(--spring);
+}
+.mini i:nth-child(1) { transform: rotate(-8deg) translateX(-6px); }
+.mini i:nth-child(2) { transform: rotate(6deg) translateX(6px); }
+.mini i:nth-child(3) { background: var(--paper); transform: rotate(-1deg); overflow: hidden; }
+.mini .mb { display: grid; place-items: center; height: 32px; border-bottom: 2px solid var(--ink); color: var(--on-blue); }
+.mini .mb svg { width: 16px; height: 16px; }
+.mini .ml { display: block; height: 5px; border-radius: 3px; background: var(--ground-2); margin: 8px 8px 0; }
+.mini .ml + .ml { width: 60%; margin-top: 5px; }
+.mini i:nth-child(3) b { font-family: var(--font-display); font-weight: 700; font-size: 11px; line-height: 1.1; font-style: normal; color: var(--ink); }
+.mini i:nth-child(3) .idx { width: 22px; height: 22px; border-radius: 7px; border-width: 1.5px; }
+.mini i:nth-child(3) .idx::after { inset: 3px; border-radius: 4px; }
+.mini i:nth-child(3) .idx svg { width: 13px; height: 13px; }
+.tpl:hover .mini i:nth-child(1), .tpl:focus-visible .mini i:nth-child(1) { transform: rotate(-15deg) translateX(-12px); }
+.tpl:hover .mini i:nth-child(2), .tpl:focus-visible .mini i:nth-child(2) { transform: rotate(13deg) translateX(12px); }
+.tpl-title { font-family: var(--font-display); font-weight: 700; font-size: 17px; letter-spacing: -0.015em; line-height: 1.12; }
+.tpl-meta { font-size: 13px; color: var(--ink-2); margin-top: 3px; }
+.tpl-meta b { color: var(--ink); font-weight: 600; }
+
+.share {
+  margin-top: 18px; background: var(--blue); color: var(--on-blue); border: 2px solid var(--ink); border-radius: 20px;
+  padding: 16px; display: grid; gap: 12px; box-shadow: 0 4px 0 var(--ink);
+}
+.share h3 { font-family: var(--font-display); font-weight: 700; font-size: 19px; letter-spacing: -0.015em; }
+.share p { font-size: 13.5px; color: var(--on-blue-2); }
+.share .btn { justify-self: start; }
+
+/* ============ direction card ============ */
+.direction {
+  max-width: 1242px; width: 100%; margin: 0 auto;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 28px;
+  box-shadow: 0 6px 0 var(--ink);
+  padding: 28px;
+  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) minmax(0, 1fr); gap: 32px;
+}
+.direction h2 { font-family: var(--font-display); font-weight: 800; font-size: 44px; letter-spacing: -0.04em; line-height: .95; }
+.direction h3 { font-family: var(--font-display); font-weight: 700; font-size: 17px; margin-bottom: 8px; }
+.direction p { color: var(--ink-2); font-size: 15px; max-width: 60ch; }
+.direction p + p { margin-top: 10px; }
+.direction .idea { font-family: var(--font-display); font-weight: 700; font-size: 21px; color: var(--ink); line-height: 1.2; letter-spacing: -0.015em; margin-top: 14px; }
+.swatches { display: grid; gap: 12px; }
+.swatch { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 14px; align-items: center; }
+.swatch-chip { height: 56px; border-radius: 14px; border: 2px solid var(--ink); }
+.swatch b { display: block; font-size: 15px; }
+.swatch span { font-size: 14px; color: var(--ink-2); }
+.direction .type-sample { font-family: var(--font-display); font-weight: 800; font-size: 34px; letter-spacing: -0.035em; line-height: 1; margin-bottom: 6px; }
+
+@media (max-width: 1260px) {
+  .frames { grid-template-columns: repeat(2, minmax(0, 390px)); }
+  .direction { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+@media (max-width: 860px) {
+  .frames { grid-template-columns: minmax(0, 390px); }
+  .direction { grid-template-columns: minmax(0, 1fr); padding: 22px; }
+  .direction h2 { font-size: 36px; }
+}
+@media (max-width: 430px) {
+  .phone { box-shadow: 0 0 0 2px var(--ink), 0 30px 50px -30px var(--shadow-2); }
+  .screen { padding-left: 14px; padding-right: 14px; }
+  .tpl-field { margin-left: -14px; margin-right: -14px; padding-left: 14px; padding-right: 14px; }
+  .grid2 { gap: 20px 10px; }
+  .page { padding-block: 24px 48px; gap: 28px; }
+  .phone { height: 800px; border-radius: 38px; }
+  .wordmark h1 { font-size: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="g-house" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9H4z M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+    <symbol id="g-cake" viewBox="0 0 24 24"><path d="M4 20h16 M5 20v-7h14v7 M5 16c2.3 1.4 4.7 1.4 7 0s4.7-1.4 7 0 M12 13V9 M12 5.5v.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="g-case" viewBox="0 0 24 24"><path d="M3 8h18v11H3z M9 8V5h6v3 M3 13h18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+    <symbol id="g-receipt" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z M9 8h6 M9 12h6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="g-coins" viewBox="0 0 24 24"><path d="M5 7c0-1.7 3.1-3 7-3s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3z M5 7v5c0 1.7 3.1 3 7 3s7-1.3 7-3V7 M5 12v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5" fill="none" stroke="currentColor" stroke-width="2.2"/></symbol>
+    <symbol id="g-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4 4 0 0 1 12 7.4a4 4 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+    <symbol id="g-play" viewBox="0 0 24 24"><path d="M3 6h18v12H3z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M10 9.3v5.4l4.6-2.7z" fill="currentColor"/></symbol>
+    <symbol id="g-tray" viewBox="0 0 24 24"><path d="M3 13 6 5h12l3 8v6H3z M3 13h5l1 2h6l1-2h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+    <symbol id="g-sun" viewBox="0 0 24 24"><circle cx="12" cy="10" r="4.5" fill="currentColor"/><path d="M3 18h18 M7 21h10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="g-plane" viewBox="0 0 24 24"><path d="M21 3 3 10.5l7 2.5 2.5 7z M10 13l5-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="g-book" viewBox="0 0 24 24"><path d="M3 5.5c3-1 6-1 9 1 3-2 6-2 9-1v13.5c-3-1-6-1-9 1-3-2-6-2-9-1z M12 6.5V20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+    <symbol id="g-work" viewBox="0 0 24 24"><path d="M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-desk" viewBox="0 0 24 24"><path d="M4 9h16v11H4z M6 6h12 M8 3h8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="i-today" viewBox="0 0 24 24"><path d="M5 5h11l3 3v11H5z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" transform="rotate(-6 12 12)"/><path d="M9 11h6 M9 15h4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" transform="rotate(-6 12 12)"/></symbol>
+    <symbol id="i-fan" viewBox="0 0 24 24"><path d="M9 5h6v14H9z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M3.5 7.5 8 6.3 M3.5 7.5l3 11 2.5-.7 M20.5 7.5 16 6.3 M20.5 7.5l-3 11-2.5-.7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><path d="M9 4h6v10H9z M5.5 11a6.5 6.5 0 0 0 13 0 M12 17.5V21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="i-later" viewBox="0 0 24 24"><path d="M5 12h12 M13 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1 M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<main class="page">
+  <header class="page-head">
+    <div class="wordmark">
+      <div class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i></div>
+      <h1>Later: Stacks</h1>
+    </div>
+    <p>Every Space is a stack on your desk. The top card is the next thing it needs from you, with the button right there. Drag a top card sideways to put it off; tap its button to act.</p>
+  </header>
+
+  <section class="frames" aria-label="Three screens">
+    <!-- 1. Spaces -->
+    <div class="frame" id="spaces">
+      <p class="frame-label">Desk <span>all your Spaces</span></p>
+      <div class="phone">
+        <div class="screen" id="desk-screen">
+          <div class="screen-head">
+            <p class="date">Thursday 12 November</p>
+            <h2 class="screen-title">Your desk</h2>
+            <p class="screen-sub"><b><span class="tally" id="desk-tally">17</span> cards</b> waiting in 7 Spaces. 5 are face down while agents work.</p>
+          </div>
+          <div id="desk-big"><section class="stack stack-lg" aria-label="House move"><div class="deck" style="--n: 3;"><div class="edge" style="--i: 1; --tilt: 0deg;"></div><div class="edge" style="--i: 2; --tilt: -.35deg;"></div><div class="edge" style="--i: 3; --tilt: .3deg;"></div><article class="card" tabindex="0" aria-roledescription="card">
+      <header class="c-head p-h"><span class="idx"><svg aria-hidden="true"><use href="#g-house"></use></svg></span><span class="c-space">House move</span><span class="c-count" aria-label="4 waiting">4</span></header>
+      <h3 class="c-ask">Solicitor needs the exchange date</h3>
+      <p class="c-detail">Pemberton Hale asked at 08:12. The buyer’s side suggested Fri 28 Nov, and the van is free.</p>
+      <div class="c-actions">
+        <button class="btn btn-pop " data-act="">Draft reply</button>
+        <button class="btn-text" data-later="">Not now</button>
+      </div></article></div><div class="stack-note" aria-live="polite"></div></section></div><!--/desk-big-->
+          <div class="grid2" id="desk-grid"><section class="stack stack-sm" aria-label="Mum’s 70th"><div class="deck" style="--n: 2;"><div class="edge" style="--i: 1; --tilt: 0deg;"></div><div class="edge" style="--i: 2; --tilt: -.35deg;"></div><article class="card" tabindex="0" aria-roledescription="card">
+      <header class="c-head p-dots"><span class="idx"><svg aria-hidden="true"><use href="#g-cake"></use></svg></span><span class="c-space">Mum’s 70th</span><span class="c-count" aria-label="3 waiting">3</span></header>
+      <h3 class="c-ask">The Boathouse holds 14 June until Fri</h3>
+      
+      <div class="c-actions">
+        <button class="btn btn-blue btn-sm" data-act="">Review £250</button>
+        <button class="btn btn-ghost btn-sm btn-round" data-later="" aria-label="Not now"><svg><use href="#i-later"></use></svg></button>
+      </div></article></div><div class="stack-note" aria-live="polite"></div></section><section class="stack stack-sm" aria-label="Job search"><div class="deck" style="--n: 2;"><div class="edge" style="--i: 1; --tilt: 0deg;"></div><div class="edge" style="--i: 2; --tilt: -.35deg;"></div><article class="card" tabindex="0" aria-roledescription="card">
+      <header class="c-head p-d"><span class="idx"><svg aria-hidden="true"><use href="#g-case"></use></svg></span><span class="c-space">Job search</span><span class="c-count" aria-label="3 waiting">3</span></header>
+      <h3 class="c-ask">Halden wants a call, 11:00 or 15:30 Thu</h3>
+      
+      <div class="c-actions">
+        <button class="btn btn-blue btn-sm" data-act="">Pick a time</button>
+        <button class="btn btn-ghost btn-sm btn-round" data-later="" aria-label="Not now"><svg><use href="#i-later"></use></svg></button>
+      </div></article></div><div class="stack-note" aria-live="polite"></div></section><section class="stack stack-sm" aria-label="Taxes 2026"><div class="deck" style="--n: 1;"><div class="edge" style="--i: 1; --tilt: 0deg;"></div><article class="card" tabindex="0" aria-roledescription="card">
+      <header class="c-head p-grid"><span class="idx"><svg aria-hidden="true"><use href="#g-receipt"></use></svg></span><span class="c-space">Taxes 2026</span><span class="c-count" aria-label="2 waiting">2</span></header>
+      <h3 class="c-ask">3 train receipts missing from April</h3>
+      
+      <div class="c-actions">
+        <button class="btn btn-blue btn-sm" data-act="">Upload</button>
+        <button class="btn btn-ghost btn-sm btn-round" data-later="" aria-label="Not now"><svg><use href="#i-later"></use></svg></button>
+      </div></article></div><div class="stack-note" aria-live="polite"></div></section><section class="stack stack-sm" aria-label="Finances"><div class="deck" style="--n: 1;"><div class="edge" style="--i: 1; --tilt: 0deg;"></div><article class="card" tabindex="0" aria-roledescription="card">
+      <header class="c-head p-check"><span class="idx"><svg aria-hidden="true"><use href="#g-coins"></use></svg></span><span class="c-space">Finances</span><span class="c-count" aria-label="2 waiting">2</span></header>
+      <h3 class="c-ask">Council tax up £14 a month from Dec</h3>
+      
+      <div class="c-actions">
+        <button class="btn btn-blue btn-sm" data-act="">Looks right</button>
+        <button class="btn btn-ghost btn-sm btn-round" data-later="" aria-label="Not now"><svg><use href="#i-later"></use></svg></button>
+      </div></article></div><div class="stack-note" aria-live="polite"></div></section><section class="stack stack-sm" aria-label="YouTube channel"><div class="deck" style="--n: 1;"><div class="edge" style="--i: 1; --tilt: 0deg;"></div><article class="card" tabindex="0" aria-roledescription="card">
+      <header class="c-head p-rings"><span class="idx"><svg aria-hidden="true"><use href="#g-play"></use></svg></span><span class="c-space">YouTube channel</span><span class="c-count" aria-label="2 waiting">2</span></header>
+      <h3 class="c-ask">Thumbnail B is ahead: 6.1% against 4.4%</h3>
+      
+      <div class="c-actions">
+        <button class="btn btn-blue btn-sm" data-act="">Keep B</button>
+        <button class="btn btn-ghost btn-sm btn-round" data-later="" aria-label="Not now"><svg><use href="#i-later"></use></svg></button>
+      </div></article></div><div class="stack-note" aria-live="polite"></div></section><section class="stack stack-sm" aria-label="Inbox"><div class="deck" style="--n: 0;"><article class="card" tabindex="0" aria-roledescription="card">
+      <header class="c-head p-d2"><span class="idx"><svg aria-hidden="true"><use href="#g-tray"></use></svg></span><span class="c-space">Inbox</span><span class="c-count" aria-label="1 waiting">1</span></header>
+      <h3 class="c-ask">3 voice notes need a home</h3>
+      
+      <div class="c-actions">
+        <button class="btn btn-blue btn-sm" data-act="">File them</button>
+        <button class="btn btn-ghost btn-sm btn-round" data-later="" aria-label="Not now"><svg><use href="#i-later"></use></svg></button>
+      </div></article></div><div class="stack-note" aria-live="polite"></div></section></div><!--/desk-grid-->
+          <h3 class="section-title">Face down <small>nothing needs you</small></h3>
+          <div class="tucked" id="desk-tucked">
+  <button class="tuck p-zig" type="button">
+    <span class="tuck-inner"><svg aria-hidden="true"><use href="#g-sun"></use></svg><span class="tuck-name">Japan in April</span><span class="tuck-time">07:40</span><span class="tuck-status">Watching Osaka fares. Cheapest so far £612 return.</span></span>
+  </button>
+  <button class="tuck p-v" type="button">
+    <span class="tuck-inner"><svg aria-hidden="true"><use href="#g-heart"></use></svg><span class="tuck-name">Health</span><span class="tuck-time">Tue</span><span class="tuck-status">Next check-up booked for 3 February</span></span>
+  </button>
+  <button class="tuck p-bigdots" type="button">
+    <span class="tuck-inner"><svg aria-hidden="true"><use href="#g-plane"></use></svg><span class="tuck-name">Side project launch</span><span class="tuck-time">09:02</span><span class="tuck-status">Writing the launch post. Draft by Friday.</span></span>
+  </button>
+  <button class="tuck p-diamond" type="button">
+    <span class="tuck-inner"><svg aria-hidden="true"><use href="#g-book"></use></svg><span class="tuck-name">Reading list</span><span class="tuck-time">Sun</span><span class="tuck-status">Watching 3 library holds</span></span>
+  </button>
+  <button class="tuck p-solid" type="button">
+    <span class="tuck-inner"><svg aria-hidden="true"><use href="#g-work"></use></svg><span class="tuck-name">Work</span><span class="tuck-time">08:55</span><span class="tuck-status">Summarising Monday’s planning notes</span></span>
+  </button></div><!--/desk-tucked-->
+        </div>
+        <nav class="tabbar" aria-label="Sections">
+          <a class="tab" aria-current="page" href="#spaces"><svg><use href="#i-desk"/></svg>Desk</a>
+          <a class="tab" href="#today"><svg><use href="#i-today"/></svg>Today</a>
+          <a class="tab" href="#templates"><svg><use href="#i-fan"/></svg>Templates</a>
+          <button class="capture" aria-label="Capture a thought"><svg><use href="#i-mic"/></svg></button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- 2. Today -->
+    <div class="frame today" id="today">
+      <p class="frame-label">Today <span>one deck from every Space</span></p>
+      <div class="phone">
+        <div class="screen today-screen" id="today-screen">
+          <div class="today-top">
+            <div>
+              <p class="date">Thursday 12 November</p>
+              <p class="today-count"><span id="today-left">12</span></p>
+            </div>
+            <p class="today-count-label">cards left today<br><b>about 9 minutes</b></p>
+          </div>
+          <div class="ticks" id="ticks" aria-hidden="true"><i class="now"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><!--/ticks-->
+          <div id="today-deck"><section class="stack stack-lg" aria-label="Today"><div class="deck" style="--n: 6;"><div class="edge" style="--i: 1; --tilt: 0deg;"></div><div class="edge" style="--i: 2; --tilt: -.35deg;"></div><div class="edge" style="--i: 3; --tilt: .3deg;"></div><div class="edge" style="--i: 4; --tilt: -.45deg;"></div><div class="edge" style="--i: 5; --tilt: .25deg;"></div><div class="edge" style="--i: 6; --tilt: -.3deg;"></div><article class="card" tabindex="0" aria-roledescription="card">
+      <header class="c-head p-h"><span class="idx"><svg aria-hidden="true"><use href="#g-house"></use></svg></span><span class="c-space">House move</span><span class="c-count" aria-label="12 left">12</span></header>
+      <h3 class="c-ask">Solicitor needs the exchange date</h3>
+      <p class="c-detail">The buyer’s side suggested Friday 28 November. Your mortgage offer runs to 3 December, and the removal van is free that day.</p>
+      <div class="draft"><p class="draft-to">To <b>Anna Pemberton, Pemberton Hale</b></p><p>Hi Anna, the 28th works for us. Please propose it to the buyer’s solicitor, and let me know if they need anything signed before then.</p></div>
+      <p class="sources"><svg><use href="#i-link"></use></svg>From 2 emails and your calendar</p>
+      <div class="c-actions">
+        <button class="btn btn-pop" data-act="">Use this draft</button>
+        <button class="btn btn-ghost" data-later="">Tomorrow</button>
+      </div></article></div><div class="stack-note" aria-live="polite"></div></section><p class="edge-glyphs"><em>Next up</em><span title="Mum’s 70th"><svg aria-hidden="true"><use href="#g-cake"></use></svg></span><span title="Job search"><svg aria-hidden="true"><use href="#g-case"></use></svg></span><span title="Taxes 2026"><svg aria-hidden="true"><use href="#g-receipt"></use></svg></span><span title="Finances"><svg aria-hidden="true"><use href="#g-coins"></use></svg></span><span title="YouTube channel"><svg aria-hidden="true"><use href="#g-play"></use></svg></span></p></div><!--/today-deck-->
+        </div>
+        <nav class="tabbar" aria-label="Sections">
+          <a class="tab" href="#spaces"><svg><use href="#i-desk"/></svg>Desk</a>
+          <a class="tab" aria-current="page" href="#today"><svg><use href="#i-today"/></svg>Today</a>
+          <a class="tab" href="#templates"><svg><use href="#i-fan"/></svg>Templates</a>
+          <button class="capture" aria-label="Capture a thought"><svg><use href="#i-mic"/></svg></button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- 3. Templates -->
+    <div class="frame templates" id="templates">
+      <p class="frame-label">Templates <span>stacks you can pick up</span></p>
+      <div class="phone">
+        <div class="screen">
+          <div class="tpl-field">
+            <div class="screen-head" style="margin-bottom:0">
+              <h2 class="screen-title">Pick up a stack</h2>
+              <p class="screen-sub">Someone else's setup becomes a new Space. You see the first cards it would deal you before you take it.</p>
+            </div>
+          </div>
+          <div class="feature">
+            <div class="fan" id="fan" tabindex="0" role="button" aria-label="Fan out the first three cards of Moving house in England" aria-expanded="false">
+              <div class="f" aria-hidden="true"><div class="f-band p-h"></div></div>
+              <div class="f" aria-hidden="true"><div class="f-band p-h"></div></div>
+              <div class="f">
+                <div class="c-head f-head p-h"><span class="idx"><svg><use href="#g-house"/></svg></span><span class="c-space">Moving house</span><span class="f-n">1 of 6</span></div>
+                <p class="f-ask">When do you hope to complete?</p>
+                <p class="f-detail">Everything else is timed from this date: searches, removals, meter readings.</p>
+                <span class="f-btn">Pick a date</span>
+              </div>
+            </div>
+            <div class="feature-info">
+              <h2>Moving house in England</h2>
+              <p class="by"><span class="avatar" aria-hidden="true">PN</span>Priya N. made it after her move to Leeds</p>
+              <p class="deals">Deals <b>6 cards</b> in week one, then about 3 a week. Uses Gmail and Calendar.</p>
+            </div>
+            <div class="feature-actions">
+              <button class="btn btn-blue" id="pickup">Pick up this stack</button>
+              <button class="btn btn-ghost">Preview all</button>
+            </div>
+          </div>
+
+          <h3 class="section-title">More stacks <small>first card shown</small></h3>
+          <div class="tpl-list">
+            <button class="tpl">
+              <span class="mini" aria-hidden="true"><i></i><i></i><i><span class="mb p-dots"><svg><use href="#g-cake"/></svg></span><span class="ml"></span><span class="ml"></span></i></span>
+              <span><span class="tpl-title">A big birthday, sorted</span><span class="tpl-meta" style="display:block">First card: who must be there? <b>5 cards</b> in week one, by Tom A.</span></span>
+            </button>
+            <button class="tpl">
+              <span class="mini" aria-hidden="true"><i></i><i></i><i><span class="mb p-grid"><svg><use href="#g-receipt"/></svg></span><span class="ml"></span><span class="ml"></span></i></span>
+              <span><span class="tpl-title">Self assessment by December</span><span class="tpl-meta" style="display:block">First card: forward last year’s return. <b>4 cards</b> in week one, by the Later team.</span></span>
+            </button>
+            <button class="tpl">
+              <span class="mini" aria-hidden="true"><i></i><i></i><i><span class="mb p-zig"><svg><use href="#g-sun"/></svg></span><span class="ml"></span><span class="ml"></span></i></span>
+              <span><span class="tpl-title">Two weeks in Japan</span><span class="tpl-meta" style="display:block">First card: which two cities first? <b>7 cards</b> in week one, by Kenji M.</span></span>
+            </button>
+          </div>
+
+          <div class="share">
+            <h3>Share House move as a stack</h3>
+            <p>Names, addresses and messages are stripped first. Others get your routines and card types, never your cards.</p>
+            <button class="btn btn-ghost btn-sm"><svg width="16" height="16"><use href="#i-link"/></svg>Make a template</button>
+          </div>
+        </div>
+        <nav class="tabbar" aria-label="Sections">
+          <a class="tab" href="#spaces"><svg><use href="#i-desk"/></svg>Desk</a>
+          <a class="tab" href="#today"><svg><use href="#i-today"/></svg>Today</a>
+          <a class="tab" aria-current="page" href="#templates"><svg><use href="#i-fan"/></svg>Templates</a>
+          <button class="capture" aria-label="Capture a thought"><svg><use href="#i-mic"/></svg></button>
+        </nav>
+      </div>
+    </div>
+  </section>
+
+  <section class="direction" aria-labelledby="dir-name">
+    <div>
+      <h2 id="dir-name">Stacks</h2>
+      <p class="idea">Every Space is a small deck on your desk. Its thickness is how much it needs you, and its top card carries the button.</p>
+      <p style="margin-top:14px">You act from the overview without opening anything: tap the button, or drag the card off and the next one rises. Spaces with nothing for you turn face down and show what the agent is doing.</p>
+    </div>
+    <div>
+      <h3>Three colours, three jobs</h3>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch-chip p-solid"></div><div><b>Ultramarine</b><span>What the agents hold. Card backs, index corners, the Today desk, navigation.</span></div></div>
+        <div class="swatch"><div class="swatch-chip" style="background:var(--rose)"></div><div><b>Rose</b><span>What waits on you. Every card edge under a top card is rose, so thickness reads as need.</span></div></div>
+        <div class="swatch"><div class="swatch-chip" style="background:var(--lime)"></div><div><b>Lime</b><span>The one thing to do now. One button per screen, and the cards you have cleared today.</span></div></div>
+      </div>
+      <p style="margin-top:14px">Spaces are told apart by the back of their cards: twelve patterns and glyphs in ultramarine, no extra hues.</p>
+    </div>
+    <div>
+      <h3>Type</h3>
+      <p class="type-sample">Funnel Display</p>
+      <p>Chunky and slightly squared, so a short ask on a card reads like a label printed on it. Funnel Sans, its sibling, carries detail and meta.</p>
+      <h3 style="margin-top:18px">What is risky</h3>
+      <p>Thickness is a blunt signal: four small cards look heavier than one urgent one. The overview is busy with nine buttons, and drag-to-defer must never feel like deleting.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+['desk-big', 'desk-grid', 'desk-tucked', 'today-deck', 'ticks'].forEach(id => { document.getElementById(id).innerHTML = ''; });
+const g = id => `<svg aria-hidden="true"><use href="#g-${id}"/></svg>`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const SPACES = [
+  { id: 'house', name: 'House move', glyph: 'house', pat: 'p-h', status: 'Waiting on the survey report', asof: '08:40', size: 'lg', pop: true, cards: [
+    { ask: 'Solicitor needs the exchange date', detail: 'Pemberton Hale asked at 08:12. The buyer’s side suggested Fri 28 Nov, and the van is free.', meta: 'From Pemberton Hale, 08:12', act: 'Draft reply', done: 'Draft ready' },
+    { ask: 'Two removal quotes: £1,140 or £1,380', detail: 'The cheaper one does not pack. Both can do the 28th.', meta: 'Asked three firms on Monday', act: 'Compare', done: 'Opened' },
+    { ask: 'Meter readings on completion day', detail: 'Gas, electric and water. I’ll remind you at 10:00 on the day.', meta: 'From the move checklist', act: 'Set reminder', done: 'Reminder set' },
+    { ask: '9 accounts still have your old address', detail: 'Bank, GP, DVLA, two subscriptions and four others.', meta: 'Found in your inbox', act: 'Review list', done: 'Opened' } ] },
+  { id: 'mum', name: 'Mum’s 70th', glyph: 'cake', pat: 'p-dots', status: 'Watching for the last two RSVPs', asof: '09:10', cards: [
+    { ask: 'The Boathouse holds 14 June until Fri', act: 'Review £250', done: 'Approval open' },
+    { ask: 'Aunt Rita says yes, plus one', act: 'Guest list', done: 'Opened' },
+    { ask: 'Three cake designs to pick from', act: 'Choose', done: 'Opened' } ] },
+  { id: 'job', name: 'Job search', glyph: 'case', pat: 'p-d', status: 'Scanning 4 boards each morning', asof: '07:00', cards: [
+    { ask: 'Halden wants a call, 11:00 or 15:30 Thu', act: 'Pick a time', done: 'Held 11:00' },
+    { ask: 'Cover letter for Marlow & Finch is drafted', act: 'Read it', done: 'Opened' },
+    { ask: '2 new roles match your filters', act: 'Look', done: 'Opened' } ] },
+  { id: 'tax', name: 'Taxes 2026', glyph: 'receipt', pat: 'p-grid', status: 'Return is 80% filled in', asof: 'Mon', cards: [
+    { ask: '3 train receipts missing from April', act: 'Upload', done: 'Uploaded' },
+    { ask: '£1,842 payment on account due 31 Jan', act: 'Add date', done: 'In calendar' } ] },
+  { id: 'fin', name: 'Finances', glyph: 'coins', pat: 'p-check', status: 'All bills paid this month', asof: '06:30', cards: [
+    { ask: 'Council tax up £14 a month from Dec', act: 'Looks right', done: 'Noted' },
+    { ask: 'Your energy fix ends in 3 weeks', act: 'See tariffs', done: 'Opened' } ] },
+  { id: 'yt', name: 'YouTube channel', glyph: 'play', pat: 'p-rings', status: 'Tracking the new upload', asof: '08:00', cards: [
+    { ask: 'Thumbnail B is ahead: 6.1% against 4.4%', act: 'Keep B', done: 'B is live' },
+    { ask: 'A viewer asked about your mic setup', act: 'Draft reply', done: 'Draft ready' } ] },
+  { id: 'inbox', name: 'Inbox', glyph: 'tray', pat: 'p-d2', status: 'Everything is filed', asof: 'now', cards: [
+    { ask: '3 voice notes need a home', act: 'File them', done: 'Filed' } ] },
+];
+const QUIET = [
+  { name: 'Japan in April', glyph: 'sun', pat: 'p-zig', status: 'Watching Osaka fares. Cheapest so far £612 return.', asof: '07:40' },
+  { name: 'Health', glyph: 'heart', pat: 'p-v', status: 'Next check-up booked for 3 February', asof: 'Tue' },
+  { name: 'Side project launch', glyph: 'plane', pat: 'p-bigdots', status: 'Writing the launch post. Draft by Friday.', asof: '09:02' },
+  { name: 'Reading list', glyph: 'book', pat: 'p-diamond', status: 'Watching 3 library holds', asof: 'Sun' },
+  { name: 'Work', glyph: 'work', pat: 'p-solid', status: 'Summarising Monday’s planning notes', asof: '08:55' },
+];
+
+/* ---------- a tiny spring ---------- */
+function spring(from, to, v0, { k = 340, c = 22 } = {}, onFrame, onDone) {
+  if (reduce) { onFrame(to); onDone && onDone(); return; }
+  const keys = Object.keys(to);
+  const x = { ...from }, v = { ...v0 };
+  keys.forEach(key => { if (v[key] == null) v[key] = 0; });
+  let last = performance.now();
+  function step(t) {
+    const dt = Math.min(0.032, (t - last) / 1000); last = t;
+    let moving = false;
+    keys.forEach(key => {
+      const a = -k * (x[key] - to[key]) - c * v[key];
+      v[key] += a * dt; x[key] += v[key] * dt;
+      if (Math.abs(v[key]) > 0.02 || Math.abs(x[key] - to[key]) > 0.002) moving = true;
+    });
+    onFrame(x);
+    if (moving) requestAnimationFrame(step); else { onFrame(to); onDone && onDone(); }
+  }
+  requestAnimationFrame(step);
+}
+const setT = (el, s) => { el.style.transform = `translate(${s.x || 0}px, ${s.y || 0}px) rotate(${s.r || 0}deg) scale(${s.s == null ? 1 : s.s})`; };
+
+/* ---------- a stack of cards ---------- */
+class Stack {
+  constructor(mount, { cards, renderFace, renderBack, size = 'sm', maxEdges = 5, onChange, label }) {
+    this.cards = cards.slice(); this.renderFace = renderFace; this.renderBack = renderBack;
+    this.maxEdges = maxEdges; this.onChange = onChange || (() => {}); this.undoStack = [];
+    this.root = document.createElement('section');
+    this.root.className = `stack stack-${size}`;
+    this.root.setAttribute('aria-label', label);
+    this.root.innerHTML = `<div class="deck"></div><div class="stack-note" aria-live="polite"></div>`;
+    this.deck = this.root.firstElementChild; this.note = this.root.lastElementChild;
+    mount.appendChild(this.root);
+    this.render();
+  }
+  edgesFor(n) { return Math.min(Math.max(n - 1, 0), this.maxEdges); }
+  render(enter) {
+    const prevEdges = this.deck.querySelectorAll('.edge:not(.leaving)').length;
+    this.deck.querySelectorAll('.card:not(.flying), .back, .edge').forEach(n => n.remove());
+    const n = this.cards.length;
+    const edges = this.edgesFor(n);
+    this.deck.style.setProperty('--n', edges);
+    const tilts = ['0deg', '-.35deg', '.3deg', '-.45deg', '.25deg', '-.3deg'];
+    for (let i = 1; i <= Math.max(edges, prevEdges); i++) {
+      const e = document.createElement('div');
+      e.className = 'edge'; e.style.setProperty('--i', i); e.style.setProperty('--tilt', tilts[i - 1] || '0deg');
+      this.deck.appendChild(e);
+      if (i > edges) { requestAnimationFrame(() => e.classList.add('leaving')); setTimeout(() => e.remove(), 400); }
+    }
+    if (!n) {
+      this.root.classList.add('cleared');
+      this.deck.insertAdjacentHTML('beforeend', this.renderBack());
+      return;
+    }
+    this.root.classList.remove('cleared');
+    const card = document.createElement('article');
+    card.className = 'card'; card.tabIndex = 0;
+    card.setAttribute('aria-roledescription', 'card');
+    card.innerHTML = this.renderFace(this.cards[0], n);
+    this.deck.appendChild(card);
+    this.top = card;
+    this.bind(card);
+    if (enter === 'rise') {
+      card.classList.add('rising');
+      setT(card, { y: 8, s: 0.965 });
+      requestAnimationFrame(() => card.classList.remove('rising'));
+      spring({ y: 8, s: 0.965 }, { y: 0, s: 1 }, {}, { k: 420, c: 16 }, s => setT(card, s), () => card.style.transform = '');
+    } else if (enter === 'undo') {
+      spring({ x: -340, r: -14 }, { x: 0, r: 0 }, {}, { k: 300, c: 21 }, s => setT(card, s), () => card.style.transform = '');
+    }
+  }
+  bind(card) {
+    const act = card.querySelector('[data-act]');
+    const later = card.querySelector('[data-later]');
+    act && act.addEventListener('click', e => { e.stopPropagation(); this.act(); });
+    later && later.addEventListener('click', e => { e.stopPropagation(); this.fling(1, 1.4, 'later'); });
+    card.addEventListener('keydown', e => {
+      if (e.target !== card) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); this.fling(1, 1.4, 'later'); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); this.fling(-1, 1.4, 'later'); }
+    });
+    let start = null, samples = [];
+    card.addEventListener('pointerdown', e => {
+      if (e.button !== 0 || e.target.closest('button')) return;
+      start = { x: e.clientX, y: e.clientY, id: e.pointerId, axis: null };
+      samples = [{ x: e.clientX, t: e.timeStamp }];
+    });
+    card.addEventListener('pointermove', e => {
+      if (!start || e.pointerId !== start.id) return;
+      const dx = e.clientX - start.x, dy = e.clientY - start.y;
+      if (!start.axis) {
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+        start.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        if (start.axis === 'y') { start = null; return; }
+        card.setPointerCapture(e.pointerId); card.classList.add('dragging');
+      }
+      samples.push({ x: e.clientX, t: e.timeStamp }); if (samples.length > 6) samples.shift();
+      const w = card.offsetWidth;
+      setT(card, { x: dx, y: dy * 0.25 - Math.abs(dx) * 0.04, r: dx / w * 14 });
+      this.peek(Math.min(1, Math.abs(dx) / (w * 0.5)));
+    });
+    const end = e => {
+      if (!start || e.pointerId !== start.id || start.axis !== 'x') { start = null; return; }
+      const dx = e.clientX - start.x, dy = e.clientY - start.y;
+      const a = samples[0], b = samples[samples.length - 1];
+      const vx = (b.t - a.t) > 0 ? (b.x - a.x) / (b.t - a.t) : 0; // px per ms
+      card.classList.remove('dragging');
+      const w = card.offsetWidth;
+      start = null;
+      if (Math.abs(dx) > w * 0.36 || (Math.abs(vx) > 0.45 && Math.sign(vx) === Math.sign(dx))) {
+        this.fling(Math.sign(dx || vx), Math.max(Math.abs(vx), 1.1), 'later', { x: dx, y: dy * 0.25, r: dx / w * 14 });
+      } else {
+        this.peek(0);
+        spring({ x: dx, y: dy * 0.25, r: dx / w * 14 }, { x: 0, y: 0, r: 0 }, { x: vx * 1000 }, { k: 520, c: 24 }, s => setT(card, s), () => card.style.transform = '');
+      }
+    };
+    card.addEventListener('pointerup', end);
+    card.addEventListener('pointercancel', end);
+  }
+  peek(p) {
+    const e1 = this.deck.querySelector('.edge');
+    if (e1) e1.style.transform = `translateY(calc(${1 - p * 0.9} * var(--edge))) scale(${1 - 0.018 * (1 - p)})`;
+    if (p === 0 && e1) e1.style.transform = '';
+  }
+  act() {
+    const card = this.top; if (!card || card.dataset.busy) return;
+    card.dataset.busy = '1';
+    const c = this.cards[0];
+    card.insertAdjacentHTML('beforeend', `<span class="stamp">${esc(c.done)}</span>`);
+    setTimeout(() => this.fling(1, 1.6, 'done'), reduce ? 300 : 620);
+  }
+  fling(dir, speed, kind, from = { x: 0, y: 0, r: 0 }) {
+    const card = this.top; if (!card || !this.cards.length) return;
+    this.top = null;
+    card.classList.add('flying'); card.classList.remove('dragging');
+    const removed = this.cards.shift();
+    this.undoStack.push(removed);
+    this.render('rise');
+    this.deck.appendChild(card);
+    const vx = dir * speed * 1000;
+    const st = { ...from }; let last = performance.now(); const t0 = last;
+    const fly = t => {
+      const dt = (t - last) / 1000; last = t;
+      st.x += vx * dt; st.y += (st.vy = (st.vy || -120) + 1800 * dt) * dt; st.r += dir * 40 * dt;
+      setT(card, st); card.style.opacity = Math.max(0, 1 - (t - t0) / 420);
+      if (t - t0 < 420 && !reduce) requestAnimationFrame(fly); else card.remove();
+    };
+    requestAnimationFrame(fly);
+    const text = kind === 'done' ? `${removed.done}.` : 'Put off until tomorrow.';
+    this.note.innerHTML = `<span>${esc(text)}</span><button type="button">Undo</button>`;
+    this.note.querySelector('button').onclick = () => this.undo();
+    this.onChange(-1, kind);
+  }
+  undo() {
+    const c = this.undoStack.pop(); if (!c) return;
+    this.cards.unshift(c);
+    this.render('undo');
+    this.note.innerHTML = '';
+    this.onChange(1, 'undo');
+  }
+}
+
+/* ---------- Desk ---------- */
+const tally = document.getElementById('desk-tally');
+let total = SPACES.reduce((a, s) => a + s.cards.length, 0);
+const bumpTally = el => { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); };
+SPACES.forEach(sp => {
+  const lg = sp.size === 'lg';
+  new Stack(document.getElementById(lg ? 'desk-big' : 'desk-grid'), {
+    cards: sp.cards, size: sp.size || 'sm', label: sp.name,
+    renderFace: (c, n) => `
+      <header class="c-head ${sp.pat}"><span class="idx">${g(sp.glyph)}</span><span class="c-space">${esc(sp.name)}</span><span class="c-count" aria-label="${n} waiting">${n}</span></header>
+      <h3 class="c-ask">${esc(c.ask)}</h3>
+      ${lg && c.detail ? `<p class="c-detail">${esc(c.detail)}</p>` : ''}
+      <div class="c-actions">
+        <button class="btn ${sp.pop ? 'btn-pop' : 'btn-blue'} ${lg ? '' : 'btn-sm'}" data-act>${esc(c.act)}</button>
+        ${lg ? `<button class="btn-text" data-later>Not now</button>` : `<button class="btn btn-ghost btn-sm btn-round" data-later aria-label="Not now"><svg><use href="#i-later"/></svg></button>`}
+      </div>`,
+    renderBack: () => `<div class="back ${sp.pat}"><div class="back-inner"><div class="back-head">${g(sp.glyph)}<span class="back-name">${esc(sp.name)}</span></div><p class="back-status">All clear. ${esc(sp.status)}.</p><p class="back-meta">As of ${esc(sp.asof)}</p></div></div>`,
+    onChange: d => { total += d; tally.textContent = total; bumpTally(tally); }
+  });
+});
+const tucked = document.getElementById('desk-tucked');
+tucked.innerHTML = QUIET.map(q => `
+  <button class="tuck ${q.pat}" type="button">
+    <span class="tuck-inner">${g(q.glyph)}<span class="tuck-name">${esc(q.name)}</span><span class="tuck-time">${esc(q.asof)}</span><span class="tuck-status">${esc(q.status)}</span></span>
+  </button>`).join('');
+tucked.querySelectorAll('.tuck').forEach(t => t.addEventListener('click', () => {
+  const was = t.classList.contains('lifted');
+  tucked.querySelectorAll('.tuck').forEach(x => x.classList.remove('lifted'));
+  if (!was) t.classList.add('lifted');
+}));
+
+/* ---------- Today ---------- */
+const bySpace = Object.fromEntries(SPACES.map(s => [s.id, s]));
+const TODAY = [
+  { sp: 'house', ask: 'Solicitor needs the exchange date', detail: 'The buyer’s side suggested Friday 28 November. Your mortgage offer runs to 3 December, and the removal van is free that day.',
+    draft: { to: 'Anna Pemberton, Pemberton Hale', body: 'Hi Anna, the 28th works for us. Please propose it to the buyer’s solicitor, and let me know if they need anything signed before then.' },
+    sources: '2 emails and your calendar', act: 'Use this draft', done: 'Queued for you to send' },
+  { sp: 'mum', ask: 'The Boathouse holds 14 June until Friday', detail: 'To keep the date they want a £250 deposit, paid to The Boathouse Ltd. Nothing is paid until you approve the exact amount.', sources: 'Venue email, 09:05', act: 'Review £250 deposit', done: 'Approval open' },
+  { sp: 'job', ask: 'Halden wants a call on Thursday', detail: 'Senior product role, hybrid in Leeds. The recruiter offered 11:00 or 15:30, and you are free at both.', sources: 'LinkedIn message and your calendar', act: 'Hold 11:00', done: 'Held 11:00' },
+  { sp: 'tax', ask: '3 train receipts missing from April', detail: 'Leeds to Manchester on the 4th, 11th and 25th. The return can’t be finished without them.', sources: 'Your bank feed', act: 'Upload receipts', done: 'Uploaded' },
+  { sp: 'fin', ask: 'Council tax goes up £14 a month from December', detail: 'The new direct debit is £168. It matches the letter from the council.', sources: 'Council letter, scanned Mon', act: 'Looks right', done: 'Noted' },
+  { sp: 'yt', ask: 'Thumbnail B is ahead after two days', detail: '6.1% of viewers clicked B against 4.4% for A, over 3,200 views.', sources: 'YouTube Studio', act: 'Keep B', done: 'B is live' },
+  { sp: 'inbox', ask: '3 voice notes need a home', detail: 'Two sound like House move, one like Mum’s 70th.', sources: 'Captured this week', act: 'File them', done: 'Filed' },
+  { sp: 'house', ask: 'Two removal quotes: £1,140 or £1,380', detail: 'The cheaper one does not pack. Both can do the 28th.', sources: '2 emails', act: 'Compare', done: 'Opened' },
+  { sp: 'job', ask: 'Cover letter for Marlow & Finch is drafted', detail: 'Kept to 280 words. It leads with the onboarding redesign.', sources: 'Job ad and your CV', act: 'Read the draft', done: 'Opened' },
+  { sp: 'mum', ask: 'Aunt Rita says yes, plus one', detail: 'That makes 31 of 40. The seating plan is updated.', sources: 'Text message', act: 'See guest list', done: 'Opened' },
+  { sp: 'fin', ask: 'Your energy fix ends in 3 weeks', detail: 'Three tariffs beat the default rate for your usage.', sources: 'Supplier email', act: 'See tariffs', done: 'Opened' },
+  { sp: 'house', ask: 'Meter readings on completion day', detail: 'Gas, electric and water. A reminder at 10:00 on the day.', sources: 'Move checklist', act: 'Set reminder', done: 'Reminder set' },
+];
+const ticks = document.getElementById('ticks');
+ticks.innerHTML = TODAY.map(() => '<i></i>').join('');
+const leftEl = document.getElementById('today-left');
+let done = 0;
+const paintTicks = () => [...ticks.children].forEach((t, i) => { t.className = i < done ? 'done' : i === done ? 'now' : ''; });
+paintTicks();
+let todayStack;
+todayStack = new Stack(document.getElementById('today-deck'), {
+  cards: TODAY, size: 'lg', maxEdges: 6, label: 'Today',
+  renderFace: (c, n) => {
+    const sp = bySpace[c.sp];
+    const next = todayStack ? todayStack.cards.slice(1, 6) : TODAY.slice(1, 6);
+    return `
+      <header class="c-head ${sp.pat}"><span class="idx">${g(sp.glyph)}</span><span class="c-space">${esc(sp.name)}</span><span class="c-count" aria-label="${n} left">${n}</span></header>
+      <h3 class="c-ask">${esc(c.ask)}</h3>
+      <p class="c-detail">${esc(c.detail)}</p>
+      ${c.draft ? `<div class="draft"><p class="draft-to">To <b>${esc(c.draft.to)}</b></p><p>${esc(c.draft.body)}</p></div>` : ''}
+      <p class="sources"><svg><use href="#i-link"/></svg>From ${esc(c.sources)}</p>
+      <div class="c-actions">
+        <button class="btn btn-pop" data-act>${esc(c.act)}</button>
+        <button class="btn btn-ghost" data-later>Tomorrow</button>
+      </div>`;
+  },
+  renderBack: () => `<div class="back p-check"><div class="back-inner" style="padding:28px 18px"><p class="back-status" style="font-size:28px">That’s the deck.</p><p class="back-meta" style="font-size:14px">12 cards cleared. Agents carry on with the rest. The next deck is dealt at 07:00.</p></div></div>`,
+  onChange: (d, kind) => {
+    done = Math.max(0, done - d);
+    leftEl.textContent = TODAY.length - done; bumpTally(leftEl); paintTicks();
+    total += kind === 'undo' ? 0 : 0;
+    renderNext();
+  }
+});
+const nextRow = document.createElement('p');
+nextRow.className = 'edge-glyphs';
+document.getElementById('today-deck').appendChild(nextRow);
+function renderNext() {
+  const next = todayStack.cards.slice(1, 6);
+  nextRow.innerHTML = next.length ? `<em>Next up</em>${next.map(c => `<span title="${esc(bySpace[c.sp].name)}">${g(bySpace[c.sp].glyph)}</span>`).join('')}` : '';
+}
+renderNext();
+
+/* ---------- Templates ---------- */
+const fan = document.getElementById('fan');
+const toggleFan = () => { const o = fan.classList.toggle('open'); fan.setAttribute('aria-expanded', o); };
+fan.addEventListener('click', toggleFan);
+fan.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFan(); } });
+document.getElementById('pickup').addEventListener('click', e => {
+  const b = e.currentTarget; b.textContent = 'Picked up. Dealing card 1';
+});
+
+/* hash: scroll a frame into view on phones */
+const go = () => { const id = location.hash.slice(1); const el = id && document.getElementById(id); if (el && innerWidth < 860) el.scrollIntoView({ block: 'start' }); };
+addEventListener('hashchange', go);
+})();
+</script>

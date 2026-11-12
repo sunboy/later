@@ -1,0 +1,1154 @@
+<title>Later: Now Next Later</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Instrument+Sans:wght@400..700&display=swap">
+<style>
+/* Hallmark floor: custom direction "Now, Next, Later" (no dealt theme). Signature: a Space set down into Later and risen back on time. */
+/* Critique line: colour says when, glyph and shape say which; width of type says how far away. */
+/* Layout: three 390px phones on a horizon; each Space screen reads day (Now) to dusk (Next) to night (Later). */
+:root {
+  /* Two primaries and one pop */
+  --sun: #FF5B24;          /* Daybreak: whatever needs you */
+  --sun-press: #E9470F;
+  --sun-glow: #FF8A5C;
+  --night: #1B2550;        /* Midnight: whatever the agents hold */
+  --night-deep: #111838;
+  --pop: #D7F64A;          /* Moonlight: the moment something changes hands */
+  --on-sun: #1B2550;
+  --on-night: #F3F2FF;
+  --on-night-2: #A6ABD6;
+  --on-night-line: rgba(243, 242, 255, 0.10);
+  /* Neutrals derived from the primaries */
+  --paper: #FFF5EE;        /* sun at 6% on white */
+  --card: #FFFFFF;
+  --dusk: #E7E6F4;         /* night at 10% on white */
+  --dusk-card: #FAFAFF;
+  --ink: #1B2550;
+  --ink-2: #555D84;
+  --ink-3: #868BAA;
+  --line: rgba(27, 37, 80, 0.12);
+  --night-wash: rgba(27, 37, 80, 0.08);
+  --sun-shadow: rgba(233, 71, 15, 0.28);
+  --night-shadow: rgba(17, 24, 56, 0.16);
+  --page: #F1ECE8;
+  --scrim: rgba(17, 24, 56, 0.44);
+  --focus: #1B2550;
+  --bar: #1B2550;
+  --sun-ink-1: rgba(27,37,80,.12);
+  --sun-ink-2: rgba(27,37,80,.2);
+  --sheen-1: rgba(255,255,255,.25);
+  --sheen-2: rgba(255,255,255,.55);
+  --night-raise: #2B3566;
+  --night-raise-a: rgba(166,171,214,.16);
+  --night-opt: rgba(243,242,255,.07);
+  --night-opt-hover: rgba(243,242,255,.13);
+  --pop-wash: rgba(215,246,74,.12);
+  --pop-wash-2: rgba(215,246,74,.22);
+  --pop-wash-3: rgba(215,246,74,.05);
+  /* Type */
+  --f-display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Instrument Sans", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --ease-set: cubic-bezier(.55, 0, .25, 1);
+  --ease-rise: cubic-bezier(.2, .9, .25, 1.15);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sun: #FF6634; --sun-press: #F0521C; --sun-glow: #FF9466;
+    --night: #0A0F2A; --night-deep: #060920;
+    --on-night: #F3F2FF; --on-night-2: #9DA2CF; --on-night-line: rgba(243,242,255,0.09);
+    --paper: #151B3D; --card: #1E2550; --dusk: #1E2652; --dusk-card: #29316A;
+    --ink: #F1F0FF; --ink-2: #B4B7DA; --ink-3: #8287B3;
+    --line: rgba(241, 240, 255, 0.12); --night-wash: rgba(241,240,255,0.08);
+    --sun-shadow: rgba(0,0,0,0.35); --night-shadow: rgba(0,0,0,0.4);
+    --page: #0C1129; --scrim: rgba(3,5,18,0.6); --focus: #D7F64A; --bar: #A6ABD6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --sun: #FF6634; --sun-press: #F0521C; --sun-glow: #FF9466;
+  --night: #0A0F2A; --night-deep: #060920;
+  --on-night: #F3F2FF; --on-night-2: #9DA2CF; --on-night-line: rgba(243,242,255,0.09);
+  --paper: #151B3D; --card: #1E2550; --dusk: #1E2652; --dusk-card: #29316A;
+  --ink: #F1F0FF; --ink-2: #B4B7DA; --ink-3: #8287B3;
+  --line: rgba(241, 240, 255, 0.12); --night-wash: rgba(241,240,255,0.08);
+  --sun-shadow: rgba(0,0,0,0.35); --night-shadow: rgba(0,0,0,0.4);
+  --page: #0C1129; --scrim: rgba(3,5,18,0.6); --focus: #D7F64A; --bar: #A6ABD6;
+  color-scheme: dark;
+}
+
+html, body { overflow-x: clip; }
+[hidden] { display: none !important; }
+body {
+  background: var(--page); color: var(--ink);
+  font-family: var(--f-body); font-size: 16px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; transition: none; }
+.tile :focus-visible, .act:focus-visible { outline-color: var(--night); }
+.band-later :focus-visible, .sheet :focus-visible { outline-color: var(--pop); }
+svg { display: block; }
+.ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- page ---------- */
+.wrap {
+  max-width: 1320px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 72px;
+}
+.intro { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 40px; margin-bottom: 36px; }
+.intro h1 {
+  font-family: var(--f-display); font-weight: 800; font-size: clamp(40px, 6vw, 76px); line-height: .92;
+  margin: 0; letter-spacing: -0.02em; min-width: 0; overflow-wrap: break-word; text-wrap: balance;
+}
+.intro h1 .w1 { font-stretch: 125%; font-weight: 900; color: var(--sun); }
+.intro h1 .w2 { font-stretch: 100%; font-weight: 700; }
+.intro h1 .w3 { font-stretch: 62%; font-weight: 400; }
+.intro p { margin: 0; max-width: 40ch; color: var(--ink-2); font-size: 17px; }
+
+.stage { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px 36px; align-items: flex-start; }
+.shot { margin: 0; display: grid; gap: 14px; width: 390px; max-width: 100%; }
+.shot figcaption { font-size: 14px; color: var(--ink-2); padding-inline: 8px; }
+.shot figcaption strong { color: var(--ink); font-weight: 650; }
+
+/* ---------- phone ---------- */
+.phone {
+  position: relative; width: 390px; max-width: 100%; height: 844px;
+  border-radius: 46px; overflow: hidden; isolation: isolate;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px var(--line), 0 30px 60px -20px var(--night-shadow), 0 12px 24px -12px var(--night-shadow);
+}
+.scroll {
+  position: absolute; inset: 0 0 82px 0; overflow-y: auto; overflow-x: hidden;
+  overscroll-behavior: contain; scrollbar-width: none;
+}
+.scroll::-webkit-scrollbar { display: none; }
+.status { height: 46px; display: flex; align-items: center; padding: 6px 30px 0; font-weight: 650; font-size: 15px; font-variant-numeric: tabular-nums; }
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 82px; z-index: 5;
+  display: grid; grid-template-columns: repeat(3, 1fr) 76px; align-items: start; padding: 8px 10px 0;
+  background: var(--paper); border-top: 1px solid var(--line);
+}
+.tab { text-decoration: none; display: grid; justify-items: center; gap: 3px; font-size: 12px; color: var(--ink-3); padding-top: 4px; border-radius: 12px; }
+.tab .ico { width: 24px; height: 24px; }
+.tab[aria-current="page"] { color: var(--ink); font-weight: 650; }
+.tab[aria-current="page"] .ico { stroke: var(--sun); }
+.capture {
+  justify-self: center; width: 52px; height: 52px; border-radius: 50%;
+  background: var(--night); color: var(--on-night); display: grid; place-items: center;
+  box-shadow: 0 6px 14px -4px var(--night-shadow);
+}
+.capture .ico { width: 24px; height: 24px; }
+.tabbar.on-night { background: var(--night); border-top-color: var(--on-night-line); }
+.tabbar.on-night .tab { color: var(--on-night-2); }
+.tabbar.on-night .tab[aria-current="page"] { color: var(--on-night); }
+.tabbar.on-night .capture { background: var(--sun); color: var(--on-sun); }
+
+/* ---------- wordmark ---------- */
+.wm { display: inline-flex; align-items: baseline; font-family: var(--f-display); font-size: 26px; line-height: 1; color: var(--ink); gap: 0; }
+.wm span:nth-child(1) { font-stretch: 125%; font-weight: 900; }
+.wm span:nth-child(2) { font-stretch: 112%; font-weight: 800; }
+.wm span:nth-child(3) { font-stretch: 96%;  font-weight: 700; }
+.wm span:nth-child(4) { font-stretch: 80%;  font-weight: 560; }
+.wm span:nth-child(5) { font-stretch: 62%;  font-weight: 420; }
+.wm-row { display: flex; align-items: center; justify-content: space-between; padding: 2px 20px 0; }
+.wm-mark { display: inline-flex; align-items: center; gap: 8px; }
+.sunset { width: 26px; height: 26px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--night); color: var(--on-night); display: grid; place-items: center; font-weight: 650; font-size: 14px; }
+
+/* ---------- glyph shapes: project square, area round, list stacked ---------- */
+.glyph { width: 40px; height: 40px; flex: none; display: grid; place-items: center; position: relative; }
+.glyph .ico { width: 21px; height: 21px; }
+.shape-project { border-radius: 12px; }
+.shape-area { border-radius: 50%; }
+.shape-list { border-radius: 10px; }
+.shape-list::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: inherit; opacity: .45; transform: translate(4px, -4px); z-index: -1; }
+
+/* ---------- Spaces: header ---------- */
+.sp-head { padding: 0 0 14px; }
+.sp-date { padding: 8px 20px 0; display: grid; gap: 2px; }
+.sp-date h1 { margin: 0; font-family: var(--f-display); font-stretch: 100%; font-weight: 700; font-size: 24px; line-height: 1.05; letter-spacing: -0.01em; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.sp-date p { margin: 0; color: var(--ink-2); font-size: 15px; font-variant-numeric: tabular-nums; }
+.sp-date p b { color: var(--ink); font-weight: 650; }
+
+/* bands */
+.band { position: relative; }
+.band-head { display: flex; align-items: baseline; gap: 10px; padding: 0 20px 12px; }
+.band-head h2 { margin: 0; font-family: var(--f-display); line-height: .9; letter-spacing: -0.02em; }
+.band-head p { margin: 0; font-size: 14px; color: var(--ink-2); }
+.h-now { font-stretch: 125%; font-weight: 900; font-size: 46px; color: var(--sun); }
+.h-next { font-stretch: 100%; font-weight: 700; font-size: 34px; color: var(--ink); }
+.h-later { font-stretch: 62%; font-weight: 380; font-size: 38px; color: var(--on-night); }
+
+/* Now */
+.band-now { padding-bottom: 22px; }
+.now-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; padding: 0 14px; }
+.tile {
+  position: relative; min-width: 0; border-radius: 26px; padding: 14px 14px 14px;
+  background: radial-gradient(120% 90% at 0% 0%, var(--sun-glow) 0%, var(--sun) 55%);
+  color: var(--on-sun); display: flex; flex-direction: column; gap: 10px;
+  box-shadow: 0 14px 24px -14px var(--sun-shadow), inset 0 1px 0 var(--sheen-1);
+  touch-action: pan-y; user-select: none;
+}
+.tile.span2 { grid-column: span 2; padding: 16px 16px 16px; }
+.tile-top { display: flex; align-items: flex-start; gap: 10px; }
+.tile .glyph { background: var(--night); color: var(--on-night); }
+.tile-name { flex: 1; min-width: 0; font-family: var(--f-display); font-stretch: 110%; font-weight: 750; font-size: 16px; line-height: 1.15; padding-top: 2px; }
+.tile-name small { display: block; font-family: var(--f-body); font-stretch: 100%; font-weight: 500; font-size: 12.5px; opacity: .78; margin-top: 2px; }
+.sink {
+  flex: none; height: 36px; min-width: 36px; padding: 0 10px 0 8px; border-radius: 18px;
+  display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 650;
+  background: var(--sun-ink-1); color: var(--on-sun); touch-action: none; cursor: grab;
+}
+.sink:hover { background: var(--sun-ink-2); }
+.sink .ico { width: 18px; height: 18px; }
+.tile:not(.span2) .sink span { display: none; }
+.tile:not(.span2) .sink { padding: 0; justify-content: center; width: 36px; }
+.tile-ask { margin: 0; font-family: var(--f-display); font-stretch: 100%; font-weight: 750; font-size: 19px; line-height: 1.12; letter-spacing: -0.01em; text-wrap: balance; overflow-wrap: break-word; }
+.tile.span2 .tile-ask { font-size: 23px; font-stretch: 108%; }
+.tile:not(.span2) .tile-top { justify-content: space-between; }
+.tile:not(.span2) .tile-name { flex: none; width: 100%; order: 3; padding-top: 0; }
+.tile:not(.span2) .tile-top { flex-wrap: wrap; gap: 8px 10px; }
+.tile:not(.span2) .tile-ask { font-size: 17px; }
+.tile:not(.span2) .act { min-height: 42px; font-size: 14px; }
+.tile-args { margin: 0; display: grid; grid-template-columns: repeat(3, auto); grid-auto-flow: column; grid-template-rows: auto auto; justify-content: space-between; gap: 1px 12px; font-size: 13.5px; padding: 9px 12px; border-radius: 14px; background: var(--sun-ink-1); font-variant-numeric: tabular-nums; }
+.tile-args dt { opacity: .72; font-size: 12px; }
+.tile-args dd { margin: 0; font-weight: 650; }
+.tile-meta { margin: 0; font-size: 13px; opacity: .8; }
+.act {
+  margin-top: auto; min-height: 46px; border-radius: 16px; padding: 10px 14px;
+  background: var(--night); color: var(--on-night); font-weight: 650; font-size: 15px; line-height: 1.15;
+  display: flex; align-items: center; justify-content: center; gap: 8px; text-align: center;
+  transform: translateZ(0); transition: transform .15s var(--ease-set), background-color .2s;
+}
+.act:hover { background: var(--night-deep); }
+.act:active { transform: scale(.97); }
+.done-line { margin-top: auto; min-height: 46px; border-radius: 16px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; background: var(--night); color: var(--pop); font-weight: 650; font-size: 15px; }
+.done-line .ico { stroke: var(--pop); }
+.tile.dragging { transition: none; cursor: grabbing; z-index: 3; }
+.tile.snap { transition: transform .3s var(--ease-rise); }
+.tile-name small.back-note { display: inline-flex; align-items: center; gap: 4px; opacity: 1; font-weight: 650; background: var(--night); color: var(--pop); border-radius: 8px; padding: 2px 7px 2px 5px; margin-top: 4px; }
+.back-note .ico { width: 14px; height: 14px; }
+.empty-now { grid-column: span 2; border: 2px dashed var(--line); border-radius: 26px; padding: 22px; color: var(--ink-2); font-size: 15px; text-align: center; }
+
+/* Next: the dusk band with a horizon edge */
+.band-next {
+  background: var(--dusk); padding: 26px 0 30px;
+  border-radius: 50% 50% 0 0 / 30px 30px 0 0;
+}
+.next-list { display: grid; gap: 8px; padding: 0 14px; }
+.nrow {
+  display: grid; grid-template-columns: 40px minmax(0,1fr) auto 36px; gap: 12px; align-items: center;
+  background: var(--dusk-card); border-radius: 20px; padding: 12px 10px 12px 12px;
+  box-shadow: 0 1px 0 var(--line);
+}
+.nrow .glyph { background: var(--night); color: var(--on-night); }
+.n-main { min-width: 0; display: grid; gap: 3px; }
+.n-name { font-family: var(--f-display); font-stretch: 96%; font-weight: 700; font-size: 15.5px; line-height: 1.15; }
+.n-status { font-size: 13px; color: var(--ink-2); line-height: 1.3; }
+.n-status i { font-style: normal; color: var(--ink-3); white-space: nowrap; }
+.bar { height: 5px; border-radius: 3px; background: var(--night-wash); overflow: hidden; margin-top: 4px; position: relative; }
+.bar b { display: block; height: 100%; width: 100%; transform-origin: left; background: var(--bar); border-radius: inherit; }
+.bar::after {
+  content: ""; position: absolute; inset: 0; width: 40%;
+  background: linear-gradient(90deg, transparent, var(--sheen-2), transparent);
+  animation: working 2.4s linear infinite;
+}
+@keyframes working { from { transform: translateX(-100%); } to { transform: translateX(260%); } }
+.n-when { text-align: right; display: grid; justify-items: end; gap: 0; font-variant-numeric: tabular-nums; }
+.n-when small { font-size: 11.5px; color: var(--ink-3); }
+.n-when strong { font-family: var(--f-display); font-stretch: 90%; font-weight: 750; font-size: 18px; line-height: 1.05; }
+.n-when span { font-size: 12px; color: var(--ink-2); }
+.mini-sink { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); touch-action: none; }
+.mini-sink:hover { background: var(--night-wash); color: var(--ink); }
+.mini-sink .ico { width: 18px; height: 18px; }
+
+/* Later: night */
+.band-later {
+  background: var(--night); color: var(--on-night); padding: 28px 0 30px; margin-top: -2px;
+  border-radius: 50% 50% 0 0 / 30px 30px 0 0;
+}
+.band-later .band-head p { color: var(--on-night-2); }
+.later-list { display: grid; padding: 0 20px; }
+.lrow { display: grid; grid-template-columns: 32px minmax(0,1fr) 40px; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--on-night-line); }
+.lrow:first-child { border-top: 0; }
+.lrow .glyph { width: 32px; height: 32px; background: var(--night-raise-a); color: var(--on-night-2); }
+.lrow .glyph .ico { width: 17px; height: 17px; }
+.l-name { font-family: var(--f-display); font-stretch: 72%; font-weight: 520; font-size: 17px; line-height: 1.1; }
+.l-wake { font-size: 13px; color: var(--on-night-2); line-height: 1.3; font-variant-numeric: tabular-nums; }
+.l-wake.soon { color: var(--pop); font-weight: 600; }
+.rise { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--on-night); box-shadow: inset 0 0 0 1.5px var(--on-night-line); }
+.rise:hover { background: var(--night-opt); }
+.rise .ico { width: 18px; height: 18px; }
+.later-foot { margin: 14px 20px 0; font-size: 13px; color: var(--on-night-2); display: flex; gap: 8px; align-items: center; }
+.later-foot .ico { width: 16px; height: 16px; flex: none; }
+
+/* Later horizon docked above the tab bar: always on screen, the place things sink into */
+.dock {
+  position: absolute; left: 0; right: 0; bottom: 82px; z-index: 4; height: 66px;
+  background: var(--night); color: var(--on-night); border-radius: 50% 50% 0 0 / 22px 22px 0 0;
+  display: flex; align-items: center; gap: 12px; padding: 8px 20px 0; text-align: left;
+  transition: transform .35s var(--ease-set);
+}
+.dock.away { transform: translateY(150%); }
+.dock .h-later { font-size: 30px; }
+.dock-txt { flex: 1; font-size: 13px; color: var(--on-night-2); line-height: 1.25; min-width: 0; }
+.dock-txt b { color: var(--on-night); font-weight: 600; }
+.dock-glyphs { display: flex; }
+.dock-glyphs .glyph { width: 28px; height: 28px; margin-left: -6px; background: var(--night-raise); color: var(--on-night-2); box-shadow: 0 0 0 2px var(--night); }
+.dock-glyphs .glyph .ico { width: 15px; height: 15px; }
+.dock-glyphs .glyph.shape-list::before { display: none; }
+.dock.landed { animation: dockFlash 1.4s var(--ease-set); }
+@keyframes dockFlash { 0% { box-shadow: inset 0 3px 0 0 transparent; } 15% { box-shadow: inset 0 3px 0 0 var(--pop); } 100% { box-shadow: inset 0 3px 0 0 transparent; } }
+.dock.landed .dock-glyphs .glyph:first-child { background: var(--pop); color: var(--night); }
+.rising { animation: rising .7s var(--ease-rise); }
+@keyframes rising { from { transform: translateY(260px) scale(.8); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* landing moment */
+.landed { animation: landed 1.4s var(--ease-set); }
+@keyframes landed {
+  0% { box-shadow: 0 0 0 0 var(--pop); }
+  20% { box-shadow: 0 0 0 4px var(--pop); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.lrow.landed { animation: landedRow 1.6s var(--ease-set); border-radius: 14px; }
+@keyframes landedRow {
+  0% { background: transparent; }
+  15% { background: var(--pop-wash-2); }
+  100% { background: transparent; }
+}
+.flyer { position: absolute; z-index: 20; margin: 0; pointer-events: none; transform-origin: 0 0; will-change: transform, opacity; }
+.ghost { visibility: hidden; }
+
+/* sheet */
+.scrim { position: absolute; inset: 0; z-index: 30; background: var(--scrim); opacity: 0; transition: opacity .25s; }
+.scrim.open { opacity: 1; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 31;
+  background: var(--night); color: var(--on-night); border-radius: 30px 30px 0 0;
+  padding: 10px 16px 26px; transform: translateY(105%); transition: transform .34s var(--ease-set);
+}
+.sheet.open { transform: translateY(0); }
+.grabber { width: 40px; height: 5px; border-radius: 3px; background: var(--on-night-line); margin: 0 auto 14px; }
+.sheet h3 { margin: 0 4px; font-family: var(--f-display); font-stretch: 72%; font-weight: 520; font-size: 30px; line-height: 1; }
+.sheet .sub { margin: 6px 4px 14px; color: var(--on-night-2); font-size: 14px; }
+.opts { display: grid; gap: 6px; }
+.opt { display: grid; grid-template-columns: 22px 1fr auto; gap: 12px; align-items: center; text-align: left; padding: 13px 14px; border-radius: 16px; background: var(--night-opt); font-size: 15.5px; }
+.opt:hover { background: var(--night-opt-hover); }
+.opt .ico { width: 20px; height: 20px; color: var(--on-night-2); }
+.opt em { font-style: normal; color: var(--on-night-2); font-variant-numeric: tabular-nums; font-size: 14px; }
+.opt.try { background: var(--pop-wash); }
+.opt.try em { color: var(--pop); }
+.sheet-cancel { margin-top: 10px; width: 100%; padding: 12px; border-radius: 16px; color: var(--on-night-2); font-size: 15px; }
+
+/* ---------- Today ---------- */
+.td-head { padding: 14px 20px 0; display: grid; gap: 4px; }
+.td-head h1 { margin: 0; font-family: var(--f-display); font-stretch: 125%; font-weight: 900; font-size: 46px; line-height: .9; color: var(--sun); letter-spacing: -0.02em; }
+.td-head p { margin: 0; font-size: 15px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.td-head p b { color: var(--ink); font-weight: 650; }
+.deckbar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 12px; }
+.deckbar i { height: 6px; border-radius: 3px; background: var(--line); transition: background-color .3s; }
+.deckbar i.done { background: var(--night); }
+.deckbar i.cur { background: var(--sun); }
+.deck { position: relative; margin: 18px 14px 0; height: 408px; }
+.dcard {
+  position: absolute; inset: 0; border-radius: 30px; background: var(--card); color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line), 0 20px 34px -22px var(--night-shadow);
+  display: flex; flex-direction: column; overflow: hidden;
+  transition: transform .45s var(--ease-set), opacity .45s var(--ease-set);
+}
+.dcard[data-pos="1"] { transform: translateY(16px) scale(.94); opacity: .85; }
+.dcard[data-pos="2"] { transform: translateY(30px) scale(.88); opacity: .5; }
+.dcard[data-pos="3"], .dcard[data-pos="4"] { transform: translateY(30px) scale(.86); opacity: 0; }
+.dcard[data-pos="gone"] { opacity: 0; pointer-events: none; }
+.dcard.out-right { transform: translateX(120%) rotate(8deg) !important; opacity: 0 !important; }
+.dcard.out-left { transform: translateX(-120%) rotate(-8deg) !important; opacity: 0 !important; }
+.dcard.out-down { transform: translateY(70%) scale(.6) !important; opacity: 0 !important; }
+.dc-face { background: radial-gradient(120% 100% at 0% 0%, var(--sun-glow) 0%, var(--sun) 60%); color: var(--on-sun); padding: 18px 18px 18px; display: grid; gap: 12px; }
+.dc-face.held { background: var(--night); color: var(--on-night); }
+.dc-face.held .glyph { background: var(--night-raise-a); color: var(--on-night); }
+.dc-src { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.dc-src .glyph { background: var(--night); color: var(--on-night); width: 34px; height: 34px; }
+.dc-src .glyph .ico { width: 18px; height: 18px; }
+.dc-src b { display: block; font-family: var(--f-display); font-stretch: 110%; font-weight: 750; font-size: 15px; }
+.dc-src span { opacity: .8; }
+.dc-title { margin: 0; font-family: var(--f-display); font-stretch: 104%; font-weight: 800; font-size: 26px; line-height: 1.06; letter-spacing: -0.015em; text-wrap: balance; }
+.dc-body { padding: 16px 18px 0; display: grid; gap: 10px; font-size: 15px; flex: 1; align-content: start; min-height: 0; }
+.dc-body .lbl { font-size: 13px; color: var(--ink-3); }
+.quote { margin: 0; padding: 12px 14px; border-radius: 16px; background: var(--paper); font-size: 15px; line-height: 1.45; }
+.kv { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-variant-numeric: tabular-nums; font-size: 15px; }
+.kv dt { color: var(--ink-3); }
+.kv dd { margin: 0; font-weight: 600; }
+.dc-actions { padding: 14px 16px 16px; display: grid; grid-template-columns: 1fr auto auto; gap: 8px; }
+.btn-main { min-height: 50px; border-radius: 16px; background: var(--night); color: var(--on-night); font-weight: 650; font-size: 15px; padding: 0 14px; line-height: 1.15; }
+.btn-main:hover { background: var(--night-deep); }
+.btn-ghost { min-height: 50px; border-radius: 16px; padding: 0 14px; box-shadow: inset 0 0 0 1.5px var(--line); font-weight: 600; font-size: 15px; display: inline-flex; align-items: center; gap: 6px; }
+.btn-ghost:hover { background: var(--night-wash); }
+.btn-ghost .ico { width: 18px; height: 18px; }
+.later-pick { padding: 12px 16px 16px; display: none; gap: 6px; }
+.dcard.picking .later-pick { display: grid; }
+.dcard.picking .dc-actions { display: none; }
+.later-pick p { margin: 0 2px 2px; font-size: 13px; color: var(--ink-3); }
+.lp-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.lp { border-radius: 14px; background: var(--night); color: var(--on-night); padding: 9px 8px; font-size: 13px; line-height: 1.2; text-align: left; }
+.lp b { display: block; font-size: 14px; }
+.lp span { color: var(--on-night-2); font-variant-numeric: tabular-nums; }
+.lp:hover { background: var(--night-deep); }
+.deck-end {
+  position: absolute; inset: 0; border-radius: 30px; background: var(--night); color: var(--on-night);
+  padding: 28px 24px; display: grid; align-content: end; gap: 10px; opacity: 0; transform: scale(.96);
+  transition: opacity .5s var(--ease-set), transform .5s var(--ease-rise); pointer-events: none;
+  overflow: hidden;
+}
+.deck-end.show { opacity: 1; transform: none; pointer-events: auto; }
+.deck-end h2 { margin: 0; font-family: var(--f-display); font-stretch: 62%; font-weight: 400; font-size: 52px; line-height: .95; }
+.deck-end h2 b { color: var(--pop); font-weight: 600; }
+.deck-end p { margin: 0; color: var(--on-night-2); font-size: 15px; max-width: 30ch; }
+.deck-end .moon { position: absolute; top: 34px; right: 30px; width: 64px; height: 64px; border-radius: 50%; background: var(--pop); box-shadow: 0 0 0 14px var(--pop-wash), 0 0 0 30px var(--pop-wash-3); }
+.deck-end .reset { justify-self: start; margin-top: 6px; padding: 10px 14px; border-radius: 14px; box-shadow: inset 0 0 0 1.5px var(--on-night-line); color: var(--on-night); font-size: 14px; }
+
+.dayline { margin: 52px 20px 24px; }
+.dayline h2 { margin: 0 0 4px; font-family: var(--f-display); font-stretch: 100%; font-weight: 700; font-size: 20px; }
+.dayline > p { margin: 0 0 14px; font-size: 14px; color: var(--ink-2); }
+.dl { position: relative; display: grid; gap: 0; padding-left: 0; margin: 0; list-style: none; }
+.dl li { display: grid; grid-template-columns: 54px 18px 1fr; gap: 10px; align-items: start; padding: 0 0 14px; position: relative; }
+.dl li::before { content: ""; position: absolute; left: 72px; top: 14px; bottom: -2px; width: 2px; background: var(--line); }
+.dl li:last-child::before { display: none; }
+.dl time { font-family: var(--f-display); font-stretch: 90%; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; padding-top: 1px; }
+.dl .knot { width: 14px; height: 14px; margin-top: 3px; border-radius: 50%; background: var(--paper); box-shadow: inset 0 0 0 3px var(--night); position: relative; z-index: 1; }
+.dl .knot.sun { box-shadow: inset 0 0 0 3px var(--sun); }
+.dl .knot.moon { background: var(--night); box-shadow: none; }
+.dl .what { font-size: 14.5px; line-height: 1.35; }
+.dl .what small { display: block; color: var(--ink-3); font-size: 12.5px; }
+.dl li.landed { animation: landedRow 1.6s var(--ease-set); border-radius: 10px; }
+.dl .day { grid-column: 1 / -1; font-size: 13px; color: var(--ink-3); padding: 4px 0 10px; }
+
+/* ---------- Templates ---------- */
+.tp-head { padding: 14px 20px 0; display: grid; gap: 6px; }
+.tp-head h1 { margin: 0; font-family: var(--f-display); font-stretch: 100%; font-weight: 800; font-size: 36px; line-height: 1; letter-spacing: -0.015em; }
+.tp-head p { margin: 0; color: var(--ink-2); font-size: 15px; }
+.search { margin: 14px 14px 0; display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 46px; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink-3); }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; color: var(--ink); font-size: 15px; outline: none; }
+.search:focus-within { box-shadow: inset 0 0 0 2px var(--focus); }
+.feature { margin: 16px 14px 0; border-radius: 30px; overflow: hidden; background: var(--card); box-shadow: 0 0 0 1px var(--line), 0 20px 34px -24px var(--night-shadow); }
+.f-top { padding: 18px 18px 14px; display: grid; gap: 6px; }
+.f-top .by { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }
+.f-top .by .avatar { width: 24px; height: 24px; font-size: 11px; background: var(--sun); color: var(--on-sun); }
+.f-top h2 { margin: 0; font-family: var(--f-display); font-stretch: 110%; font-weight: 850; font-size: 28px; line-height: 1; letter-spacing: -0.015em; }
+.f-top p { margin: 0; font-size: 14.5px; color: var(--ink-2); }
+.rhythm { display: grid; }
+.rh { display: grid; grid-template-columns: 58px 1fr; gap: 12px; padding: 12px 18px; align-items: baseline; }
+.rh dt { font-family: var(--f-display); line-height: 1; }
+.rh dd { margin: 0; font-size: 14.5px; line-height: 1.35; }
+.rh.r-now { background: var(--sun); color: var(--on-sun); }
+.rh.r-now dt { font-stretch: 125%; font-weight: 900; font-size: 19px; }
+.rh.r-next { background: var(--dusk); color: var(--ink); }
+.rh.r-next dt { font-stretch: 100%; font-weight: 700; font-size: 18px; }
+.rh.r-later { background: var(--night); color: var(--on-night); }
+.rh.r-later dt { font-stretch: 62%; font-weight: 420; font-size: 21px; }
+.f-foot { padding: 14px 18px 18px; display: grid; gap: 12px; }
+.needs { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.needs dt { color: var(--ink-3); }
+.needs dd { margin: 0; color: var(--ink); font-weight: 550; }
+.f-foot .btn-main { width: 100%; }
+.more-h { margin: 26px 20px 4px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.more-h h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 20px; }
+.legend { display: flex; gap: 10px; font-size: 12px; color: var(--ink-3); }
+.legend span { display: inline-flex; align-items: center; gap: 4px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.lg-now { background: var(--sun); } .lg-next { background: var(--dusk); box-shadow: inset 0 0 0 1px var(--line); } .lg-later { background: var(--night); }
+.tlist { display: grid; padding: 0 20px; }
+.trow { display: grid; grid-template-columns: 40px minmax(0,1fr); gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); text-align: left; }
+.trow:first-child { border-top: 0; }
+.trow .glyph { background: var(--night); color: var(--on-night); }
+.t-main { min-width: 0; display: grid; gap: 4px; }
+.t-name { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.t-name b { font-family: var(--f-display); font-stretch: 100%; font-weight: 700; font-size: 16px; }
+.t-name span { font-size: 12.5px; color: var(--ink-3); white-space: nowrap; }
+.t-line { font-size: 13.5px; color: var(--ink-2); line-height: 1.35; }
+.rbar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; gap: 2px; margin-top: 4px; }
+.rbar i { display: block; height: 100%; }
+.rbar .a { background: var(--sun); } .rbar .b { background: var(--dusk); box-shadow: inset 0 0 0 1px var(--line); } .rbar .c { background: var(--night); }
+.share { margin: 18px 14px 24px; padding: 18px; border-radius: 26px; background: var(--night); color: var(--on-night); display: grid; gap: 10px; }
+.share h2 { margin: 0; font-family: var(--f-display); font-stretch: 80%; font-weight: 560; font-size: 24px; line-height: 1.05; }
+.share p { margin: 0; color: var(--on-night-2); font-size: 14px; }
+.share .btn-share { justify-self: start; min-height: 44px; padding: 0 16px; border-radius: 14px; background: var(--sun); color: var(--on-sun); font-weight: 650; font-size: 15px; }
+.share .btn-share:hover { background: var(--sun-press); }
+.trow:hover b { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- direction card ---------- */
+.dir { margin-top: 64px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.dir-name { background: var(--night); color: var(--on-night); border-radius: 30px; padding: 30px; display: grid; gap: 16px; }
+.dir-name h2 { margin: 0; font-family: var(--f-display); font-size: 44px; line-height: .95; letter-spacing: -0.02em; }
+.dir-name h2 .a { font-stretch: 125%; font-weight: 900; color: var(--sun); }
+.dir-name h2 .b { font-stretch: 100%; font-weight: 700; }
+.dir-name h2 .c { font-stretch: 62%; font-weight: 400; }
+.dir-name p { margin: 0; color: var(--on-night-2); max-width: 52ch; }
+.dir-name p strong { color: var(--on-night); font-weight: 600; }
+.swatches { display: grid; gap: 10px; }
+.sw { display: grid; grid-template-columns: 64px 1fr; gap: 14px; align-items: center; }
+.sw i { height: 64px; border-radius: 18px; display: block; }
+.sw .s1 { background: var(--sun); } .sw .s2 { background: var(--night); box-shadow: inset 0 0 0 1px var(--line); } .sw .s3 { background: var(--pop); }
+.sw b { display: block; font-family: var(--f-display); font-weight: 700; font-size: 17px; }
+.sw b code { font-family: var(--f-body); font-weight: 500; font-size: 13px; color: var(--ink-3); margin-left: 6px; }
+.sw span { font-size: 14.5px; color: var(--ink-2); }
+.dir-notes { display: grid; gap: 14px; }
+.note h3 { margin: 0 0 4px; font-family: var(--f-display); font-weight: 700; font-size: 17px; }
+.note p { margin: 0; font-size: 15px; color: var(--ink-2); max-width: 62ch; }
+.note.risk { padding: 16px 18px; border-radius: 20px; box-shadow: inset 0 0 0 1.5px var(--sun); }
+
+@media (max-width: 900px) { .dir { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 430px) {
+  .wrap { padding-block: 24px 48px; }
+  .shot { width: 100%; }
+  .phone { border-radius: 36px; }
+  .dir-name { padding: 22px; }
+  .dir-name h2 { font-size: 34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  .bar::after { display: none; }
+}
+</style>
+
+<!-- Inline icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-cake" viewBox="0 0 24 24"><path d="M4 20h16M5 20v-7h14v7M5 16c2.3 1.4 4.6 1.4 7 0s4.7-1.4 7 0M12 13V9.5M12 4.5c.9 1 1.2 1.9.8 2.6a.9.9 0 0 1-1.6 0c-.4-.7-.1-1.6.8-2.6z"/></symbol>
+    <symbol id="i-house" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-6h4v6"/></symbol>
+    <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3"/></symbol>
+    <symbol id="i-case" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5h6v2M3 13h18"/></symbol>
+    <symbol id="i-plane" viewBox="0 0 24 24"><path d="M3 11.5 21 4l-7 17-3-7.5zM11 13.5 21 4"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="4"/><path d="M10.5 9.2 15 12l-4.5 2.8z"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2.5 4L17 12H5"/></symbol>
+    <symbol id="i-coins" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.1 4.1 0 0 1 12 7.4a4.1 4.1 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v15H7.5A2.5 2.5 0 0 0 5 20.5zM5 20.5A2.5 2.5 0 0 0 7.5 21H19"/></symbol>
+    <symbol id="i-laptop" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 19.5h20"/></symbol>
+    <symbol id="i-tray" viewBox="0 0 24 24"><path d="M3 13.5 6 5h12l3 8.5V19H3zM3 13.5h5l1.5 2.5h5l1.5-2.5h5"/></symbol>
+    <symbol id="i-sink" viewBox="0 0 24 24"><path d="M12 3v10M8 9.5l4 4 4-4M4 17.5h16M8.5 21h7"/></symbol>
+    <symbol id="i-rise" viewBox="0 0 24 24"><path d="M12 15V4M8 7.5l4-4 4 4M4 18.5h16M8.5 21.5h7"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/></symbol>
+    <symbol id="i-sunrise" viewBox="0 0 24 24"><path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 4v3M4.9 9.9l1.6 1.6M19.1 9.9l-1.6 1.6"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></symbol>
+    <symbol id="i-today" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="3"/><path d="M9 9h6M9 13h6M9 17h3"/></symbol>
+    <symbol id="i-spaces" viewBox="0 0 24 24"><path d="M3 8.5h18M3 14h18"/><path d="M6 19.5h12"/><circle cx="12" cy="4" r="1.2"/></symbol>
+    <symbol id="i-tpl" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M4 9.5h16M4 14.5h16"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 12.5V20h14v-7.5"/></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="2"/><path d="M3 9h18M12 9v11M12 9S10.5 4 8 5s.5 4 4 4zM12 9s1.5-5 4-4-.5 4-4 4z"/></symbol>
+    <symbol id="i-sunset" viewBox="0 0 26 26"><circle cx="13" cy="15" r="8" fill="currentColor" stroke="none"/></symbol>
+  </defs>
+</svg>
+
+<main class="wrap">
+  <header class="intro">
+    <h1><span class="w1">Now,</span> <span class="w2">Next,</span> <span class="w3">Later</span></h1>
+    <p>One direction for Later. Time is the organising idea. Flick anything down to rest it, and it comes back up when you said it would.</p>
+  </header>
+
+  <div class="stage">
+    <!-- ============ 1. SPACES ============ -->
+    <figure class="shot">
+      <div class="phone" id="ph-spaces">
+        <div class="scroll" id="sp-scroll">
+          <div class="status">07:48</div>
+          <header class="sp-head">
+            <div class="wm-row">
+              <span class="wm-mark">
+                <svg class="sunset" viewBox="0 0 26 26" aria-hidden="true"><defs><clipPath id="hz"><rect x="0" y="0" width="26" height="17"/></clipPath></defs><circle cx="13" cy="17" r="9" fill="var(--sun)" clip-path="url(#hz)"/><rect x="2" y="19" width="22" height="2.6" rx="1.3" fill="var(--night)"/></svg>
+                <span class="wm" aria-label="later"><span>l</span><span>a</span><span>t</span><span>e</span><span>r</span></span>
+              </span>
+              <button class="avatar" aria-label="Your account">SR</button>
+            </div>
+            <div class="sp-date">
+              <h1 class="vh">Spaces</h1>
+              <p id="sp-counts"></p>
+            </div>
+          </header>
+
+          <section class="band band-now" aria-labelledby="h-now">
+            <div class="band-head"><h2 class="h-now" id="h-now">Now</h2><p>needs you</p></div>
+            <div class="now-grid" id="now-grid"></div>
+          </section>
+
+          <section class="band band-next" aria-labelledby="h-next">
+            <div class="band-head"><h2 class="h-next" id="h-next">Next</h2><p>agents on it, and when it reaches you</p></div>
+            <div class="next-list" id="next-list"></div>
+          </section>
+
+          <section class="band band-later" aria-labelledby="h-later">
+            <div class="band-head"><h2 class="h-later" id="h-later">Later</h2><p>resting, and what wakes it</p></div>
+            <div class="later-list" id="later-list"></div>
+            <p class="later-foot"><svg class="ico" aria-hidden="true"><use href="#i-sink"/></svg>Pull any Later handle down to rest a Space here.</p>
+          </section>
+        </div>
+
+        <button class="dock" id="dock" aria-label="Show the Later band"><span class="h-later" aria-hidden="true">Later</span><span class="dock-txt" id="dock-txt"></span><span class="dock-glyphs" id="dock-glyphs" aria-hidden="true"></span></button>
+        <nav class="tabbar" aria-label="Main">
+          <a class="tab" href="#today"><svg class="ico" aria-hidden="true"><use href="#i-today"/></svg>Today</a>
+          <a class="tab" href="#spaces" aria-current="page"><svg class="ico" aria-hidden="true"><use href="#i-spaces"/></svg>Spaces</a>
+          <a class="tab" href="#templates"><svg class="ico" aria-hidden="true"><use href="#i-tpl"/></svg>Templates</a>
+          <button class="capture" aria-label="Capture something"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg></button>
+        </nav>
+
+        <div class="scrim" id="scrim" hidden></div>
+        <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-h" hidden>
+          <div class="grabber"></div>
+          <h3 id="sheet-h">Back when?</h3>
+          <p class="sub" id="sheet-sub"></p>
+          <div class="opts" id="opts"></div>
+          <button class="sheet-cancel" id="sheet-cancel">Keep it here</button>
+        </div>
+      </div>
+      <figcaption><strong>Spaces.</strong> Day to night. Tap an action on an orange tile, or pull its Later handle down and pick a return time. Try the 15 second option.</figcaption>
+    </figure>
+
+    <!-- ============ 2. TODAY ============ -->
+    <figure class="shot" id="today">
+      <div class="phone" id="ph-today">
+        <div class="scroll">
+          <div class="status">07:48</div>
+          <header class="td-head">
+            <h1>Today</h1>
+            <p id="td-sub"><b>5 cards</b>, about 6 minutes. Then nothing until 14:00.</p>
+            <div class="deckbar" id="deckbar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          </header>
+          <div class="deck" id="deck" aria-live="polite"></div>
+
+          <section class="dayline" aria-labelledby="dl-h">
+            <h2 id="dl-h">Coming up to you</h2>
+            <p>What the agents will bring back, and when.</p>
+            <ol class="dl" id="dl"></ol>
+          </section>
+        </div>
+        <nav class="tabbar" aria-label="Main">
+          <a class="tab" href="#today" aria-current="page"><svg class="ico" aria-hidden="true"><use href="#i-today"/></svg>Today</a>
+          <a class="tab" href="#spaces"><svg class="ico" aria-hidden="true"><use href="#i-spaces"/></svg>Spaces</a>
+          <a class="tab" href="#templates"><svg class="ico" aria-hidden="true"><use href="#i-tpl"/></svg>Templates</a>
+          <button class="capture" aria-label="Capture something"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg></button>
+        </nav>
+      </div>
+      <figcaption><strong>Today.</strong> The Now band, dealt as a finite deck. Later on a card sets it into the day below at the time you pick.</figcaption>
+    </figure>
+
+    <!-- ============ 3. TEMPLATES ============ -->
+    <figure class="shot" id="templates">
+      <div class="phone" id="ph-tpl">
+        <div class="scroll">
+          <div class="status">07:48</div>
+          <header class="tp-head">
+            <h1>Templates</h1>
+            <p>Start a Space from someone else's setup. Each one is described by its rhythm.</p>
+          </header>
+          <label class="search" for="tp-search"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><input id="tp-search" type="search" placeholder="Moving, trips, a big birthday"></label>
+
+          <article class="feature" aria-labelledby="f-h">
+            <div class="f-top">
+              <span class="by"><span class="avatar" aria-hidden="true">PR</span>Priya Raman's setup, used for her move to Leeds</span>
+              <h2 id="f-h">Moving house</h2>
+              <p>From offer accepted to the first night in.</p>
+            </div>
+            <dl class="rhythm">
+              <div class="rh r-now"><dt>Now</dt><dd>One card each Monday with that week's decisions: quotes, dates, sign-offs.</dd></div>
+              <div class="rh r-next"><dt>Next</dt><dd>Chases the conveyancer, surveyor and three removal firms, and tells you when each replies.</dd></div>
+              <div class="rh r-later"><dt>Later</dt><dd>Keeps the meter readings and the change-of-address list for moving day.</dd></div>
+            </dl>
+            <div class="f-foot">
+              <dl class="needs">
+                <dt>Reads</dt><dd>Gmail (read and draft), Calendar</dd>
+                <dt>Spend cap</dt><dd>$4.00 a month, on your key</dd>
+                <dt>Starts</dt><dd>Paused, until you switch each routine on</dd>
+              </dl>
+              <button class="btn-main">Start a Space from this</button>
+            </div>
+          </article>
+
+          <div class="more-h">
+            <h2>More rhythms</h2>
+            <span class="legend" aria-hidden="true"><span><i class="lg-now"></i>Now</span><span><i class="lg-next"></i>Next</span><span><i class="lg-later"></i>Later</span></span>
+          </div>
+          <div class="tlist" id="tlist"></div>
+
+          <section class="share" aria-labelledby="sh-h">
+            <h2 id="sh-h">Share Mum's 70th as a template</h2>
+            <p>Names, addresses and amounts are stripped first. You see exactly what leaves before anything does.</p>
+            <button class="btn-share">Preview what's shared</button>
+          </section>
+        </div>
+        <nav class="tabbar" aria-label="Main">
+          <a class="tab" href="#today"><svg class="ico" aria-hidden="true"><use href="#i-today"/></svg>Today</a>
+          <a class="tab" href="#spaces"><svg class="ico" aria-hidden="true"><use href="#i-spaces"/></svg>Spaces</a>
+          <a class="tab" href="#templates" aria-current="page"><svg class="ico" aria-hidden="true"><use href="#i-tpl"/></svg>Templates</a>
+          <button class="capture" aria-label="Capture something"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg></button>
+        </nav>
+      </div>
+      <figcaption><strong>Templates.</strong> What it brings you now, what it works on next, what it keeps for later. The bar is the shape of its year.</figcaption>
+    </figure>
+  </div>
+
+  <!-- ============ DIRECTION CARD ============ -->
+  <section class="dir" aria-labelledby="dir-h">
+    <div class="dir-name">
+      <h2 id="dir-h"><span class="a">Now,</span> <span class="b">Next,</span> <span class="c">Later</span></h2>
+      <p><strong>The one idea.</strong> The app is a horizon. Day at the top, night at the bottom. You set a thing down and it sinks into Later; it rises again at the time you chose. "Later" is the verb the whole app uses.</p>
+      <p><strong>Type.</strong> Archivo, on its width axis. Now is set wide and heavy, Next at normal width, Later narrow and light, so distance in time is drawn as width; the wordmark recedes letter by letter. Instrument Sans carries everything you read.</p>
+      <p><strong>Spaces apart.</strong> Colour says when, never which. A Space is told by its glyph and its shape: square for a project, round for an area, stacked for a list.</p>
+    </div>
+    <div class="dir-notes">
+      <div class="swatches">
+        <div class="sw"><i class="s1"></i><div><b>Daybreak <code>#FF5B24</code></b><span>Whatever needs you. If it is orange, it is waiting on your decision.</span></div></div>
+        <div class="sw"><i class="s2"></i><div><b>Midnight <code>#1B2550</code></b><span>Whatever the agents hold: work under way, things resting, and the button that hands a job over. Ink and paper are tints of the two.</span></div></div>
+        <div class="sw"><i class="s3"></i><div><b>Moonlight <code>#D7F64A</code></b><span>Only the moment something changes hands: it lands in Later, comes back on time, or gets done. Never a resting state.</span></div></div>
+      </div>
+      <div class="note risk">
+        <h3>What is risky</h3>
+        <p>A wall of orange at the top can read as alarm on a heavy day, so the Now band needs a hard cap. Forcing every Space into one of three bands hides mixed states, such as a Space that is both waiting and urgent. Width-axis type gets fiddly at small sizes, and the dusk band is the weakest colour field of the three.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ico = (id, cls = 'ico') => `<svg class="${cls}" aria-hidden="true"><use href="#i-${id}"/></svg>`;
+  const glyph = (s, extra = '') => `<span class="glyph shape-${s.kind} ${extra}" aria-hidden="true">${ico(s.glyph)}</span>`;
+
+  /* ---------------- Spaces data ---------------- */
+  const S = [
+    { id: 'mum', name: "Mum's 70th", kind: 'project', glyph: 'cake', band: 'now', agent: 'Wren', at: '07:31',
+      ask: 'Approve the venue deposit', args: [['To', 'The Old Mill Ltd'], ['Amount', '£250.00'], ['Reference', 'MUM70-DEP']],
+      act: 'Approve £250.00', done: 'Paid. Receipt filed.',
+      next: { status: 'Confirming 14 March with The Old Mill', eta: '14:00', day: 'Today', p: .45 } },
+    { id: 'house', name: 'House move', kind: 'project', glyph: 'house', band: 'now', agent: 'Scout', at: '07:40',
+      ask: 'Loft access for the surveyor, Tuesday 10:00?', act: 'Queue a yes', done: 'Reply queued.',
+      next: { status: 'Yes queued to Dave Ellis. You can still stop it', eta: '09:00', day: 'Today', p: .85 } },
+    { id: 'tax', name: 'Taxes 2026', kind: 'project', glyph: 'receipt', band: 'now', agent: 'Ledger', at: '06:55',
+      ask: '23 expenses to sort, yes or no', act: 'Sort 23', done: 'All 23 sorted.',
+      next: { status: 'Drafting your self-assessment summary', eta: 'Mon', day: '17 Nov', p: .3 } },
+    { id: 'job', name: 'Job search', kind: 'area', glyph: 'case', band: 'now', agent: 'Atlas', at: '07:02',
+      ask: 'Your cover letter for Halden & Co is ready', act: 'Read the draft', done: 'Marked as read.',
+      next: { status: 'Holding the letter until you press send', eta: 'Fri', day: 'deadline', p: .9 } },
+
+    { id: 'japan', name: 'Japan in April', kind: 'project', glyph: 'plane', band: 'next', agent: 'Atlas', at: '07:12',
+      next: { status: 'Watching 3 fares, London to Tokyo. Best so far £742', eta: 'Fri', day: '09:00', p: null },
+      ask: 'Fares dipped: £742 return, 3 to 17 April', act: 'Hold for 48 hours', done: 'Held until Saturday.' },
+    { id: 'yt', name: 'YouTube channel', kind: 'area', glyph: 'play', band: 'next', agent: 'Reel', at: '07:20',
+      next: { status: 'Writing 3 title options for episode 14', eta: '18:00', day: 'Today', p: .6 },
+      ask: 'Pick a title for episode 14', act: 'Pick one of 3', done: 'Title set.' },
+    { id: 'launch', name: 'Side project launch', kind: 'project', glyph: 'flag', band: 'next', agent: 'Scout', at: '06:40',
+      next: { status: 'Checklist 14 of 20. Press list is next', eta: 'Sat', day: '10:00', p: .7 },
+      ask: 'Launch is in 9 days. 6 checklist items left', act: 'See the 6', done: 'Checklist opened.' },
+    { id: 'money', name: 'Finances', kind: 'area', glyph: 'coins', band: 'next', agent: 'Ledger', at: '07:05',
+      next: { status: 'Reconciling October. 41 of 58 matched', eta: 'Sun', day: '10:00', p: .71 },
+      ask: '17 October payments did not match', act: 'Check 17', done: 'Checked.' },
+
+    { id: 'health', name: 'Health', kind: 'area', glyph: 'heart', band: 'later', wake: 'Wakes 6 Jan for the dentist check-up',
+      ask: '3 dentist slots free in January', act: 'Pick a slot', done: 'Booked request sent.', agent: 'Wren', at: 'now',
+      next: { status: 'Asking the practice to hold your slot', eta: '16:00', day: 'Today', p: .2 } },
+    { id: 'read', name: 'Reading list', kind: 'list', glyph: 'book', band: 'later', wake: 'Wakes on your next free Sunday afternoon',
+      ask: '3 picks for November, all under 300 pages', act: 'Choose one', done: 'Chosen.', agent: 'Reel', at: 'now',
+      next: { status: 'Finding the library copy near you', eta: 'Sat', day: '11:00', p: .3 } },
+    { id: 'work', name: 'Work', kind: 'area', glyph: 'laptop', band: 'later', wake: 'You are off. Wakes Monday 08:30',
+      ask: '2 things to know before Monday', act: 'Read them', done: 'Read.', agent: 'Atlas', at: 'now',
+      next: { status: 'Gathering notes for your 1:1', eta: 'Mon', day: '08:30', p: .4 } },
+    { id: 'inbox', name: 'Inbox', kind: 'list', glyph: 'tray', band: 'later', wake: 'Wakes if Mum, the bank or the school writes',
+      ask: '6 captures to file into Spaces', act: 'File all 6', done: 'Filed.', agent: 'Scout', at: 'now',
+      next: { status: 'Filing 6 captures', eta: '08:00', day: 'Today', p: .5 } },
+  ];
+  const byId = id => S.find(s => s.id === id);
+  const order = S.map(s => s.id);           // stable position within each band
+  const inBand = b => order.map(byId).filter(s => s.band === b);
+
+  const RETURNS = [
+    { label: 'This evening', when: '19:00', icon: 'moon', wake: 'Back tonight at 19:00' },
+    { label: 'Tomorrow morning', when: 'Fri 08:00', icon: 'sunrise', wake: 'Back Friday 08:00' },
+    { label: 'Saturday, after coffee', when: 'Sat 10:00', icon: 'cal', wake: 'Back Saturday 10:00' },
+    { label: 'When something changes', when: 'a reply lands', icon: 'bolt', wake: 'Wakes when a reply lands' },
+    { label: 'In 15 seconds', when: 'try it', icon: 'rise', wake: null, try: true },
+  ];
+
+  const nowGrid = document.getElementById('now-grid');
+  const nextList = document.getElementById('next-list');
+  const laterList = document.getElementById('later-list');
+  const scroller = document.getElementById('sp-scroll');
+  const phone = document.getElementById('ph-spaces');
+
+  function tileHTML(s, i, total) {
+    const span = i === 0 || (i === total - 1 && (total - 1) % 2 === 1) ? ' span2' : '';
+    const args = s.args && span ? `<dl class="tile-args">${s.args.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` : '';
+    const meta = s.meta && span ? `<p class="tile-meta">${s.meta}</p>` : '';
+    const who = s.backNote ? `<small class="back-note">${ico('rise')}${s.backNote}</small>` : `<small>${s.agent}, ${s.at === 'now' ? 'just now' : s.at}</small>`;
+    const foot = s.isDone
+      ? `<div class="done-line">${ico('check')}${s.done}</div>`
+      : `<button class="act" data-act="${s.id}">${s.act}</button>`;
+    return `<article class="tile${span}" data-id="${s.id}">
+      <div class="tile-top">${glyph(s)}<div class="tile-name">${s.name}${who}</div>
+      <button class="sink" data-sink="${s.id}" aria-label="Move ${s.name} to Later">${ico('sink')}<span>Later</span></button></div>
+      <p class="tile-ask">${s.ask}</p>${args}${meta}${foot}</article>`;
+  }
+  function nextHTML(s) {
+    const n = s.next;
+    const bar = n.p != null ? `<span class="bar"><b style="transform:scaleX(${n.p})"></b></span>` : '';
+    return `<div class="nrow" data-id="${s.id}">${glyph(s)}
+      <div class="n-main"><span class="n-name">${s.name}</span><span class="n-status">${n.status}. <i>as of ${s.at === 'now' ? '07:48' : s.at}</i></span>${bar}</div>
+      <div class="n-when"><small>reaches you</small><strong>${n.eta}</strong><span>${n.day}</span></div>
+      <button class="mini-sink" data-sink="${s.id}" aria-label="Move ${s.name} to Later">${ico('sink')}</button></div>`;
+  }
+  function laterHTML(s) {
+    const soon = s.backAt ? ' soon' : '';
+    const wake = s.backAt ? `Back in ${Math.max(0, Math.ceil((s.backAt - Date.now()) / 1000))} seconds` : s.wake;
+    return `<div class="lrow" data-id="${s.id}">${glyph(s)}
+      <div><div class="l-name">${s.name}</div><div class="l-wake${soon}" data-wake="${s.id}">${wake}</div></div>
+      <button class="rise" data-rise="${s.id}" aria-label="Bring ${s.name} back now">${ico('rise')}</button></div>`;
+  }
+  function render() {
+    const now = inBand('now'), next = inBand('next'), later = inBand('later');
+    nowGrid.innerHTML = now.length ? now.map((s, i) => tileHTML(s, i, now.length)).join('')
+      : `<div class="empty-now">Nothing needs you. The agents have the rest.</div>`;
+    nextList.innerHTML = next.map(nextHTML).join('');
+    laterList.innerHTML = later.map(laterHTML).join('');
+    const soonest = later.find(s => s.backAt);
+    document.getElementById('dock-txt').innerHTML = `<b>${later.length} resting</b><br>${soonest ? 'one back in seconds' : 'next back Friday 08:00'}`;
+    document.getElementById('dock-glyphs').innerHTML = later.slice().reverse().slice(0, 5).map(s => glyph(s)).join('');
+    document.getElementById('sp-counts').innerHTML =
+      `Thursday 12 November. <b>${now.length} need you</b>, ${next.length} on the way, ${later.length} resting.`;
+  }
+  render();
+
+  /* ---------------- travel: the signature motion ---------------- */
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  function rectIn(el) {
+    const a = el.getBoundingClientRect(), p = phone.getBoundingClientRect();
+    return { x: a.left - p.left, y: a.top - p.top, w: a.width, h: a.height };
+  }
+  function scrollToEl(el, align = 'center') {
+    const sr = scroller.getBoundingClientRect(), er = el.getBoundingClientRect();
+    let top = scroller.scrollTop + (er.top - sr.top);
+    top -= align === 'center' ? (sr.height - er.height) / 2 : 90;
+    scroller.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' });
+  }
+  let busy = false;
+  const dock = document.getElementById('dock');
+  function visible(el) {
+    const sr = scroller.getBoundingClientRect(), er = el.getBoundingClientRect();
+    const bottom = sr.bottom - (dock.classList.contains('away') ? 0 : 66);
+    return er.bottom > sr.top + 10 && er.top < bottom - 10;
+  }
+  const laterBand = document.querySelector('.band-later');
+  new IntersectionObserver(([en]) => dock.classList.toggle('away', en.isIntersecting),
+    { root: scroller, rootMargin: '0px 0px -40px 0px' }).observe(laterBand);
+  dock.addEventListener('click', () => scrollToEl(laterBand, 'top'));
+  async function travel(id, mutate, { dir = 'down' } = {}) {
+    if (busy) return; busy = true;
+    const fromEl = phone.querySelector(`[data-id="${id}"]`);
+    const r0 = fromEl ? rectIn(fromEl) : null;
+    let clone = null;
+    if (fromEl && !reduce) {
+      clone = fromEl.cloneNode(true);
+      clone.classList.add('flyer'); clone.classList.remove('dragging', 'snap', 'landed');
+      clone.style.left = r0.x + 'px'; clone.style.top = r0.y + 'px';
+      clone.style.width = r0.w + 'px'; clone.style.height = r0.h + 'px';
+      clone.style.transform = fromEl.style.transform || 'none';
+      phone.appendChild(clone);
+    }
+    const fromVisible = fromEl && visible(fromEl);
+    mutate(); render();
+    const toEl = phone.querySelector(`[data-id="${id}"]`);
+    if (!toEl) { clone && clone.remove(); busy = false; return; }
+    const intoDock = dir === 'down' && byId(id).band === 'later' && !visible(toEl) && !dock.classList.contains('away');
+    if (clone && intoDock) {
+      // set it down into the night horizon without leaving the day
+      const r1 = rectIn(dock);
+      const a = clone.animate([
+        { transform: clone.style.transform || 'none', opacity: 1 },
+        { transform: 'translateY(-8px) scale(.97) rotate(-1.5deg)', opacity: 1, offset: .18 },
+        { transform: `translate(${r1.x + r1.w - 90 - r0.x}px, ${r1.y + 10 - r0.y}px) scale(${40 / r0.w}, ${40 / r0.h})`, opacity: .2 }
+      ], { duration: 760, easing: 'cubic-bezier(.55,0,.3,1)', fill: 'forwards' });
+      await a.finished.catch(() => {});
+      clone.remove();
+      dock.classList.remove('landed'); void dock.offsetWidth; dock.classList.add('landed');
+      setTimeout(() => dock.classList.remove('landed'), 1500);
+      busy = false; return;
+    }
+    if (dir === 'up' && !fromVisible) {
+      clone && clone.remove();
+      scrollToEl(toEl, 'top');
+      await wait(reduce ? 0 : 300);
+      toEl.classList.add('rising');
+      setTimeout(() => toEl.classList.remove('rising'), 800);
+      toEl.classList.add('landed'); setTimeout(() => toEl.classList.remove('landed'), 1700);
+      busy = false; return;
+    }
+    if (clone) {
+      toEl.classList.add('ghost');
+      // lift / tip before the fall
+      clone.animate([{ transform: clone.style.transform }, { transform: dir === 'down' ? 'translateY(-6px) scale(.97) rotate(-1.5deg)' : 'translateY(6px) scale(.97)' }],
+        { duration: 160, easing: 'ease-out', fill: 'forwards' });
+      await wait(120);
+      scrollToEl(toEl, dir === 'down' ? 'center' : 'top');
+      await wait(520);
+      const r1 = rectIn(toEl);
+      const dx = r1.x - r0.x, dy = r1.y - r0.y, sx = r1.w / r0.w, sy = r1.h / r0.h;
+      const a = clone.animate([
+        { transform: 'translateY(-6px) scale(.97)', opacity: 1 },
+        { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, opacity: .15 }
+      ], { duration: 560, easing: dir === 'down' ? 'cubic-bezier(.55,0,.3,1)' : 'cubic-bezier(.2,.9,.3,1.05)', fill: 'forwards' });
+      await a.finished.catch(() => {});
+      clone.remove();
+      toEl.classList.remove('ghost');
+    } else {
+      scrollToEl(toEl, dir === 'down' ? 'center' : 'top');
+    }
+    toEl.classList.add('landed');
+    setTimeout(() => toEl.classList.remove('landed'), 1700);
+    busy = false;
+  }
+
+  /* ---------------- sheet ---------------- */
+  const sheet = document.getElementById('sheet'), scrim = document.getElementById('scrim');
+  let sheetFor = null, lastFocus = null;
+  function openSheet(id) {
+    const s = byId(id); sheetFor = id; lastFocus = document.activeElement;
+    document.getElementById('sheet-sub').textContent = `${s.name} rests in Later and comes back up on its own.`;
+    document.getElementById('opts').innerHTML = RETURNS.map((r, i) =>
+      `<button class="opt${r.try ? ' try' : ''}" data-ret="${i}">${ico(r.icon)}<span>${r.label}</span><em>${r.when}</em></button>`).join('');
+    sheet.hidden = false; scrim.hidden = false;
+    requestAnimationFrame(() => { sheet.classList.add('open'); scrim.classList.add('open'); sheet.querySelector('.opt').focus({ preventScroll: true }); });
+  }
+  function closeSheet() {
+    sheet.classList.remove('open'); scrim.classList.remove('open');
+    setTimeout(() => { sheet.hidden = true; scrim.hidden = true; }, reduce ? 0 : 340);
+    if (lastFocus && lastFocus.isConnected) lastFocus.focus({ preventScroll: true });
+    snapBack();
+  }
+  scrim.addEventListener('click', closeSheet);
+  document.getElementById('sheet-cancel').addEventListener('click', closeSheet);
+  sheet.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+  document.getElementById('opts').addEventListener('click', async e => {
+    const b = e.target.closest('[data-ret]'); if (!b) return;
+    const r = RETURNS[+b.dataset.ret], id = sheetFor;
+    sheet.classList.remove('open'); scrim.classList.remove('open');
+    setTimeout(() => { sheet.hidden = true; scrim.hidden = true; }, 340);
+    await wait(reduce ? 0 : 220);
+    setToLater(id, r);
+  });
+
+  function setToLater(id, r) {
+    const s = byId(id);
+    travel(id, () => {
+      s.returnTo = s.band === 'next' ? 'next' : 'now';
+      s.band = 'later'; s.isDone = false; s.backNote = null;
+      if (r.try) { s.backAt = Date.now() + 15000; s.wake = 'Back in 15 seconds'; }
+      else { s.backAt = null; s.wake = r.wake; }
+    });
+  }
+  function bringBack(id, onTime = false) {
+    const s = byId(id);
+    const to = s.returnTo || 'now';
+    travel(id, () => {
+      s.band = to; s.backAt = null;
+      if (to === 'now') { s.backNote = onTime ? 'Back, as promised' : 'Back from Later'; s.at = 'now'; }
+    }, { dir: 'up' });
+  }
+  setInterval(() => {
+    S.forEach(s => {
+      if (s.band !== 'later' || !s.backAt) return;
+      const left = Math.ceil((s.backAt - Date.now()) / 1000);
+      const el = laterList.querySelector(`[data-wake="${s.id}"]`);
+      if (left <= 0) { if (!busy) bringBack(s.id, true); }
+      else if (el) el.textContent = `Back in ${left} second${left === 1 ? '' : 's'}`;
+    });
+  }, 500);
+
+  /* ---------------- actions ---------------- */
+  phone.addEventListener('click', async e => {
+    const act = e.target.closest('[data-act]');
+    const sink = e.target.closest('[data-sink]');
+    const rise = e.target.closest('[data-rise]');
+    if (act) {
+      if (busy) return;
+      const s = byId(act.dataset.act);
+      s.isDone = true; s.backNote = null; render();
+      const t = nowGrid.querySelector(`[data-id="${s.id}"]`);
+      t && t.classList.add('landed');
+      await wait(reduce ? 300 : 1000);
+      travel(s.id, () => { s.band = 'next'; s.isDone = false; s.at = '07:48'; });
+    } else if (sink) {
+      if (dragMoved) { dragMoved = false; return; }
+      openSheet(sink.dataset.sink);
+    } else if (rise) {
+      bringBack(rise.dataset.rise);
+    }
+  });
+
+  /* ---------------- pull-down gesture on the Later handle (and on tiles with a mouse) ---------------- */
+  let drag = null, dragMoved = false;
+  function snapBack() {
+    phone.querySelectorAll('.tile, .nrow').forEach(t => {
+      if (!t.style.transform) return;
+      t.classList.add('snap'); t.style.transform = '';
+      setTimeout(() => t.classList.remove('snap'), 320);
+    });
+  }
+  phone.addEventListener('pointerdown', e => {
+    const handle = e.target.closest('[data-sink]');
+    const tile = e.target.closest('.tile');
+    if (!handle && !(tile && e.pointerType === 'mouse' && !e.target.closest('button'))) return;
+    const el = (handle && handle.closest('.tile, .nrow')) || tile;
+    if (!el) return;
+    drag = { el, id: el.dataset.id, y0: e.clientY, x0: e.clientX, dy: 0, pid: e.pointerId };
+    dragMoved = false;
+  });
+  phone.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.pid) return;
+    const dy = e.clientY - drag.y0;
+    if (!dragMoved && Math.abs(dy) < 8) return;
+    if (!dragMoved) { dragMoved = true; drag.el.classList.add('dragging'); try { drag.el.setPointerCapture(e.pointerId); } catch (_) {} }
+    drag.dy = Math.max(0, dy);
+    const k = drag.dy * .55;
+    drag.el.style.transform = `translateY(${k}px) rotate(${Math.min(4, k / 30)}deg) scale(${1 - Math.min(.06, k / 900)})`;
+  });
+  const endDrag = e => {
+    if (!drag || (e && e.pointerId !== drag.pid)) return;
+    const d = drag; drag = null; d.el.classList.remove('dragging');
+    if (dragMoved && d.dy > 70) openSheet(d.id);
+    else if (dragMoved) snapBack();
+    setTimeout(() => { dragMoved = false; }, 0);
+  };
+  phone.addEventListener('pointerup', endDrag);
+  phone.addEventListener('pointercancel', endDrag);
+  phone.addEventListener('keydown', e => {
+    // keyboard equal citizen: L on a focused tile button sets it to Later
+    if ((e.key === 'l' || e.key === 'L') && e.target.closest('.tile, .nrow')) openSheet(e.target.closest('.tile, .nrow').dataset.id);
+  });
+
+  /* ---------------- Today deck ---------------- */
+  const CARDS = [
+    { space: 'house', type: 'Needs a reply', title: 'Can Dave see the loft on Tuesday at 10?',
+      body: `<span class="lbl">Scout's draft, in your voice</span><p class="quote">Hi Dave, Tuesday at 10 works. The hatch is in the back bedroom and I'll leave the ladder out. Thanks, Sam</p><dl class="kv"><dt>To</dt><dd>Dave Ellis, Ellis Surveying</dd></dl>`,
+      main: 'Queue reply to Dave' },
+    { space: 'mum', type: 'Approval', title: 'Pay the venue deposit',
+      body: `<span class="lbl">Exactly what will be paid</span><dl class="kv"><dt>To</dt><dd>The Old Mill Ltd</dd><dt>Amount</dt><dd>£250.00</dd><dt>Reference</dt><dd>MUM70-DEP</dd><dt>From</dt><dd>Joint account ending 4471</dd></dl><span class="lbl">The hold on 14 March expires Friday 17:00.</span>`,
+      main: 'Approve £250.00' },
+    { space: 'japan', type: 'Digest', held: true, title: 'Fares to Tokyo dipped overnight',
+      body: `<dl class="kv"><dt>Best</dt><dd>£742 return, 3 to 17 April</dd><dt>Was</dt><dd>£806 on Monday</dd><dt>Sources</dt><dd>2 airline sites, checked 07:12</dd></dl>`,
+      main: 'Hold it for 48 hours' },
+    { space: 'tax', type: 'Quick sort', title: 'Is the £38.40 Screwfix receipt a work expense?',
+      body: `<dl class="kv"><dt>Date</dt><dd>2 November</dd><dt>Items</dt><dd>Wall plugs, 2 shelf brackets</dd></dl><span class="lbl">22 more like this are waiting in Taxes 2026.</span>`,
+      main: 'Yes, it is' },
+    { space: 'yt', type: 'Brief', held: true, title: 'Episode 14 is cut. Titles arrive at 18:00',
+      body: `<p style="margin:0">Reel has the edit back from Jonah and is writing three title options with thumbnails to match. Nothing needed from you until then.</p>`,
+      main: 'Good' },
+  ];
+  const DAY = [
+    { t: '09:00', k: 'sun', what: 'Your yes reaches Dave', sub: 'House move' },
+    { t: '14:00', k: 'night', what: 'The Old Mill confirms 14 March', sub: "Mum's 70th" },
+    { t: '18:00', k: 'night', what: 'Three titles for episode 14', sub: 'YouTube channel' },
+    { t: 'Fri 07:30', k: 'moon', what: 'Tomorrow\'s deck is dealt', sub: 'About 4 cards so far', day: 'tomorrow' },
+  ];
+  const deck = document.getElementById('deck'), deckbar = document.getElementById('deckbar'), dl = document.getElementById('dl');
+  let idx = 0, deckBusy = false;
+  function cardHTML(c, i) {
+    const s = byId(c.space);
+    return `<article class="dcard" data-i="${i}" aria-hidden="${i !== idx}">
+      <div class="dc-face${c.held ? ' held' : ''}">
+        <div class="dc-src">${glyph(s)}<div><b>${s.name}</b><span>${c.type}, from ${s.agent}</span></div></div>
+        <h3 class="dc-title">${c.title}</h3>
+      </div>
+      <div class="dc-body">${c.body}</div>
+      <div class="dc-actions">
+        <button class="btn-main" data-d="main">${c.main}</button>
+        <button class="btn-ghost" data-d="later">${ico('sink')}Later</button>
+        <button class="btn-ghost" data-d="skip" aria-label="Not needed">${ico('x')}</button>
+      </div>
+      <div class="later-pick"><p>Back when?</p><div class="lp-row">
+        <button class="lp" data-back="19:00"><b>Tonight</b><span>19:00</span></button>
+        <button class="lp" data-back="Fri 08:00"><b>Tomorrow</b><span>Fri 08:00</span></button>
+        <button class="lp" data-back="Sat 10:00"><b>Saturday</b><span>Sat 10:00</span></button>
+      </div></div>
+    </article>`;
+  }
+  function drawDay(flashT) {
+    const sorted = DAY.slice().sort((a, b) => key(a.t) - key(b.t));
+    let html = '', shownTomorrow = false;
+    sorted.forEach(d => {
+      if (key(d.t) >= 2400 && !shownTomorrow) { html += `<li><span class="day">Tomorrow and after</span></li>`; shownTomorrow = true; }
+      html += `<li${d.t === flashT ? ' class="landed"' : ''}><time>${d.t}</time><span class="knot ${d.k}"></span><span class="what">${d.what}<small>${d.sub}</small></span></li>`;
+    });
+    dl.innerHTML = html;
+  }
+  function key(t) {
+    const days = { Fri: 1, Sat: 2, Sun: 3, Mon: 4 };
+    const [a, b] = t.includes(' ') ? t.split(' ') : [null, t];
+    const [h, m] = b.split(':').map(Number);
+    return (a ? days[a] * 2400 : 0) + h * 100 + m;
+  }
+  function drawDeck() {
+    deck.innerHTML = CARDS.map(cardHTML).join('') + `<div class="deck-end" id="deck-end"><span class="moon" aria-hidden="true"></span><h2>That's the deck. <b>Nothing</b> needs you until 14:00.</h2><p>The agents have the rest. They will bring it back up when it is ready.</p><button class="reset" id="reset">Deal it again</button></div>`;
+    positions();
+  }
+  function positions() {
+    deck.querySelectorAll('.dcard').forEach(c => {
+      const i = +c.dataset.i, p = i - idx;
+      c.dataset.pos = p < 0 ? 'gone' : String(Math.min(p, 4));
+      c.style.zIndex = String(10 - Math.max(0, p));
+      c.setAttribute('aria-hidden', String(p !== 0));
+      c.inert = p !== 0;
+    });
+    deckbar.querySelectorAll('i').forEach((b, i) => { b.className = i < idx ? 'done' : i === idx ? 'cur' : ''; });
+    const left = CARDS.length - idx;
+    document.getElementById('td-sub').innerHTML = left > 0
+      ? `<b>${left} card${left === 1 ? '' : 's'}</b>, about ${Math.max(1, Math.round(left * 1.2))} minute${left === 1 ? '' : 's'}. Then nothing until 14:00.`
+      : `<b>Done</b> for now. Next card arrives at 14:00.`;
+    const end = document.getElementById('deck-end');
+    if (end) end.classList.toggle('show', idx >= CARDS.length);
+  }
+  deck.addEventListener('click', async e => {
+    if (e.target.id === 'reset') { idx = 0; DAY.splice(4); drawDeck(); drawDay(); return; }
+    const card = e.target.closest('.dcard'); if (!card || deckBusy) return;
+    const d = e.target.closest('[data-d]'), back = e.target.closest('[data-back]');
+    if (d && d.dataset.d === 'later') { card.classList.add('picking'); card.querySelector('.lp').focus(); return; }
+    let cls = null, flash = null;
+    if (d && d.dataset.d === 'main') cls = 'out-right';
+    if (d && d.dataset.d === 'skip') cls = 'out-left';
+    if (back) {
+      cls = 'out-down';
+      const c = CARDS[+card.dataset.i], s = byId(c.space);
+      DAY.push({ t: back.dataset.back, k: 'sun', what: c.title, sub: `${s.name}, set to Later by you` });
+      flash = back.dataset.back;
+    }
+    if (!cls) return;
+    deckBusy = true;
+    card.classList.add(cls);
+    await wait(reduce ? 0 : 380);
+    if (flash) drawDay(flash);
+    idx++; positions(); deckBusy = false;
+    const top = deck.querySelector(`.dcard[data-i="${idx}"] .btn-main`) || document.getElementById('reset');
+    top && top.focus({ preventScroll: true });
+  });
+  drawDeck(); drawDay();
+
+  /* ---------------- Templates list ---------------- */
+  const T = [
+    { name: 'Big birthday', glyph: 'gift', kind: 'project', by: 'by Tom O.', line: 'Venue, guest list and a surprise kept quiet until the day.', r: [35, 45, 20] },
+    { name: 'Tax year, UK', glyph: 'receipt', kind: 'project', by: 'by Ade K.', line: 'Rests most of the year, then gets busy before 31 January.', r: [10, 20, 70] },
+    { name: 'Two weeks abroad', glyph: 'plane', kind: 'project', by: 'by Mei L.', line: 'Watches fares, holds rooms, keeps the packing list for the night before.', r: [20, 55, 25] },
+    { name: 'Weekly channel', glyph: 'play', kind: 'area', by: 'by Jonah P.', line: 'One decision a week: the title. Everything else is next.', r: [15, 70, 15] },
+    { name: 'Job hunt', glyph: 'case', kind: 'area', by: 'by Rosa D.', line: 'Drafts each letter, chases each reply, files the no-thank-yous.', r: [40, 45, 15] },
+  ];
+  document.getElementById('tlist').innerHTML = T.map(t => `<button class="trow">${glyph(t)}
+    <span class="t-main"><span class="t-name"><b>${t.name}</b><span>${t.by}</span></span>
+    <span class="t-line">${t.line}</span>
+    <span class="rbar" role="img" aria-label="Rhythm: ${t.r[0]}% now, ${t.r[1]}% next, ${t.r[2]}% later"><i class="a" style="flex:${t.r[0]}"></i><i class="b" style="flex:${t.r[1]}"></i><i class="c" style="flex:${t.r[2]}"></i></span></span></button>`).join('');
+})();
+</script>
