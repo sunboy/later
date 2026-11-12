@@ -53,7 +53,7 @@ function SpaceTile({ s, group }: { s: Space; group: 'now' | 'next' | 'later' }) 
         </Main>
         {(!who || cards.length > 0) && <div className="sp-foot">
           {!who && <button className="put" onClick={() => app.assign(s.id, 'juno')}>Ask Keep to put Juno on it</button>}
-          {cards.length > 0 && <button onClick={() => app.openStory(s.id)}><Icon name="chev" size={14} />Play {live || 'the'} {live === 1 ? 'card' : 'cards'}</button>}
+          {cards.length > 0 && <button onClick={() => app.openStory(s.id)}><span className="chev-r"><Icon name="chev" size={14} /></span>Play {live || 'the'} {live === 1 ? 'card' : 'cards'}</button>}
         </div>}
       </div>
     </div>

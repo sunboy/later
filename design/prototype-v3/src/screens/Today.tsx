@@ -266,9 +266,26 @@ function NextRow({ item }: { item: NextItem }) {
   const done = finished.includes(item.id);
   const working = !!item.orb && running;
   const status = item.orb && !running ? 'Paused by you' : item.status;
+  const slot = useRef<HTMLSpanElement>(null);
+  const isLeaving = leaving.includes(item.id);
+  useEffect(() => {
+    const el = slot.current, phone = document.querySelector('.phone') as HTMLElement | null, chief = document.querySelector('.chief-btn svg');
+    if (!isLeaving || !done || !el || !phone || !chief || reducedMotion()) return;
+    const p = phone.getBoundingClientRect(), a = el.getBoundingClientRect(), c = chief.getBoundingClientRect();
+    const clone = el.cloneNode(true) as HTMLElement;
+    clone.classList.add('crew-fly');
+    Object.assign(clone.style, { left: a.left - p.left + 'px', top: a.top - p.top + 'px', width: a.width + 'px', height: a.height + 'px' });
+    phone.appendChild(clone);
+    const dx = c.left + c.width / 2 - (a.left + a.width / 2), dy = c.top + c.height / 2 - (a.top + a.height / 2);
+    clone.animate([
+      { transform: 'none', opacity: 1 },
+      { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 60}px) rotate(-14deg) scale(1.05)`, opacity: 1, offset: 0.5 },
+      { transform: `translate(${dx}px, ${dy}px) rotate(-4deg) scale(.6)`, opacity: 0 },
+    ], { duration: 900, easing: 'cubic-bezier(.5,0,.4,1)' }).finished.finally(() => clone.remove()).catch(() => {});
+  }, [isLeaving]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className={`nrow ${working ? '' : 'waiting'} ${done ? 'landed' : ''} ${leaving.includes(item.id) ? 'leaving' : ''} ${flash ? 'flash' : ''}`} data-flip={'n-' + item.id} aria-busy={working}>
-      <span className="crew-slot"><Crew who={item.agent} size={38} state={done ? 'done' : working ? 'working' : running ? 'idle' : 'rest'} /></span>
+      <span className="crew-slot" ref={slot}><Crew who={item.agent} size={38} state={done ? 'done' : working ? 'working' : running ? 'idle' : 'rest'} /></span>
       <div className="n-main">
         <span className="n-name">{s.name}</span>
         <span className="n-status">
@@ -498,7 +515,7 @@ export function Today() {
 
       <button className={`dock ${settle ? 'settle' : ''} ${evening ? 'tall' : ''}`} onClick={() => setLaterOpen(true)} aria-label={`Later: ${later.length} resting. Open the list`}>
         <span className="h-later">Later</span>
-        <span className="txt"><b>{later.length} resting</b><br />{soon ? <span className="soon">One back in {secs} second{secs === 1 ? '' : 's'}</span> : evening ? <>Tomorrow 07:00: 4 cards so far,<br />and a new edition</> : 'Next back Monday 08:30'}</span>
+        <span className="txt"><b>{later.length} resting</b><br />{soon ? <span className="soon">One back in {secs} second{secs === 1 ? '' : 's'}</span> : evening ? 'Tomorrow 07:00: 4 cards and a new edition' : 'Next back Monday 08:30'}</span>
         <span className="glyphs" aria-hidden="true">{later.slice(0, 4).map(l => <span key={l.id} className="glyph"><Icon name={space(l.spaceId).glyph} size={13} /></span>)}</span>
         <Icon name="chev" size={18} />
       </button>

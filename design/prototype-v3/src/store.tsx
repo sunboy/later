@@ -308,6 +308,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       stopRec: secs => {
         set(p => ({ ...p, rec: 'tidying' }));
         later(() => set(p => {
+          if (p.rec !== 'tidying') return p; // an event or Close interrupted it
           const pid = 'v' + Date.now();
           const msgs: Msg[] = [
             { who: 'you', text: NOTE.clean, at: 'now', voice: { secs, raw: RAMBLE } },
@@ -342,7 +343,7 @@ function assignState(p: State, spaceId: string, who: AgentId): State {
     ...p, staff: { ...p.staff, [spaceId]: who },
     next: job && !p.next.some(n => n.id === job.id) ? [...p.next, job] : p.next,
     threads: log(p, spaceId, `Keep put ${AGENTS[who].name} on ${space(spaceId).name}`),
-    flash: flash('staff-' + spaceId), event: { type: 'assign', at: Date.now(), id: spaceId, note: p.event?.note },
+    flash: flash('staff-' + spaceId, 'dealt'), event: { type: 'assign', at: Date.now(), id: spaceId, note: p.event?.note },
   };
 }
 

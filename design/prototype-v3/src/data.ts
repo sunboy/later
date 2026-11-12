@@ -389,6 +389,21 @@ export const THREADS0: Record<string, Msg[]> = {
     { who: 'log', text: 'Wren read the venue’s email', at: '07:31' },
     { who: 'crew', text: 'The Old Mill can do 14 March for 22. They hold it until Friday 17:00 for a £250.00 deposit.', card: { kind: 'Ready to pay', title: 'Pay the venue deposit', state: 'In Now, ready for you to pay from your bank' } },
   ],
+  job: [
+    { who: 'log', text: 'Juno read Ana’s email from Lattice', at: '07:55' },
+    { who: 'crew', text: 'Ana wants a first call. You are free Thursday afternoon; I have pencilled 14:30.' },
+  ],
+  japan: [
+    { who: 'log', text: 'Juno checked 3 airline sites', at: '09:00' },
+    { who: 'crew', text: 'Heathrow to Haneda is £612 return for 3 to 17 April, down £132. I am checking two more.' },
+  ],
+  tally: [
+    { who: 'log', text: 'Scout sent the press list 12 emails', at: 'Wed' },
+    { who: 'crew', text: 'Two replies are still out. The launch email is ready for you to send.', card: { kind: 'Approval', title: 'Send the launch email to 318 subscribers', state: 'Needs a press and hold' } },
+  ],
+  health: [{ who: 'log', text: 'Wren booked the dentist for 6 January', at: 'Mon' }],
+  work: [{ who: 'log', text: 'Ledger paused Work while you are off', at: 'Wed' }],
+  inbox: [{ who: 'log', text: 'Wren is watching for Mum, the bank and the school', at: '09:30' }],
   tax: [
     { who: 'log', text: 'Ledger started reconciling October', at: '09:02' },
     { who: 'crew', text: 'I will bring you only the ones I cannot match.' },

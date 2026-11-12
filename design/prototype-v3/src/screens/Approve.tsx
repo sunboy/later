@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AGENTS, BILLS, SENDS, gbp, space } from '../data';
 import { Icon } from '../icons';
 import { HoldButton } from '../Hold';
@@ -15,6 +15,9 @@ export function ApprovalBody({ id, compact = false }: { id: string; compact?: bo
   const out = outbox.find(o => o.id === id);
   const done = !!out && out.status !== 'stopped';
   const agent = AGENTS[p.agent];
+  const win = useRef<HTMLDivElement>(null);
+  // after the hold, bring the window row into view so Stop is never off screen
+  useEffect(() => { if (out?.status === 'pending') win.current?.scrollIntoView({ block: 'end', behavior: 'smooth' }); }, [out?.status]);
   const rows: [string, string][] = [['To', p.to], ['Address', p.address], ['From', p.from], ...(p.subject ? [['Subject', p.subject] as [string, string]] : []), ['Goes', '30 seconds after you hold, unless you stop it']];
   return (
     <>
@@ -32,7 +35,7 @@ export function ApprovalBody({ id, compact = false }: { id: string; compact?: bo
       </dl></div>
       <p className="ap-bind">This approval covers this one send with exactly these words and this recipient, and nothing else. Check <span className="code">{p.hash}</span></p>
       <HoldButton key={out?.status === 'stopped' ? 'again' : 'hold'} label={p.hold} done={done} onDone={() => holdSend(id)} />
-      {out && <OutboxRow id={id} inline />}
+      <div ref={win} style={{ scrollMarginBottom: 24 }}>{out && <OutboxRow id={id} inline />}</div>
     </>
   );
 }

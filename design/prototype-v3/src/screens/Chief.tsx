@@ -153,7 +153,7 @@ export function ChiefSheet() {
       <div className="keep-top"><span /><button className="btn quiet sm" onClick={app.closeChief}><Icon name="close" size={16} />Close</button></div>
       <div className="keep-scroll">
         <div className="keep-hero">
-          <Chief state={mood} size={128} out={app.crewOut} />
+          <Chief state={mood} size={128} out={app.crewOut >= 2} />
           <h2>Keep</h2>
           {!app.rec && <p>Tell me once, out loud or typed. I file it in the right Space and put someone on it.</p>}
         </div>
@@ -187,7 +187,7 @@ export function ChiefSheet() {
       <div className="keep-top thread">
         <button className="btn quiet sm" onClick={() => app.openChief(null)} aria-label="All threads"><Icon name="back" size={16} />Threads</button>
         <div className="thr-title">
-          {who ? <Crew who={who} size={30} state={chief.busy ? 'thinking' : 'idle'} /> : <Chief size={30} state={mood} out={app.crewOut} />}
+          {who ? <Crew who={who} size={30} state={chief.busy ? 'thinking' : 'idle'} /> : <Chief size={30} state={mood} out={app.crewOut >= 2} />}
           <div><b>{t === 'keep' ? 'Keep' : space(t).name}</b><small>{t === 'keep' ? 'Anything, unfiled' : who ? `${AGENTS[who].name} is on it` : 'No one is on it'}</small></div>
         </div>
         <button className="btn quiet sm" onClick={app.closeChief} aria-label="Close"><Icon name="close" size={16} /></button>
@@ -220,7 +220,7 @@ function ThreadRow({ id, name, last, needs }: { id: string; name: string; last: 
   const who = id === 'keep' ? null : app.staff[id];
   return (
     <button className="thr" onClick={() => app.openChief(id)}>
-      {id === 'keep' ? <Chief size={36} state={app.chiefState === 'rest' ? 'idle' : app.chiefState} out={app.crewOut} /> : who ? <Crew who={who} size={36} state={needs ? 'waiting' : 'idle'} /> : <span className="glyph"><Icon name={space(id).glyph} size={16} /></span>}
+      {id === 'keep' ? <Chief size={36} state={app.chiefState === 'rest' ? 'idle' : app.chiefState} out={app.crewOut >= 2} /> : who ? <Crew who={who} size={36} state={needs ? 'waiting' : 'idle'} /> : <span className="glyph"><Icon name={space(id).glyph} size={16} /></span>}
       <span className="thr-main"><b>{name}{who ? <em>, {AGENTS[who].name}</em> : id === 'keep' ? null : <em>, no one yet</em>}</b><span>{m ? (m.who === 'you' ? 'You: ' : '') + m.text : 'Nothing said yet'}</span></span>
       {needs && <i className="thr-dot" aria-label="needs you" />}
     </button>

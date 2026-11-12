@@ -38,11 +38,12 @@ function ChiefButton() {
   const app = useApp();
   const landed = useFlash('chief');
   const dealing = useFlash('deal');
+  const dealt = useFlash('dealt');
   const st = app.rec ? app.chiefState : landed ? 'done' : app.chiefState;
   const say = { idle: 'idle', waiting: 'something needs you', rest: 'resting', done: 'done', thinking: 'thinking', working: 'working', listening: 'listening', error: 'something went wrong' }[st];
   return (
     <button className={`chief-btn ${landed ? 'landed' : ''} ${dealing ? 'dealing' : ''}`} onClick={() => app.openChief(null)} aria-label={`Keep, ${say}. Talk, type or capture`}>
-      <Chief state={st} size={56} out={app.crewOut} />
+      <Chief state={st} size={52} out={app.crewOut >= 2 || dealt} />
       <span className="chief-lbl">Keep</span>
     </button>
   );
@@ -98,7 +99,7 @@ function Left() {
   return (
     <aside className="stage-left" aria-label="About this direction">
       <Wordmark size={46} />
-      <p className="lede">The interface keeps time. What needs you rises and grows, what the crew have in hand shrinks to a line, and what can wait sinks to Later. Keep, the stack in the corner, deals the cards. Each crew member away working is a card missing from its stack.</p>
+      <p className="lede">The interface keeps time. What needs you rises and grows, what the crew have in hand shrinks to a line, and what can wait sinks to Later. Keep, the fanned hand of cards in the corner, deals the cards. When crew are out working, its fan is one card thinner.</p>
       <ul className="legend">
         <li><span className="chip-sw a" /><span><b>Needs you.</b> The heading of Now, an urgent card, a nearing deadline, the hold.</span></li>
         <li><span className="chip-sw b" /><span><b>The crew and Later.</b> Keep and the crew, the Later dock, the night edition, stories.</span></li>
