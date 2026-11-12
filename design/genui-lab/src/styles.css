@@ -212,18 +212,17 @@ input { font: inherit; color: inherit; }
 .skin { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 22px; pointer-events: none; }
 .skin::before, .skin::after { content: ''; position: absolute; inset: 0; border-radius: inherit; transition: opacity .45s var(--ease), box-shadow .45s var(--ease); }
 .skin::before { background: var(--card); box-shadow: 0 1px 0 var(--line), 0 12px 24px -18px var(--shadow-2); }
-.skin::after { background: linear-gradient(160deg, var(--a-hi), var(--a) 62%); box-shadow: 0 16px 28px -16px var(--a-shadow), 0 2px 0 var(--shadow); opacity: 0; }
+.skin::after { background: linear-gradient(160deg, var(--a) 30%, color-mix(in srgb, var(--a) 84%, #000)); box-shadow: 0 16px 28px -16px var(--a-shadow), 0 2px 0 var(--shadow); opacity: 0; }
 .e-loud .skin::after { opacity: 1; }
 .e-quiet .skin::before { opacity: 0; }
-.e-loud { --t1: var(--on-a); --t2: var(--on-a-2); --t3: var(--on-a-2); --well: var(--on-a-wash); --rule: var(--on-a-wash); --hi: var(--on-a); --surf: var(--a);
+.e-loud { --t1: var(--on-a); --t2: var(--on-a); --t3: var(--on-a); --well: color-mix(in srgb, var(--a) 80%, #000); --rule: var(--on-a-wash); --hi: var(--on-a); --surf: var(--a);
   --m-body: var(--on-a); --m-hole: var(--a); --m-2: var(--on-a-2); --m-3: color-mix(in srgb, var(--on-a) 40%, var(--a)); --m-ground: var(--a);
   --chart: var(--on-a); --chart-2: var(--on-a-wash); --chart-fill: var(--on-a-wash); }
 .e-quiet { --t1: var(--ink-2); --t2: var(--ink-3); --well: var(--card); --surf: var(--paper); --m-hole: var(--paper); --m-ground: var(--paper); }
 .body { position: relative; padding: 14px 16px 15px; transition: color .35s var(--ease); min-width: 0; }
 .e-quiet .body { padding: 8px 8px 8px; }
-.blk.is-hot .skin { outline: 2px solid var(--hot); outline-offset: 3px; }
+.view.spec-on .blk.is-hot .skin { outline: 2px solid var(--hot); outline-offset: 3px; }
 .view.spec-on .blk { cursor: help; }
-.view.spec-on .blk.is-hot .skin { outline-style: solid; }
 
 .src { margin: 8px 0 0; font-size: 11.5px; color: var(--t3); line-height: 1.4; }
 .src .ext { text-decoration: underline dotted; text-underline-offset: 3px; text-decoration-color: var(--t3); }
@@ -538,3 +537,5 @@ input { font: inherit; color: inherit; }
 .ph-crew { display: grid; place-items: center; width: 34px; height: 34px; }
 .roll { animation: roll .5s var(--sp-grow); }
 @keyframes roll { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.ask input:focus-visible { outline: none; }
+.ask:focus-within { box-shadow: 0 0 0 2px var(--focus), 0 14px 28px -14px var(--shadow-2); }

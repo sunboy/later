@@ -103,7 +103,7 @@ function Comparison({ b }: B<'comparison'>) {
                 <b className="opt-n">{o.name}</b>
                 <span className="opt-p num">{money(o.price)}</span>
                 <dl className="opt-f">{o.facts.slice(0, facts).map(f => <div key={f.k}><dt>{f.k}</dt><dd>{f.v}</dd></div>)}</dl>
-                {rec && <span className="opt-rec">{d.options.length > 1 ? 'Recommended' : 'The one to take'}</span>}
+                {rec && <span className="opt-rec">{d.options.length > 1 ? 'Top pick' : 'The one to take'}</span>}
                 {b.size !== 'small' && <button className={`btn sm ${rec ? 'onrec' : ''}`} aria-pressed={sel} onClick={() => setPicked(sel ? null : o.id)}>{sel ? <><Icon name="check" size={16} />Chosen</> : 'Choose'}</button>}
               </div>
             </div>

@@ -10,6 +10,7 @@ import { Chief, Crew, type MState } from './Mascot';
 import { Icon } from './icons';
 import { CREW_NAME } from './format';
 import { wait, SPRING } from './motion';
+import { describeChange } from './diff';
 
 type Mode = { kind: 'space'; space: string; step: StepId } | { kind: 'answer'; req: string; ref?: string } | { kind: 'test'; id: string; space: string };
 type Theme = 'dark' | 'light';
@@ -58,6 +59,8 @@ export function App() {
 
   const scroller = useRef<HTMLDivElement>(null);
   const shownRef = useRef(shown);
+  const lastChange = useRef<string | null>(null);
+  const bubbleT = useRef(0);
   shownRef.current = shown;
   const keepRef = useRef<HTMLDivElement>(null);
   const token = useRef(0);
@@ -71,6 +74,7 @@ export function App() {
     }
     setRefusal(null);
     setArrival(how);
+    lastChange.current = describeChange(shownRef.current.placed, r.value);
     setShown(s => ({ rev: s.rev + 1, spec: r.spec!, placed: r.value, clamps: r.clamps, from }));
     if (opts.top) requestAnimationFrame(() => scroller.current?.scrollTo({ top: 0, behavior: 'smooth' }));
     return true;
@@ -82,13 +86,20 @@ export function App() {
   }, [pins]);
 
   const goSpace = (space: string, step: StepId = 'today', how: Arrival = 'grow', p = pins) => {
-    token.current++; setBusy(false); setBubble(null); setKeep('idle');
+    token.current++; setBusy(false); setKeep('idle');
+    if (!(mode.kind === 'space' && mode.space === space)) setBubble(null);
     const s = spaceById(space);
     setMode({ kind: 'space', space, step });
     clearTimeout(moodT.current);
     setCrewMood('working');
     moodT.current = window.setTimeout(() => setCrewMood(step === 'after' ? 'done' : 'idle'), 900);
-    present(spaceSpec(space, step, p), how, `${CREW_NAME[s.crew]} sent`, { top: mode.kind !== 'space' || mode.space !== space });
+    const same = mode.kind === 'space' && mode.space === space;
+    present(spaceSpec(space, step, p), how, `${CREW_NAME[s.crew]} sent`, { top: !same });
+    clearTimeout(bubbleT.current);
+    if (same && lastChange.current) {
+      setBubble(`${CREW_NAME[s.crew]} recomposed for ${s.steps.find(x => x.id === step)!.date}. ${lastChange.current}`);
+      bubbleT.current = window.setTimeout(() => setBubble(null), 3200);
+    }
   };
 
   const compose = async (req: Request, ref?: Refinement) => {
@@ -101,16 +112,10 @@ export function App() {
     setKeep('working');
     setMode({ kind: 'answer', req: req.id, ref: ref?.id });
     const spec = (ref ?? req).spec;
-    const prev = new Map(shownRef.current.spec.blocks.map(b => [b.id, JSON.stringify(b)]));
-    const kept = spec.blocks.filter(b => prev.get(b.id) === JSON.stringify(b)).length;
-    const changed = spec.blocks.filter(b => prev.has(b.id) && prev.get(b.id) !== JSON.stringify(b)).length;
-    const added = spec.blocks.length - kept - changed;
-    const removed = [...prev.keys()].filter(id => !spec.blocks.some(b => b.id === id)).length;
     present(spec, 'deal', 'Keep sent', { top: !ref });
-    const parts = ref
-      ? [kept && `kept ${kept}`, changed && `changed ${changed}`, added && `added ${added}`, removed && `removed ${removed}`].filter(Boolean).join(', ')
-      : `${spec.blocks.length} blocks`;
-    setBubble(`${ref ? 'Same view, ' : 'Composed '}${parts}. Written in advance for this prototype.`);
+    setBubble(ref
+      ? `${lastChange.current ?? 'Same view.'} Written in advance for this prototype.`
+      : `Composed ${spec.blocks.length} blocks for this. Written in advance for this prototype.`);
     await wait(spec.blocks.length * 85 + SPRING.deal().duration);
     if (t !== token.current) return;
     setKeep('done'); setBusy(false);
@@ -151,7 +156,8 @@ export function App() {
 
   const runTest = (id: string) => {
     const x = id === CLAMPED.id ? CLAMPED : REJECTS.find(r => r.id === id)!;
-    const ok = present(x.spec, 'grow', 'Scout sent', { title: x.title, top: true });
+    const by = (x.spec as { composedBy?: keyof typeof CREW_NAME }).composedBy;
+    const ok = present(x.spec, 'grow', `${by ? CREW_NAME[by] : 'An agent'} sent`, { title: x.title, top: true });
     if (ok) setMode({ kind: 'test', id, space: x.space });
     if (narrow) setSheet('spec'); else setSpecOpen(true);
   };
@@ -284,7 +290,7 @@ export function App() {
             const on = mode.kind === 'space' && mode.step === id;
             return (
               <button key={id} role="radio" aria-checked={on} className={`tm ${on ? 'on' : ''}`} disabled={mode.kind !== 'space'}
-                onClick={() => { setPlaying(false); if (mode.kind === 'space') goSpace(mode.space, id); }}>
+                onClick={() => { setPlaying(false); if (sheet) setSheet(null); if (mode.kind === 'space') goSpace(mode.space, id); }}>
                 <i aria-hidden="true" /><b>{STEP_LABEL[id]}</b><small>{st.date}</small>
               </button>
             );
@@ -292,7 +298,7 @@ export function App() {
         </div>
         <button className="btn sm play" disabled={mode.kind !== 'space'} onClick={() => {
           if (playing) { setPlaying(false); return; }
-          if (mode.kind === 'space') { goSpace(mode.space, 'before'); setPlaying(true); }
+          if (mode.kind === 'space') { if (sheet) setSheet(null); goSpace(mode.space, 'before'); setPlaying(true); }
         }}><Icon name={playing ? 'pause' : 'clock'} size={16} />{playing ? 'Stop' : 'Play the four moments'}</button>
       </section>
       <section className="panel">

@@ -7,8 +7,8 @@
   "description": "Generative UI lab: agents send typed view specs, the client owns the pixels.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "test:spec": "node --experimental-strip-types scripts/check-specs.ts"
+    "build": "tsc --noEmit && vite build && node scripts/artifact.mjs",
+    "check:specs": "esbuild scripts/check-specs.ts --bundle --platform=node --format=esm --outfile=dist/check-specs.mjs --log-level=warning && node dist/check-specs.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

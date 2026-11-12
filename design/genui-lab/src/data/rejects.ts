@@ -54,6 +54,6 @@ export const CLAMPED = {
   spec: base([
     blk('headline', 'head', { title: 'Everything is urgent', line: 'Scout asked for three loud blocks.', crew: 'scout' }, { emphasis: 'loud' }),
     blk('stat', 'dep', { value: 3850000, format: 'money', label: 'Deposit, due at exchange' }, { emphasis: 'loud', size: 'large' }),
-    blk('quote', 'agent', { text: 'Act now. Rates are rising and this offer will not last.', by: 'Estate agent newsletter', source: src('newsletter', 'email', '07:00') }, { emphasis: 'loud' }),
+    blk('quote', 'agent', { text: 'Act now. Rates are rising and this offer will not last.', by: 'Northside Estates', source: src('weekly newsletter', 'email', '07:00') }, { emphasis: 'loud' }),
   ]),
 };

@@ -2,7 +2,23 @@
 import { useEffect, useRef } from 'react';
 import type { Clamp, Issue } from './spec/types';
 
-const ind = (s: string, n: number) => s.split('\n').map(l => ' '.repeat(n) + l).join('\n');
+/** JSON, pretty where it helps: short objects and arrays of plain values stay on one line. */
+function oneLine(v: unknown): string {
+  if (Array.isArray(v)) return '[' + v.map(oneLine).join(', ') + ']';
+  if (v && typeof v === 'object') {
+    const e = Object.entries(v as Record<string, unknown>).filter(([, x]) => x !== undefined);
+    return e.length ? '{ ' + e.map(([k, x]) => `${JSON.stringify(k)}: ${oneLine(x)}`).join(', ') + ' }' : '{}';
+  }
+  return JSON.stringify(v) ?? 'null';
+}
+function pretty(v: unknown, pad = ''): string {
+  const flat = oneLine(v);
+  const nested = v && typeof v === 'object' && Object.values(v as object).some(x => x && typeof x === 'object' && Object.keys(x).length > 1);
+  if (!v || typeof v !== 'object' || (flat.length + pad.length <= 66 && !nested)) return flat;
+  const inner = pad + '  ';
+  if (Array.isArray(v)) return '[\n' + v.map(x => inner + pretty(x, inner)).join(',\n') + '\n' + pad + ']';
+  return '{\n' + Object.entries(v as Record<string, unknown>).filter(([, x]) => x !== undefined).map(([k, x]) => `${inner}${JSON.stringify(k)}: ${pretty(x, inner)}`).join(',\n') + '\n' + pad + '}';
+}
 
 export function SpecJson({ spec, hot, onHot, clamps, issues, from }: {
   spec: unknown; hot: string | null; onHot: (id: string | null) => void; clamps: Clamp[]; issues?: Issue[]; from: string;
@@ -16,7 +32,7 @@ export function SpecJson({ spec, hot, onHot, clamps, issues, from }: {
   }, [hot]);
   const s = (spec ?? {}) as Record<string, unknown>;
   const { blocks, ...rest } = s;
-  const head = JSON.stringify(rest, null, 2).replace(/\n}$/, ',');
+  const head = pretty(rest).replace(/\n}$/, ',');
   const list = Array.isArray(blocks) ? blocks : [];
   const bad = new Set((issues ?? []).map(i => /^view\.blocks\[(\d+)\]/.exec(i.path)?.[1]).filter(Boolean).map(Number));
   const clamped = new Set(clamps.map(c => /^view\.blocks\[(\d+)\]/.exec(c.path)?.[1]).filter(Boolean).map(Number));
@@ -29,7 +45,7 @@ export function SpecJson({ spec, hot, onHot, clamps, issues, from }: {
           const id = (b as { id?: string }).id ?? String(i);
           return (
             <pre key={i} data-sid={id} className={`code seg ${hot === id ? 'hot' : ''} ${bad.has(i) ? 'bad' : ''} ${clamped.has(i) ? 'clamped' : ''}`}
-              onMouseEnter={() => onHot(id)}>{ind(JSON.stringify(b, null, 2), 4)}{i < list.length - 1 ? ',' : ''}</pre>
+              onMouseEnter={() => onHot(id)}>{'    ' + pretty(b, '    ')}{i < list.length - 1 ? ',' : ''}</pre>
           );
         })}
         <pre className="code">{'  ]\n}'}</pre>
