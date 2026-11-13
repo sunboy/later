@@ -244,7 +244,7 @@ function Left() {
   if (ob.mode === 'onboard') return (
     <aside className="stage-left" aria-label="About the front door">
       <h1 className="mark-wm" aria-label="Later"><wm-horizon variant="lower" /></h1>
-      <p className="lede">The front door. A five-scene story teaches one idea each, then two doors and seven short set-up steps. Keep is the guide; the crew it deals show how far you have come. Sound is synthesised, quiet and switchable.</p>
+      <p className="lede">The front door, as scenes on one horizon: above the line is now, below it is later. Five short scenes teach one idea each by doing it, then two doors and set-up, where Keep deals the crew one by one. Sound is synthesised, starts with the first tap, and is switchable.</p>
       <FrontDoor />
       <p className="fine">Example data. {p.name}. Nothing here sends, pays or deletes. Use Simulate for the errors.</p>
     </aside>

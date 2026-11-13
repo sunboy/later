@@ -4,40 +4,40 @@ import { AGENTS, type AgentId } from '../data';
 import { Icon } from '../icons';
 import { Chief, Crew, type MState } from '../Mascot';
 import { reducedMotion, spring, setT, usePrefersReducedMotion } from '../motion';
-import { hum, onSoundChange, play, setSound, soundOn, unlock, type Sfx } from '../sound';
-import { useOb, type Step } from './flow';
+import { hum, onSoundChange, play, setSound, soundOn, unlock } from '../sound';
+import { STORY, useOb, type Step } from './flow';
+
+/* The front door as scenes. One world throughout: a sky, the horizon (the brand's own line) and the ground.
+   Above the line is now; below it is later. Keep stands on the horizon, large, and acts every beat out:
+   anticipation, action, reaction. Every scene's last frame tells its story on its own, so reduced motion
+   gets composed stills, and every gesture also has a plain button. Sounds are played on the frame a thing lands. */
 
 /* ------------------------------------------------------------------ helpers */
 
-const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
-function useAlive() {
-  const r = useRef(true);
-  useEffect(() => { r.current = true; return () => { r.current = false; }; }, []);
-  return r;
-}
-const keepEl = () => document.querySelector('.ob-scene .ob-keep svg') as HTMLElement | null;
+type Sky = 'night' | 'clay' | 'navy' | 'deep' | 'dawn' | 'glow';
+type G = Parameters<typeof Icon>[0]['name'];
+const CREW: AgentId[] = ['wren', 'scout', 'juno', 'ledger'];
 
-/** Dealing means assigning: the element flies in from Keep and lands with one overshoot. The whoosh plays as it leaves. */
-function dealFrom(el: HTMLElement | null | undefined, opts: { delay?: number; dur?: number; from?: Element | null; spin?: number; quiet?: boolean } = {}) {
-  const src = (opts.from ?? keepEl())?.getBoundingClientRect();
-  if (!opts.quiet) setTimeout(() => play('deal'), opts.delay ?? 0);
-  if (!el || !src || reducedMotion()) return Promise.resolve();
-  const r = el.getBoundingClientRect();
-  const dx = src.left + src.width / 2 - (r.left + r.width / 2), dy = src.top + src.height / 2 - (r.top + r.height / 2);
-  const sc = Math.max(0.12, Math.min(0.6, src.width / Math.max(1, r.width)));
-  const spin = opts.spin ?? -16;
-  return el.animate([
-    { transform: `translate(${dx}px, ${dy}px) scale(${sc}) rotate(${spin}deg)`, opacity: 0.4 },
-    { transform: `translate(0, -8px) scale(1.03) rotate(${-spin * 0.06}deg)`, opacity: 1, offset: 0.74 },
-    { transform: 'none', opacity: 1 },
-  ], { duration: opts.dur ?? 600, delay: opts.delay ?? 0, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'backwards' }).finished.catch(() => {});
+/** Timers that die with the scene, and that collapse to "now" under reduced motion. */
+function useTimers() {
+  const ids = useRef<number[]>([]);
+  useEffect(() => () => { ids.current.forEach(clearTimeout); ids.current = []; }, []);
+  return (ms: number, fn: () => void) => { ids.current.push(window.setTimeout(fn, reducedMotion() ? Math.min(ms, 30) : ms)); };
 }
-/** The citrus flash: done. */
-const flashDone = (el: HTMLElement | null | undefined) => {
-  if (!el || reducedMotion()) return;
-  el.animate([{ boxShadow: '0 0 0 0 var(--pop)' }, { boxShadow: '0 0 0 5px var(--pop)', offset: 0.2 }, { boxShadow: '0 0 0 0 transparent' }], { duration: 1200, easing: 'ease-out' });
-};
-const usd = (micro: number) => '$' + (micro / 1_000_000).toFixed(2);
+
+/** Fly an element in from another (dealing): it leaves small and spun, lands with one overshoot. */
+function fly(el: Element | null | undefined, from: Element | null | undefined, o: { delay?: number; dur?: number; spin?: number } = {}) {
+  if (!el || !from || reducedMotion()) return Promise.resolve();
+  const a = from.getBoundingClientRect(), b = el.getBoundingClientRect();
+  const dx = a.left + a.width / 2 - (b.left + b.width / 2), dy = a.top + a.height / 2 - (b.top + b.height / 2);
+  const spin = o.spin ?? -18;
+  return (el as HTMLElement).animate([
+    { transform: `translate(${dx}px, ${dy}px) scale(.3) rotate(${spin}deg)`, opacity: 0 },
+    { transform: `translate(${dx * 0.1}px, ${dy * 0.1 - 18}px) scale(1.04) rotate(${-spin * 0.1}deg)`, opacity: 1, offset: 0.7 },
+    { transform: 'none', opacity: 1 },
+  ], { duration: o.dur ?? 620, delay: o.delay ?? 0, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'backwards' }).finished.catch(() => {});
+}
+const keepSvg = () => document.querySelector('.ld .ld-k svg');
 
 /** The visible sound switch. It remembers its setting on this device. */
 export function SoundToggle({ cls = '' }: { cls?: string }) {
@@ -50,395 +50,352 @@ export function SoundToggle({ cls = '' }: { cls?: string }) {
   );
 }
 
-/* ------------------------------------------------------------------ Keep's hand: the progress of set-up */
+/** Keep, standing on the horizon. x is the offset from the centre; s the drawn size. */
+const K = ({ x = 0, s = 230, st = 'idle', out, cls = '', lift = 0 }: { x?: number; s?: number; st?: MState; out?: boolean; cls?: string; lift?: number }) => (
+  <span className={`ld-on ld-k ${cls}`} style={{ ['--x' as string]: `${x}px`, ['--lift' as string]: `${lift}px` } as CSSProperties}>
+    <Chief state={st} size={s} out={out} />
+  </span>
+);
+/** A crew member, each with its own cut and its own colour. */
+const C = ({ who, x = 0, s = 100, st = 'idle', cls = '', lift = 0, style }: { who: AgentId; x?: number; s?: number; st?: MState; cls?: string; lift?: number; style?: CSSProperties }) => (
+  <span className={`ld-on ld-c ${cls}`} data-who={who} style={{ ['--x' as string]: `${x}px`, ['--lift' as string]: `${lift}px`, ...style } as CSSProperties}>
+    <Crew who={who} state={st} size={s} />
+  </span>
+);
+/** A card with one glyph on it. y is the height of its centre above the horizon. */
+const Card = ({ g, x = 0, y = 0, r = 0, w = 58, cls = '', style, children }: { g?: G; x?: number; y?: number; r?: number; w?: number; cls?: string; style?: CSSProperties; children?: ReactNode }) => (
+  <span className={`ld-card ${cls}`} style={{ ['--x' as string]: `${x}px`, ['--y' as string]: `${y}px`, ['--r' as string]: `${r}deg`, ['--w' as string]: `${w}px`, ...style } as CSSProperties}>
+    {g && <Icon name={g} size={Math.round(w * 0.44)} stroke={1.8} />}{children}
+  </span>
+);
 
-function Hand({ k, crew = 'idle', out }: { k: MState; crew?: MState; out?: boolean }) {
-  const ob = useOb();
-  const box = useRef<HTMLSpanElement>(null);
-  const seen = useRef<string[]>(ob.placed.map(p => p.who));
-  useLayoutEffect(() => {
-    const now = ob.placed.map(p => p.who);
-    const fresh = now.filter(w => !seen.current.includes(w));
-    seen.current = now;
-    fresh.forEach(w => {
-      const el = box.current?.querySelector<HTMLElement>(`[data-who="${w}"]`);
-      if (el && !reducedMotion()) el.animate([{ transform: 'translateY(10px) scale(.6) rotate(-20deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 520, delay: 380, easing: 'cubic-bezier(.34,1.45,.64,1)', fill: 'backwards' });
-    });
-  }, [ob.placed]);
-  const n = ob.placed.length;
+/** The headline, its words rising in one after another. */
+function Say({ text, id = 'ld-say' }: { text: string; id?: string }) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  useEffect(() => { if (!document.activeElement || document.activeElement === document.body || document.activeElement.closest('.phone')) ref.current?.focus({ preventScroll: true }); }, []);
   return (
-    <div className="ob-hand" role="img" aria-label={n ? `Keep, with ${ob.placed.map(p => AGENTS[p.who].name).join(', ')}` : 'Keep'}>
-      <span className="ob-keep"><Chief state={k} size={56} out={out} /></span>
-      {n > 0 && (
-        <span className="ob-fan" ref={box} aria-hidden="true">
-          {ob.placed.map((p, i) => (
-            <span key={p.who} className="ob-pc" data-who={p.who} style={{ ['--i' as string]: i } as CSSProperties}><Crew who={p.who} size={32} state={crew} /></span>
-          ))}
-        </span>
-      )}
-    </div>
+    <h1 className="ld-say" id={id} ref={ref} tabIndex={-1} aria-live="polite" key={text}>
+      {text.split(' ').map((w, i) => <span key={i} style={{ ['--i' as string]: i } as CSSProperties}>{w} </span>)}
+    </h1>
   );
 }
 
-/** One headline, one short line, one thing to do, and a quiet "How this works" when there is more to say. */
-function Scene({ k, say, sub, children, foot, cls = '', crew, out, how }: {
-  k: MState; say: ReactNode; sub?: ReactNode; children?: ReactNode; foot?: ReactNode; cls?: string; crew?: MState; out?: boolean; how?: ReactNode;
-}) {
-  const h = useRef<HTMLHeadingElement>(null);
-  const [open, setOpen] = useState(false);
-  useEffect(() => { if (document.activeElement && document.activeElement !== document.body && !document.activeElement.closest('.phone')) return; h.current?.focus({ preventScroll: true }); }, []);
+/** Progress: five small cards through the story; through set-up, the crew Keep has dealt so far. */
+function Progress() {
+  const ob = useOb();
+  const at = STORY.indexOf(ob.step);
+  if (at >= 0) return (
+    <span className="ld-pips" role="img" aria-label={`Scene ${at + 1} of ${STORY.length}`}>
+      {STORY.map((s, i) => <i key={s} className={i < at ? 'past' : i === at ? 'now' : ''} />)}
+    </span>
+  );
+  if (['title', 'doors'].includes(ob.step)) return <span />;
   return (
-    <section className={`ob-scene ${cls}`} aria-labelledby="ob-say">
-      <div className="ob-scroll">
-        <header className="ob-head">
-          <div className="ob-headrow"><Hand k={k} crew={crew} out={out} /><SoundToggle cls="quiet" /></div>
-          <h1 className="ob-say" id="ob-say" ref={h} tabIndex={-1} aria-live="polite">{say}</h1>
-          {sub && <p className="ob-sub">{sub}</p>}
-        </header>
-        <div className="ob-body">{children}</div>
-        {how && <div className="ob-how">
-          <button aria-expanded={open} onClick={() => setOpen(v => !v)}>How this works</button>
-          {open && <p>{how}</p>}
-        </div>}
-      </div>
-      {foot && <footer className="ob-foot">{foot}</footer>}
+    <span className="ld-team" role="img" aria-label={ob.placed.length ? `Dealt so far: ${ob.placed.map(w => AGENTS[w].name).join(', ')}` : 'No crew dealt yet'}>
+      {CREW.map(w => ob.placed.includes(w)
+        ? <span key={w} className="ld-tc" data-who={w}><Crew who={w} size={30} /></span>
+        : <i key={w} />)}
+    </span>
+  );
+}
+
+function Scene({ sky, cls = '', say, sub, children, foot, hz = 64, onTap, skip, label }: {
+  sky: Sky; cls?: string; say?: string; sub?: ReactNode; children?: ReactNode; foot?: ReactNode; hz?: number; onTap?: () => void; skip?: boolean; label?: string;
+}) {
+  const ob = useOb();
+  return (
+    <section className={`ld ${cls}`} data-sky={sky} style={{ ['--hz' as string]: `${hz}%` } as CSSProperties} aria-labelledby={say ? 'ld-say' : undefined} aria-label={say ? undefined : label} onClick={onTap}>
+      <div className="ld-sky" aria-hidden="true"><i className="ld-stars" /><i className="ld-night" /></div>
+      <div className="ld-glow" aria-hidden="true" />
+      <div className="ld-ground" aria-hidden="true" />
+      <div className="ld-stage">{children}</div>
+      <header className="ld-top" onClick={e => e.stopPropagation()}>
+        <Progress />
+        <span className="ld-tools">
+          {skip && <button className="ld-skip" onClick={() => ob.go('doors')}>Skip</button>}
+          <SoundToggle cls="ld-snd" />
+        </span>
+      </header>
+      {say && <div className="ld-words"><Say text={say} />{sub && <p className="ld-sub" key={String(sub)}>{sub}</p>}</div>}
+      {foot && <footer className="ld-foot" onClick={e => e.stopPropagation()}>{foot}</footer>}
     </section>
   );
 }
 
 const Proto = ({ children, onClick }: { children: ReactNode; onClick: () => void }) => (
-  <button className="ob-proto" onClick={onClick}><span>Simulate</span>{children}</button>
+  <button className="ld-proto" onClick={onClick}><span>Simulate</span>{children}</button>
 );
+function How({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="ld-how">
+      <button aria-expanded={open} onClick={() => setOpen(v => !v)}>How this works</button>
+      {open && <p>{children}</p>}
+    </div>
+  );
+}
+const Hint = ({ children, show = true }: { children: ReactNode; show?: boolean }) => <p className={`ld-hint ${show ? 'on' : ''}`} aria-hidden={!show}>{children}</p>;
 
-/* ------------------------------------------------------------------ 1. Title: tap to begin (the tap also wakes the audio) */
+/* ------------------------------------------------------------------ 1. Title: Keep climbs out of the horizon */
 
 function Title() {
   const ob = useOb();
   const rm = usePrefersReducedMotion();
-  const [ph, setPh] = useState(rm ? 3 : 0); // 0 the ball turns, 1 it settles into the mark, 2 Keep is dealt, 3 Keep waits for the tap
-  useEffect(() => {
-    if (rm) return;
-    const ts = [setTimeout(() => setPh(1), 1350), setTimeout(() => setPh(2), 1800), setTimeout(() => setPh(3), 2500)];
-    return () => ts.forEach(clearTimeout);
-  }, [rm]);
-  const begin = () => { if (soundOn()) unlock(); play('rise'); ob.go('story'); };
+  const after = useTimers();
+  const [ph, setPh] = useState(rm ? 3 : 0); // 0 the line draws, 1 Keep climbs out, 2 the mark, 3 waiting for the tap
+  const [k, setK] = useState<MState>('idle');
+  const went = useRef(false);
+  useEffect(() => { after(450, () => setPh(1)); after(1500, () => setPh(2)); after(2200, () => setPh(3)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const begin = () => {
+    if (went.current) return; went.current = true;
+    if (soundOn()) unlock();
+    setPh(3); setK('done'); play('rise');
+    after(520, () => ob.go('pile'));
+  };
   return (
-    <div className={`ob-title ph-${ph}`}>
-      <button className="t-hit" onClick={begin} aria-label="Later. Tap to begin.">
-        <span className="t-stage" aria-hidden="true">
-          {!rm && <span className="t-ball"><span className="t-shadow" /><wm-ball variant="upper" state="working" /></span>}
-          <span className="t-mark"><wm-horizon variant="lower" state="idle" /></span>
-          <span className="t-keep"><Chief state={ph >= 3 ? 'waiting' : 'idle'} size={92} /></span>
-        </span>
-        <span className="t-hint" aria-hidden="true">Tap to begin</span>
+    <Scene sky="night" cls={`ld-title ph-${ph}`} hz={66} onTap={begin} label="Later">
+      <div className="ld-above"><K s={250} st={k} cls="ld-tkeep" /></div>
+      <span className="t-mark" aria-hidden="true"><wm-horizon variant="lower" state="idle" /></span>
+      <button className="t-go" onClick={e => { e.stopPropagation(); begin(); }}>
+        <span className="sr">Later. </span>Tap to start
+        <small><Icon name="soundon" size={16} /> Sound on</small>
       </button>
-      <SoundToggle cls="on-dark" />
-    </div>
+    </Scene>
   );
 }
 
-/* ------------------------------------------------------------------ 2. The story: five scenes, one idea each */
+/* ------------------------------------------------------------------ 2 and 3. A lot, then the crew sort it */
 
-type G = 'mail' | 'today' | 'bill' | 'cap' | 'cake' | 'plane';
-interface Pos { x: number; y: number; r: number; s: number; o: number; d: number; z?: number }
-interface CardS extends Pos { id: number; g: G; tone?: 'a' | 'pop' }
-interface ActorS extends Pos { st: MState }
-
-const LINES = [
-  'Life sends you a lot.',
-  'Keep and the crew sort it.',
-  'You only see what needs you.',
-  'Not now? Flick it down. It comes back.',
-  'Nothing leaves without your yes.',
+/** The pile: where each card lands on and around Keep (x from the centre, y above the horizon), front or behind. */
+const PILE: { g: G; x: number; y: number; r: number; front: boolean; to: number }[] = [
+  { g: 'mail', x: -58, y: 40, r: -14, front: true, to: 0 },
+  { g: 'bill', x: 8, y: 26, r: 6, front: true, to: 3 },
+  { g: 'cake', x: 66, y: 44, r: 16, front: true, to: 0 },
+  { g: 'cap', x: -118, y: 32, r: -24, front: true, to: 2 },
+  { g: 'plane', x: 122, y: 30, r: 22, front: true, to: 1 },
+  { g: 'receipt', x: -40, y: 200, r: -20, front: false, to: 3 },
+  { g: 'house', x: 32, y: 210, r: 12, front: false, to: 1 },
+  { g: 'today', x: -2, y: 240, r: -4, front: false, to: 1 },
+  { g: 'gift', x: 86, y: 170, r: 28, front: false, to: 0 },
+  { g: 'paw', x: -94, y: 162, r: -30, front: false, to: 2 },
+  { g: 'car', x: -160, y: 66, r: -36, front: true, to: 3 },
+  { g: 'book', x: 166, y: 72, r: 34, front: true, to: 2 },
 ];
-const HINT = ['', '', 'Tap it', '', 'Press and hold'];
-const GLYPHS: G[] = ['cap', 'cake', 'plane', 'bill', 'mail', 'today'];
-const CREW: AgentId[] = ['wren', 'scout', 'juno', 'ledger'];
+/** Where the crew stand once dealt, and where each one's stack sits above its head. */
+const SPOT: Record<AgentId, number> = { wren: -158, scout: -102, juno: 102, ledger: 158 };
+const SORTED = (i: number) => {
+  const p = PILE[i], who = CREW[p.to], n = PILE.slice(0, i).filter(q => q.to === p.to).length;
+  return { x: SPOT[who] + (n - 1) * 3, y: 112 + n * 7, r: (n - 1) * 5 };
+};
+
+function Heap({ landed, sorted, sink }: { landed: number; sorted: number; sink?: boolean }) {
+  return <>
+    {PILE.map((p, i) => {
+      const s = i < sorted ? SORTED(i) : null;
+      return (
+        <Card key={i} g={p.g} x={s ? s.x : p.x} y={sink ? -120 : s ? s.y : p.y} r={s ? s.r : p.r} w={s ? 40 : 58}
+          cls={`h ${i < landed ? 'in' : ''} ${p.front && !s ? 'front' : ''} ${s ? 'sorted' : ''}`}
+          style={{ ['--d' as string]: `${(s ? i : 0) * 70}ms` } as CSSProperties} />
+      );
+    })}
+  </>;
+}
+
+function Pile() {
+  const ob = useOb();
+  const after = useTimers();
+  const still = ob.jumped || reducedMotion();
+  const [landed, setLanded] = useState(still ? PILE.length : 0);
+  const [k, setK] = useState<MState>(still ? 'thinking' : 'listening');
+  const [ready, setReady] = useState(still);
+  useEffect(() => {
+    if (still) return;
+    PILE.forEach((_, i) => { after(380 + i * 125, () => setLanded(i + 1)); after(380 + i * 125 + 330, () => play('deal', { vol: 0.5, step: (i % 6) * 2 })); });
+    after(380 + 5 * 125 + 200, () => { setK('error'); play('thup'); });
+    after(380 + PILE.length * 125 + 700, () => { setK('thinking'); setReady(true); });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <Scene sky="clay" cls="ld-pile" say="Life sends you a lot." skip onTap={() => ready && ob.go('sort')}
+      foot={<Hint show={ready}>Tap to carry on</Hint>}>
+      <div className="ld-above">
+        <Heap landed={landed} sorted={0} />
+        <K st={k} cls={k === 'error' ? 'squash' : ''} />
+      </div>
+    </Scene>
+  );
+}
+
+function Sort() {
+  const ob = useOb();
+  const after = useTimers();
+  const [ph, setPh] = useState<'wait' | 'deal' | 'sort' | 'done'>('wait');
+  const [dealt, setDealt] = useState(0);
+  const [sorted, setSorted] = useState(0);
+  const go = () => {
+    if (ph !== 'wait') return;
+    setPh('deal'); play('rise', { step: -2 });
+    CREW.forEach((_, i) => after(260 + i * 240, () => { setDealt(i + 1); play('deal', { step: i * 2 }); }));
+    const t0 = 260 + 4 * 240 + 260;
+    after(t0, () => setPh('sort'));
+    PILE.forEach((_, i) => after(t0 + i * 70, () => setSorted(i + 1)));
+    PILE.forEach((_, i) => after(t0 + i * 70 + 360, () => play('tick', { step: i })));
+    after(t0 + PILE.length * 70 + 600, () => { setPh('done'); play('done'); });
+    after(t0 + PILE.length * 70 + 2400, () => ob.go('needs'));
+  };
+  const k: MState = ph === 'wait' ? 'thinking' : ph === 'done' ? 'done' : 'working';
+  return (
+    <Scene sky="navy" cls={`ld-sort ph-${ph}`} say="Keep and the crew sort it." skip onTap={() => ph === 'done' && ob.go('needs')}
+      foot={<Hint show={ph === 'wait'}>Tap Keep</Hint>}>
+      <div className="ld-above">
+        <Heap landed={PILE.length} sorted={sorted} />
+        {CREW.map((w, i) => <C key={w} who={w} s={104} x={i < dealt ? SPOT[w] : 0} lift={i < dealt ? 0 : 40} st={ph === 'done' ? 'done' : i < dealt ? 'idle' : 'idle'} cls={`deal ${i < dealt ? 'in' : ''}`} />)}
+        <K st={k} out={ph === 'deal'} cls={ph === 'wait' ? '' : 'small'} />
+        <button className="ld-keep-hit" disabled={ph !== 'wait'} onClick={e => { e.stopPropagation(); go(); }} aria-label="Tap Keep to deal the crew" />
+      </div>
+    </Scene>
+  );
+}
+
+/* ------------------------------------------------------------------ 4. Only what needs you */
+
+function Needs() {
+  const ob = useOb();
+  const after = useTimers();
+  const still = ob.jumped || reducedMotion();
+  const [ph, setPh] = useState<'sink' | 'rise' | 'done'>(still ? 'rise' : 'sink');
+  const [moved, setMoved] = useState(still);
+  useEffect(() => {
+    if (still) return;
+    after(500, () => { setMoved(true); play('later', { vol: 0.45 }); });
+    after(1300, () => { setPh('rise'); play('rise'); });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const tap = () => {
+    if (ph !== 'rise') return;
+    setPh('done'); after(260, () => play('done'));
+    after(1900, () => ob.go('later'));
+  };
+  return (
+    <Scene sky="navy" cls={`ld-needs ph-${ph}`} say="Only what needs you." skip
+      foot={<Hint show={ph === 'rise'}>Tap the card</Hint>}>
+      <div className="ld-above">
+        <Heap landed={PILE.length} sorted={PILE.length} sink={moved} />
+        {CREW.map(w => <C key={w} who={w} s={104} x={SPOT[w]} lift={moved ? -130 : 0} st="working" cls="deal in sinks" />)}
+        <K x={moved ? -96 : 0} st={ph === 'done' ? 'done' : moved ? 'waiting' : 'working'} cls={moved ? 'smaller' : 'small'} />
+        <button className={`ld-big flip ${ph !== 'sink' ? 'up' : ''} ${ph === 'done' ? 'turned' : ''}`} onClick={e => { e.stopPropagation(); tap(); }} disabled={ph !== 'rise'} aria-label="The one card that needs you. Tap it.">
+          <span className="face a"><Icon name="bill" size={58} stroke={1.7} /></span>
+          <span className="face b"><Icon name="check" size={64} stroke={2.4} /></span>
+        </button>
+      </div>
+    </Scene>
+  );
+}
+
+/* ------------------------------------------------------------------ 5. Later: flick it under the line; it comes back */
+
+function Later() {
+  const ob = useOb();
+  const after = useTimers();
+  const [ph, setPh] = useState<'wait' | 'gone' | 'back'>('wait');
+  const card = useRef<HTMLButtonElement>(null);
+  const drag = useRef<{ y: number; id: number; on: boolean; dy: number } | null>(null);
+  const send = () => {
+    if (ph !== 'wait') return;
+    setPh('gone'); play('later');
+    after(2500, () => { setPh('back'); play('back'); });
+    after(4300, () => ob.go('yes'));
+  };
+  const down = (e: React.PointerEvent) => { if (ph === 'wait') drag.current = { y: e.clientY, id: e.pointerId, on: false, dy: 0 }; };
+  const move = (e: React.PointerEvent) => {
+    const d = drag.current, el = card.current; if (!d || d.id !== e.pointerId || !el) return;
+    d.dy = Math.max(-20, e.clientY - d.y);
+    if (!d.on && Math.abs(d.dy) < 6) return;
+    if (!d.on) { d.on = true; el.setPointerCapture(e.pointerId); }
+    setT(el, { y: d.dy, r: d.dy / 18 });
+  };
+  const up = () => {
+    const d = drag.current, el = card.current; drag.current = null; if (!d || !d.on || !el) return;
+    if (d.dy > 56) { el.style.transform = ''; send(); return; }
+    spring({ y: d.dy, r: d.dy / 18 }, { y: 0, r: 0 }, {}, { k: 520, c: 26 }, v => setT(el, v), () => { el.style.transform = ''; });
+  };
+  return (
+    <Scene sky="navy" cls={`ld-later ph-${ph}`} say={ph === 'wait' ? 'Not now? Flick it down.' : 'It comes back.'} skip
+      foot={<>
+        <Hint show={ph === 'wait'}><Icon name="sink" size={18} /> Flick the card down</Hint>
+        {ph === 'wait' && <button className="ld-btn quiet" onClick={send}>Send it to later</button>}
+      </>}>
+      <div className="ld-above">
+        <K x={-96} st={ph === 'gone' ? 'rest' : ph === 'back' ? 'done' : 'waiting'} cls="smaller" />
+        <button ref={card} className="ld-big drag" disabled={ph !== 'wait'} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
+          onClick={e => e.stopPropagation()} onKeyDown={e => { if (e.key === 'ArrowDown') send(); }} aria-label="The card. Flick it down, or press the down arrow, to send it to later.">
+          <span className="face a"><Icon name="bill" size={58} stroke={1.7} /></span>
+        </button>
+      </div>
+      <span className="ld-when" aria-hidden="true"><Icon name="clock" size={16} /> 6 pm</span>
+    </Scene>
+  );
+}
+
+/* ------------------------------------------------------------------ 6. Nothing leaves without your yes */
+
 const HOLD_MS = 1100;
 
-function Story() {
+function Yes() {
   const ob = useOb();
-  const alive = useAlive();
-  const stage = useRef<HTMLDivElement>(null);
-  const [W, setW] = useState(0), [H, setH] = useState(0);
-  const [scene, setScene] = useState(0);
-  const [ready, setReady] = useState(false); // the scene has finished acting; a tap moves on
-  const [want, setWant] = useState<null | 'tap' | 'flick' | 'hold'>(null);
-  const [cards, setCards] = useState<CardS[]>([]);
-  const [keep, setKeep] = useState<ActorS>({ x: -140, y: 0, r: 0, s: 1, o: 1, d: 0, st: 'idle' });
-  const [crew, setCrew] = useState<ActorS[]>([]);
-  const [line, setLine] = useState(false), [clock, setClock] = useState(false);
-  const [held, setHeld] = useState(0); // 0..1 progress of the hold
-  const token = useRef(0);
-
-  useLayoutEffect(() => {
-    const el = stage.current; if (!el) return;
-    const m = () => { setW(el.clientWidth); setH(el.clientHeight); };
-    m(); const ro = new ResizeObserver(m); ro.observe(el); return () => ro.disconnect();
-  }, []);
-
-  const card = (id: number, p: Partial<CardS>) => setCards(cs => cs.map(c => c.id === id ? { ...c, ...p } : c));
-  const sfx = (n: Sfx, step = 0, vol = 1) => play(n, { step, vol });
-
-  /* each scene is a short timeline; a token cancels it if the viewer moves on */
-  const act = async (n: number) => {
-    const my = ++token.current;
-    const ok = () => alive.current && token.current === my;
-    const wait = async (ms: number) => { await sleep(ms); return ok(); };
-    const cx = W / 2, cy = H * 0.42;
-    setReady(false); setWant(null);
-    if (n === 0) {
-      setKeep({ x: -140, y: cy, r: 0, s: 1, o: 1, d: 0, st: 'idle' }); setCrew([]); setLine(false); setClock(false);
-      const from: [number, number][] = [[-70, H * 0.2], [W + 70, H * 0.36], [W * 0.3, -90], [W + 70, H * 0.06], [-70, H * 0.58], [W * 0.72, -90]];
-      setCards(GLYPHS.map((g, i) => ({ id: i, g, x: from[i][0], y: from[i][1], r: (i % 2 ? 1 : -1) * 40, s: 1, o: 1, d: 0, z: i })));
-      if (!(await wait(240))) return;
-      const land = [[-26, 10, -18], [22, -6, 14], [-8, -22, -6], [30, 18, 24], [-34, -10, -28], [6, 6, 8]];
-      for (let i = 0; i < 6; i++) {
-        card(i, { x: cx + land[i][0], y: cy + land[i][1], r: land[i][2], d: 560 });
-        sfx('deal', i);
-        if (!(await wait(330))) return;
-      }
-      if (!(await wait(500))) return;
-      setReady(true);
-      if (!(await wait(1300))) return;
-      setScene(1);
-    }
-    if (n === 1) {
-      // Keep enters, looks, squares the heap, deals one card to each of the crew, and they carry them off
-      setCrew([]);
-      setCards(cs => cs.map((c, i) => ({ ...c, x: cx + [-26, 22, -8, 30, -34, 6][i], y: cy + [10, -6, -22, 18, -10, 6][i], r: [-18, 14, -6, 24, -28, 8][i], o: 1, s: 1, d: 0, tone: undefined })));
-      setKeep({ x: -140, y: cy + 10, r: 0, s: 1, o: 1, d: 0, st: 'idle' });
-      if (!(await wait(60))) return;
-      setKeep(k => ({ ...k, x: cx - 112, d: 640, st: 'listening' }));
-      sfx('tick', -5);
-      if (!(await wait(760))) return;
-      setKeep(k => ({ ...k, st: 'working' }));
-      setCards(cs => cs.map((c, i) => ({ ...c, x: cx + 8, y: cy - i * 3, r: 0, d: 300 })));
-      if (!(await wait(300))) return;
-      sfx('thup');
-      if (!(await wait(380))) return;
-      const spots = CREW.map((_, j) => W * (0.16 + j * 0.227));
-      setCrew(CREW.map((_, j) => ({ x: spots[j], y: H + 80, r: 0, s: 1, o: 1, d: 0, st: 'idle' })));
-      if (!(await wait(40))) return;
-      setCrew(cr => cr.map(c => ({ ...c, y: H * 0.86, d: 520 })));
-      sfx('rise', -7, 0.6);
-      setKeep(k => ({ ...k, st: 'idle' }));
-      if (!(await wait(560))) return;
-      for (let j = 0; j < 4; j++) {
-        card(j, { x: spots[j], y: H * 0.86 - 46, r: (j - 1.5) * 6, s: 0.62, d: 380, z: 10 + j });
-        sfx('deal', j + 2);
-        if (!(await wait(300))) return;
-      }
-      setKeep(k => ({ ...k, st: 'done' }));
-      if (!(await wait(250))) return;
-      for (let j = 0; j < 4; j++) {
-        setCrew(cr => cr.map((c, i) => i === j ? { ...c, y: H + 120, d: 520 } : c));
-        card(j, { y: H + 80, d: 520 });
-        if (!(await wait(140))) return;
-      }
-      if (!(await wait(520))) return;
-      setKeep(k => ({ ...k, st: 'idle' }));
-      setReady(true);
-      if (!(await wait(1200))) return;
-      setScene(2);
-    }
-    if (n === 2) {
-      // Keep keeps two cards; one rises and comes forward. It needs you: tap it.
-      setCrew([]);
-      setCards(cs => cs.map(c => c.id < 4 ? { ...c, o: 0, d: 0 } : c));
-      setKeep(k => ({ ...k, x: W * 0.2, y: H * 0.84, s: 0.85, d: k.x < 0 ? 0 : 600, st: 'idle' }));
-      setCards(cs => cs.map(c => c.id >= 4 ? { ...c, x: W * 0.2 + 34 + (c.id - 4) * 6, y: H * 0.84 - 26, r: 10 + (c.id - 4) * 6, s: 0.55, o: 1, d: 600, tone: undefined } : c));
-      if (!(await wait(720))) return;
-      setKeep(k => ({ ...k, st: 'waiting' }));
-      card(4, { x: cx, y: cy, r: 0, s: 1.9, d: 620, tone: 'a', z: 30 });
-      sfx('rise');
-      if (!(await wait(640))) return;
-      setWant('tap');
-    }
-    if (n === 3) {
-      setLine(true);
-      setKeep(k => ({ ...k, x: W * 0.16, y: H * 0.68, s: 0.8, d: 560, st: 'idle' }));
-      card(4, { o: 0, d: 0 });
-      if (!(await wait(560))) return;
-      card(5, { x: cx, y: cy - 20, r: 0, s: 1.9, d: 620, z: 31 });
-      sfx('rise', 2);
-      if (!(await wait(640))) return;
-      setWant('flick');
-    }
-    if (n === 4) {
-      setLine(false); setClock(false);
-      card(5, { o: 0, d: 0 });
-      setKeep(k => ({ ...k, x: W * 0.2, y: H * 0.84, s: 0.85, d: 520, st: 'idle' }));
-      setCards(cs => [...cs.filter(c => c.id !== 6), { id: 6, g: 'mail', x: W * 0.2, y: H * 0.8, r: -20, s: 0.4, o: 1, d: 0, z: 40 }]);
-      if (!(await wait(560))) return;
-      card(6, { x: cx, y: cy, r: 0, s: 1.9, d: 560 });
-      sfx('deal');
-      if (!(await wait(800))) return;
-      // it tries to leave, and stops at the edge
-      card(6, { x: W - 70, r: 9, d: 520 });
-      sfx('later', 6, 0.5);
-      if (!(await wait(520))) return;
-      sfx('thup', 0, 0.7);
-      setKeep(k => ({ ...k, st: 'waiting' }));
-      setWant('hold');
-    }
+  const after = useTimers();
+  const [ph, setPh] = useState<'wait' | 'hold' | 'sent'>('wait');
+  const h = useRef<{ done: () => void; cancel: () => void } | null>(null);
+  const t = useRef(0);
+  const start = () => {
+    if (ph === 'sent') return;
+    setPh('hold'); h.current = hum(HOLD_MS);
+    t.current = window.setTimeout(() => {
+      h.current?.done(); h.current = null; setPh('sent');
+      after(2600, () => ob.go('doors'));
+    }, HOLD_MS);
   };
-  useEffect(() => { if (W && H) act(scene); }, [scene, W > 0 && H > 0]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  /* the three gestures */
-  const tapped = async () => {
-    if (want !== 'tap') return;
-    setWant(null);
-    card(4, { tone: 'pop', d: 200 });
-    play('done'); setKeep(k => ({ ...k, st: 'done' }));
-    await sleep(520); if (!alive.current) return;
-    card(4, { x: keep.x + 30, y: keep.y - 20, s: 0.4, r: -14, o: 0, d: 520 });
-    play('deal', { step: 4, vol: 0.6 });
-    await sleep(700); if (!alive.current) return;
-    setReady(true); setScene(3);
+  const stop = () => {
+    if (!h.current) return;
+    clearTimeout(t.current); h.current.cancel(); h.current = null; setPh('wait');
   };
-  const flicked = async () => {
-    if (want !== 'flick') return;
-    setWant(null);
-    const lineY = H * 0.72;
-    card(5, { y: lineY + 110, s: 1.2, o: 0, r: 4, d: 520 });
-    play('later'); setKeep(k => ({ ...k, st: 'rest' }));
-    await sleep(540); if (!alive.current) return;
-    setClock(true);
-    for (let i = 0; i < 4; i++) { await sleep(300); if (!alive.current) return; play('tick', { step: i * 2, vol: 0.5 }); }
-    await sleep(200); if (!alive.current) return;
-    setClock(false);
-    card(5, { y: H * 0.42 - 20, s: 1.9, o: 1, r: 0, tone: 'pop', d: 620 });
-    play('back'); setKeep(k => ({ ...k, st: 'done' }));
-    await sleep(1100); if (!alive.current) return;
-    card(5, { tone: undefined });
-    setReady(true); setScene(4);
-  };
-  const holdRef = useRef<{ raf: number; h: ReturnType<typeof hum>; t0: number } | null>(null);
-  const holdStart = () => {
-    if (want !== 'hold' || holdRef.current) return;
-    const h = hum(HOLD_MS), t0 = performance.now();
-    const step = (t: number) => {
-      const p = Math.min(1, (t - t0) / HOLD_MS); setHeld(p);
-      if (p >= 1) { holdRef.current = null; h.done(); holdDone(); return; }
-      if (holdRef.current) holdRef.current.raf = requestAnimationFrame(step);
-    };
-    holdRef.current = { raf: requestAnimationFrame(step), h, t0 };
-  };
-  const holdStop = () => {
-    const s = holdRef.current; if (!s) return;
-    cancelAnimationFrame(s.raf); holdRef.current = null; s.h.cancel(); setHeld(0);
-  };
-  const holdDone = async () => {
-    setWant(null); setHeld(0);
-    setKeep(k => ({ ...k, st: 'done' }));
-    card(6, { tone: 'pop', d: 160 });
-    await sleep(420); if (!alive.current) return;
-    card(6, { x: W + 160, r: 16, d: 520 });
-    play('deal', { step: 5, vol: 0.7 });
-    await sleep(1000); if (!alive.current) return;
-    ob.go('doors');
-  };
-  useEffect(() => () => { const s = holdRef.current; if (s) { cancelAnimationFrame(s.raf); s.h.cancel(); } }, []);
-
-  /* flick down on the card (or press it, or the down arrow) */
-  const drag = useRef<{ y: number; id: number } | null>(null);
-  const onDown = (e: React.PointerEvent) => {
-    if (want === 'hold') { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); holdStart(); return; }
-    if (want === 'flick') { drag.current = { y: e.clientY, id: e.pointerId }; (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); }
-  };
-  const onMove = (e: React.PointerEvent) => {
-    const d = drag.current; if (!d || d.id !== e.pointerId) return;
-    const dy = Math.max(0, e.clientY - d.y);
-    const el = e.currentTarget as HTMLElement; el.style.translate = `0 ${dy}px`;
-    if (dy > 70) { drag.current = null; el.style.translate = ''; flicked(); }
-  };
-  const onUp = (e: React.PointerEvent) => {
-    if (want === 'hold') { holdStop(); return; }
-    const d = drag.current; drag.current = null;
-    const el = e.currentTarget as HTMLElement;
-    if (d) { const dy = e.clientY - d.y; el.style.translate = ''; if (dy < 8) flicked(); }
-  };
-
-  const next = () => { if (want) return; if (scene < 2) setScene(scene + 1); };
-  const interactive = (id: number) => (want === 'tap' && id === 4) || (want === 'flick' && id === 5) || (want === 'hold' && id === 6);
-
+  useEffect(() => () => { clearTimeout(t.current); h.current?.cancel(); }, []);
   return (
-    <section className="ob-story" aria-labelledby="st-say">
-      <header className="st-top">
-        <span className="st-hand" role="img" aria-label={`Scene ${scene + 1} of 5`}>
-          {LINES.map((_, i) => <i key={i} className={i <= scene ? 'on' : ''} style={{ ['--i' as string]: i } as CSSProperties} />)}
-        </span>
-        <span className="st-tools"><SoundToggle cls="quiet" /><button className="btn quiet sm" onClick={() => ob.go('doors')}>Skip</button></span>
-      </header>
-      <h1 className="st-say" id="st-say" aria-live="polite" key={scene}>{LINES[scene]}</h1>
-      <div className={`st-stage ${ready && scene < 2 ? 'tappable' : ''}`} ref={stage} onClick={next}>
-        {line && <div className="st-line" style={{ top: H * 0.72 }} aria-hidden="true" />}
-        {clock && <div className="st-clock" style={{ left: W / 2, top: H * 0.72 + 44 }} aria-hidden="true"><i /></div>}
-        {crew.map((c, j) => (
-          <span key={j} className="st-actor" aria-hidden="true" style={{ transform: `translate(${c.x}px, ${c.y}px) scale(${c.s})`, transitionDuration: `${c.d}ms` }}>
-            <Crew who={CREW[j]} size={50} state={c.st} />
-          </span>
-        ))}
-        <span className="st-actor st-keep" aria-hidden="true" style={{ transform: `translate(${keep.x}px, ${keep.y}px) scale(${keep.s})`, transitionDuration: `${keep.d}ms` }}>
-          <Chief state={keep.st} size={92} />
-        </span>
-        {cards.map(c => {
-          const live = interactive(c.id);
-          return (
-            <button key={c.id} tabIndex={live ? 0 : -1} aria-hidden={!live}
-              aria-label={live ? (want === 'tap' ? 'The card that needs you. Tap it' : want === 'flick' ? 'Flick this card down to later' : 'Press and hold to let this card go') : undefined}
-              className={`st-card ${c.tone ?? ''} ${live ? 'live ' + want : ''}`}
-              style={{ transform: `translate(${c.x}px, ${c.y}px) rotate(${c.r}deg) scale(${c.s})`, opacity: c.o, transitionDuration: `${c.d}ms`, zIndex: c.z, ['--held' as string]: c.id === 6 ? held : 0 } as CSSProperties}
-              onClick={e => { e.stopPropagation(); if (want === 'tap' && c.id === 4) tapped(); }}
-              onPointerDown={live ? onDown : undefined} onPointerMove={live ? onMove : undefined} onPointerUp={live ? onUp : undefined} onPointerCancel={live ? onUp : undefined}
-              onKeyDown={e => {
-                if (!live) return;
-                if (want === 'flick' && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); flicked(); }
-                if (want === 'hold' && (e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); holdStart(); }
-              }}
-              onKeyUp={e => { if (want === 'hold' && (e.key === ' ' || e.key === 'Enter')) holdStop(); }}>
-              <Icon name={c.tone === 'pop' ? 'check' : c.g} size={22} stroke={1.9} />
-              {c.id === 6 && <svg className="st-ring" viewBox="0 0 100 100" aria-hidden="true"><rect x="3" y="3" width="94" height="94" rx="18" pathLength="100" /></svg>}
-            </button>
-          );
-        })}
-        {want && HINT[scene] && <p className="st-hint" aria-hidden="true">{HINT[scene]}</p>}
-        {want === 'flick' && <p className="st-hint" aria-hidden="true"><Icon name="sink" size={20} /></p>}
+    <Scene sky="glow" cls={`ld-yes ph-${ph}`} say={ph === 'sent' ? 'That was your yes.' : 'Nothing leaves without your yes.'} sub={ph === 'sent' ? 'Only practice. Nothing was sent.' : undefined} skip={ph !== 'sent'}
+      foot={ph === 'sent'
+        ? <button className="ld-btn" onClick={() => ob.go('doors')}>Carry on</button>
+        : <button className={`ld-hold ${ph === 'hold' ? 'on' : ''}`} style={{ ['--hold' as string]: `${HOLD_MS}ms` } as CSSProperties}
+            onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); start(); }} onPointerUp={stop} onPointerCancel={stop} onPointerLeave={stop}
+            onKeyDown={e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); start(); } }}
+            onKeyUp={e => { if (e.key === ' ' || e.key === 'Enter') stop(); }}>
+            <i className="fill" /><span>Hold to say yes</span>
+          </button>}>
+      <div className="ld-above">
+        <K x={-96} st={ph === 'sent' ? 'done' : 'listening'} cls="smaller" />
+        <span className="ld-big send"><span className="face a"><Icon name="send" size={54} stroke={1.9} /></span><i className="tab" /></span>
       </div>
-    </section>
+    </Scene>
   );
 }
 
-/* ------------------------------------------------------------------ 3. Two doors */
+/* ------------------------------------------------------------------ 7. Two doors: it runs in your own account */
 
 function Doors() {
   const ob = useOb();
-  const [open, setOpen] = useState(false);
   return (
-    <section className="ob-scene ob-doors" aria-labelledby="ob-say">
-      <div className="ob-scroll">
-        <div className="doors-top"><SoundToggle cls="quiet" /></div>
-        <div className="doors-art" aria-hidden="true">
-          <span className="door-keep"><Chief state="idle" size={84} /></span>
-          {CREW.map((w, j) => <span key={w} className={`door-card d${j + 1}`}><Crew who={w} size={50} /></span>)}
-        </div>
-        <h1 className="ob-say big" id="ob-say">It runs in your own account, not ours.</h1>
-        <div className="ob-how center">
-          <button aria-expanded={open} onClick={() => setOpen(v => !v)}>How this works</button>
-          {open && <p>Later lives in your Cloudflare account and uses your own Anthropic key. We never see your mail.</p>}
-        </div>
+    <Scene sky="dawn" cls="ld-doors" say="Yours. In your own account." sub="Your Cloudflare. Your Anthropic key. Not ours."
+      foot={<>
+        <button className="ld-btn primary" onClick={() => { play('rise'); ob.setPath('new'); ob.go('computer'); }}>Set up mine</button>
+        <button className="ld-btn" onClick={() => { play('rise'); ob.setPath('returning'); ob.go('computer'); }}>I already have Later</button>
+        <button className="ld-btn quiet sm" onClick={() => ob.toApp('skip')}>Look around first</button>
+      </>}>
+      <div className="ld-above">
+        {CREW.map((w, i) => <C key={w} who={w} s={96} x={SPOT[w] * 1.02} cls="hop" style={{ ['--i' as string]: i } as CSSProperties} />)}
+        <K s={220} cls="wave" />
       </div>
-      <footer className="ob-foot">
-        <button className="btn primary block" onClick={() => { ob.setPath('new'); ob.go('computer'); }}>Set up mine</button>
-        <button className="btn block" onClick={() => { ob.setPath('returning'); ob.go('computer'); }}>I already have Later</button>
-        <button className="btn quiet block sm" onClick={() => ob.toApp('skip')}>Look around first</button>
-      </footer>
-    </section>
+    </Scene>
   );
 }
 
-/* ------------------------------------------------------------------ 4. On your computer, then pair (one screen) */
+/* ------------------------------------------------------------------ 8. On your computer, then pair */
 
 function qr(seed = 7): boolean[][] {
   const n = 25, m: boolean[][] = Array.from({ length: n }, () => Array(n).fill(false));
@@ -463,360 +420,355 @@ const QrCode = () => (
   </svg>
 );
 
-const CREDIT = 100_000_000, CAP = 60_000_000; // integer micro-USD
+const CAP = 60_000_000; // integer micro-USD, example data
+const usd = (micro: number) => '$' + (micro / 1_000_000).toFixed(2).replace(/\.00$/, '');
+const usd2 = (micro: number) => '$' + (micro / 1_000_000).toFixed(2);
+const DOTS = 9;
 
 function Computer() {
   const ob = useOb();
-  const alive = useAlive();
+  const after = useTimers();
   const back = ob.path === 'returning';
-  // new: wait for the installer to make your home, then it shows a code. returning: the code is already on your other device.
   const [phase, setPhase] = useState<'wait' | 'quiet' | 'code' | 'scan' | 'expired' | 'paired'>(back ? 'code' : 'wait');
-  const phoneRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (ob.take('computer-done')) setPhase('code');
     if (ob.take('computer-quiet')) setPhase('quiet');
   }, [ob.sim?.at]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (phase === 'code') play('rise', { step: -3 }); }, [phase]);
-  const scan = async () => {
+  const scan = () => {
     setPhase('scan');
-    await sleep(1500); if (!alive.current) return;
-    if (ob.take('code-expired')) { setPhase('expired'); return; }
-    setPhase('paired');
+    after(1500, () => {
+      if (ob.take('code-expired')) { setPhase('expired'); play('thup'); return; }
+      setPhase('paired');
+      for (let i = 0; i < DOTS; i++) after(i * 60, () => play('tick', { step: i, vol: 0.6 }));
+      after(DOTS * 60 + 200, () => { play('deal'); if (!back) ob.place('ledger'); else CREW.forEach(w => ob.place(w)); });
+      after(DOTS * 60 + 820, () => play('done'));
+    });
   };
-  useLayoutEffect(() => {
-    if (phase !== 'paired') return;
-    const cards = phoneRef.current?.querySelectorAll<HTMLElement>('.ph-card');
-    cards?.forEach((c, j) => dealFrom(c, { delay: 240 + j * 180, dur: 600 }));
-    setTimeout(() => play('done'), 240 + (cards?.length ?? 1) * 180 + 420);
-    if (!back) ob.place('ledger', 'Spend');
-  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const k: MState = phase === 'quiet' || phase === 'expired' ? 'error' : phase === 'paired' ? 'done' : phase === 'scan' ? 'listening' : phase === 'code' ? 'waiting' : 'thinking';
   const say = {
-    wait: 'Set this up on a computer.', quiet: 'Your computer has gone quiet.', code: back ? 'Scan the code from your Later.' : 'Your home is ready. Scan its code.',
-    scan: 'Reading the code.', expired: 'That code has expired.', paired: 'This phone is paired.',
+    wait: 'Set it up on a computer.', quiet: 'Your computer went quiet.', code: back ? 'Scan the code from your Later.' : 'Your home is ready.',
+    scan: 'Reading the code.', expired: 'That code has expired.', paired: 'Paired.',
   }[phase];
   const sub = {
-    wait: 'Open the address there, then type the code.', quiet: 'Run the installer again. It picks up where it left off.',
-    code: back ? 'Settings, then Add a phone, on any paired device.' : 'Your computer is showing it now.', scan: '',
-    expired: 'Show a new code, then scan again.', paired: back ? 'Your crew is already at work.' : <><b className="num">{usd(CREDIT).replace('.00', '')}</b> of credit, capped at <b className="num">{usd(CAP).replace('.00', '')}</b>.</>,
+    wait: 'Open the address there and type the code.', quiet: 'Run the installer again. It picks up where it stopped.',
+    code: back ? 'On a paired device: Settings, then Add a phone.' : 'Scan the code it is showing.', scan: '',
+    expired: 'Show a new code, then scan again.', paired: back ? 'Your crew is already at work.' : `Spending is capped at ${usd(CAP)}, set on your computer.`,
   }[phase];
-  const who: AgentId[] = back ? CREW : ['ledger'];
   return (
-    <Scene k={k} cls="ob-computer" say={say} sub={sub || undefined}
-      how={phase === 'wait' ? 'The installer puts Later in your own Cloudflare account and locks your Anthropic key there. As soon as your home exists it shows a code, and this phone pairs.' : undefined}
-      foot={phase === 'wait' ? <Proto onClick={() => setPhase('code')}>Home created</Proto>
-        : phase === 'quiet' ? <button className="btn primary block" onClick={() => setPhase('wait')}>I’ve run it again</button>
-          : phase === 'code' ? <button className="btn primary block" onClick={scan}>Scan the code</button>
-            : phase === 'expired' ? <button className="btn primary block" onClick={scan}>Scan again</button>
-              : phase === 'paired' ? <button className="btn primary block" onClick={() => back ? ob.toApp('pair') : ob.go('mail')}>{back ? 'Open Today' : 'Carry on'}</button>
-                : <button className="btn block" disabled>Reading the code</button>}>
-      {(phase === 'wait' || phase === 'quiet') && (
-        <div className="laptop" role="img" aria-label="On your computer, open later.sh/go and type K4Q 72R">
-          <div className="lap-screen">
-            <div className="lap-body">
-              <strong className="lap-url">later.sh/go</strong>
-              <span className="lap-code code">K4Q 72R</span>
-            </div>
-          </div>
-          <span className="lap-base" />
+    <Scene sky="navy" cls={`ld-computer ph-${phase}`} say={say} sub={sub || undefined} hz={60}
+      foot={<>
+        {phase === 'wait' && <><Proto onClick={() => setPhase('code')}>Home created</Proto>
+          <How>The installer puts Later in your own Cloudflare account and locks your Anthropic key and your spending cap there. When your home exists it shows a code, and this phone pairs. Nothing on a Later server.</How></>}
+        {phase === 'quiet' && <button className="ld-btn primary" onClick={() => setPhase('wait')}>I’ve run it again</button>}
+        {phase === 'code' && <button className="ld-btn primary" onClick={scan}>Scan the code</button>}
+        {phase === 'expired' && <button className="ld-btn primary" onClick={scan}>Scan again</button>}
+        {phase === 'scan' && <button className="ld-btn primary" disabled>Reading the code</button>}
+        {phase === 'paired' && <button className="ld-btn primary" onClick={() => back ? ob.toApp('pair') : ob.go('mail')}>{back ? 'Open Today' : 'Carry on'}</button>}
+      </>}>
+      <div className="ld-above">
+        <K x={64} s={160} st={k} cls="peek" lift={150} />
+        {phase === 'paired' && !back && <C who="ledger" x={-150} s={100} st="done" cls="pop-in" />}
+      </div>
+      <div className={`ld-laptop ${phase}`} role="img" aria-label={phase === 'wait' || phase === 'quiet' ? 'Your computer, showing later.sh/go and the code K4Q 72R' : phase === 'paired' ? 'Your computer, paired' : 'Your computer, showing a code to scan'}>
+        <div className="lap-screen">
+          {(phase === 'wait' || phase === 'quiet') && <span className="lap-go"><b>later.sh/go</b><span className="code">K4Q 72R</span></span>}
+          {(phase === 'code' || phase === 'scan' || phase === 'expired') && <span className="lap-qr"><QrCode />{phase === 'expired' && <span className="x"><Icon name="close" size={40} stroke={2.6} /></span>}</span>}
+          {phase === 'scan' && <><i className="vf tl" /><i className="vf tr" /><i className="vf bl" /><i className="vf br" /><i className="vf-line" /></>}
+          {phase === 'paired' && <span className="lap-ok"><Icon name="check" size={46} stroke={2.6} /></span>}
         </div>
-      )}
-      {(phase === 'code' || phase === 'scan' || phase === 'expired') && (
-        <div className={`viewfinder ${phase}`} role="img" aria-label={phase === 'expired' ? 'An expired code' : 'The code on your computer'}>
-          <span className="vf-screen"><QrCode />{phase === 'expired' && <span className="vf-x"><Icon name="close" size={40} stroke={2.4} /></span>}</span>
-          <i className="c tl" /><i className="c tr" /><i className="c bl" /><i className="c br" />
-          {phase === 'scan' && <span className="vf-line" />}
-          <span className="vf-peek"><Chief state={phase === 'expired' ? 'error' : 'listening'} size={100} /></span>
-        </div>
-      )}
-      {phase === 'paired' && (
-        <div className="paired" ref={phoneRef}>
-          <div className="ph-outline" aria-hidden="true">
-            <span className="ph-island" />
-            <div className="ph-cards">{who.map(w => <span key={w} className="ph-card"><Crew who={w} size={back ? 40 : 58} state="done" /></span>)}</div>
-          </div>
-        </div>
-      )}
+        <i className="lap-base" />
+      </div>
+      <span className={`ld-path ${phase === 'paired' ? 'lit' : ''}`} aria-hidden="true">
+        {Array.from({ length: DOTS }, (_, i) => {
+          const t = (i + 1) / (DOTS + 1), x = (1 - t) * (1 - t) * 150 + 2 * t * (1 - t) * 170 + t * t * 34, y = 2 * t * (1 - t) * 96 + t * t * 92;
+          return <i key={i} style={{ ['--i' as string]: i, left: `calc(50% + ${x.toFixed(1)}px)`, top: `calc(var(--hz) + ${y.toFixed(1)}px)` } as CSSProperties} />;
+        })}
+        <b className="ld-phone" />
+      </span>
     </Scene>
   );
 }
 
-/* ------------------------------------------------------------------ 5. Mail: one path, three small lines, one field */
+/* ------------------------------------------------------------------ 9 to 11. Mail, calendar, school: a crew member holds each ask */
 
 const GOOD_PW = 'abcd efgh ijkl mnop';
 
-function Mail() {
-  const ob = useOb();
-  const alive = useAlive();
-  const [st, setSt] = useState<'idle' | 'checking' | 'ok' | 'bad'>(ob.mail ? 'ok' : 'idle');
-  const [pw, setPw] = useState('');
-  const pwRef = useRef<HTMLInputElement>(null), crewRef = useRef<HTMLSpanElement>(null), cardRef = useRef<HTMLDivElement>(null);
-  const go = async () => {
-    setSt('checking');
-    await sleep(1200); if (!alive.current) return;
-    if (ob.take('wrong-password') || pw.replace(/\s/g, '').length !== 16) { setSt('bad'); return; }
-    setSt('ok'); ob.setConn('mail', true);
-  };
+function useDealIn(who: AgentId) {
   useLayoutEffect(() => {
-    if (st !== 'ok') return;
-    ob.place('wren', 'Mail');
-    dealFrom(crewRef.current).then(() => { flashDone(cardRef.current); play('done'); });
-    const t = setTimeout(() => alive.current && ob.go('calendar'), 1900);
+    const el = document.querySelector(`.ld .ld-hero`);
+    void fly(el, keepSvg(), { delay: 260, dur: 680 });
+    const t = setTimeout(() => play('deal'), reducedMotion() ? 0 : 260);
     return () => clearTimeout(t);
-  }, [st]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [who]);
+}
+
+function Connect({ who, g, sky = 'navy', cls, say, sub, children, foot, st }: {
+  who: AgentId; g: G; sky?: Sky; cls: string; say: string; sub: ReactNode; children?: ReactNode; foot: ReactNode; st: 'idle' | 'checking' | 'ok' | 'bad';
+}) {
+  useDealIn(who);
+  const cst: MState = st === 'bad' ? 'error' : st === 'checking' ? 'thinking' : st === 'ok' ? 'done' : 'idle';
   return (
-    <Scene k={st === 'bad' ? 'error' : st === 'checking' ? 'thinking' : st === 'ok' ? 'done' : 'waiting'} cls="ob-mail"
-      say={st === 'bad' ? 'Google said no to that password.' : st === 'ok' ? 'Mail connected.' : 'Connect your mail.'}
-      sub={st === 'bad' ? 'Paste the 16 letters again.' : st === 'ok' ? 'Wren reads it. Nothing is sent without you.' : 'Gmail, stored in your own account.'}
-      how="Google makes a separate password just for Later. You can delete it in your Google account at any time. Other ways in: your own Google connection (advanced), or later a connection service, which would see your mail."
-      foot={st === 'bad'
-        ? <button className="btn primary block" onClick={() => { setPw(''); setSt('idle'); setTimeout(() => pwRef.current?.focus(), 0); }}>Paste again</button>
-        : st === 'ok' ? null
-          : <><button className="btn primary block" disabled={!pw || st === 'checking'} onClick={go}>{st === 'checking' ? 'Connecting' : 'Connect'}</button>
-              <button className="btn quiet block sm" onClick={() => ob.go('calendar')}>Skip for now</button></>}>
-      <div ref={cardRef} className={`conn ${st}`}>
-        {st === 'ok'
-          ? <div className="conn-done"><span ref={crewRef}><Crew who="wren" size={52} state="idle" /></span><Icon name="mail" size={22} /></div>
-          : <>
-            <ol className="mini-steps">
-              <li><span className="n">1</span>Turn on 2-Step Verification</li>
-              <li><span className="n">2</span>Make an app password</li>
-              <li><span className="n">3</span>Paste it here</li>
-            </ol>
-            <label className="fld"><span className="sr">App password</span>
-              <span className="fld-row"><input ref={pwRef} id="ob-pw" className="code" value={pw} onChange={e => { setPw(e.target.value); if (st === 'bad') setSt('idle'); }} placeholder="xxxx xxxx xxxx xxxx" autoComplete="off" spellCheck={false} aria-invalid={st === 'bad'} />
-                <button className="btn sm" onClick={() => { setPw(GOOD_PW); if (st === 'bad') setSt('idle'); }}>Paste</button></span>
-            </label>
-          </>}
+    <Scene sky={sky} cls={`ld-connect ${cls} st-${st}`} say={say} sub={sub} hz={52} foot={foot}>
+      <div className="ld-above">
+        <K x={-112} s={150} st={st === 'ok' ? 'done' : 'idle'} cls="ld-k-side" />
+        <span className="ld-hero-wrap"><C who={who} x={44} s={190} st={cst} cls="ld-hero" /></span>
+        <Card g={g} x={st === 'ok' ? 44 : 118} y={st === 'ok' ? 90 : 52} r={st === 'ok' ? 0 : 12} w={72} cls={`held ${st === 'ok' ? 'taken' : ''}`} />
       </div>
+      {children}
     </Scene>
   );
 }
 
-/* ------------------------------------------------------------------ 6. Calendar: one field, skippable */
+function Field({ id, label, value, set, placeholder, paste, bad, onEnter }: { id: string; label: string; value: string; set: (v: string) => void; placeholder: string; paste: string; bad?: boolean; onEnter: () => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <label className={`ld-field ${bad ? 'bad' : ''}`}>
+      <span className="sr">{label}</span>
+      <input ref={ref} id={id} className="code" value={value} onChange={e => set(e.target.value)} placeholder={placeholder} autoComplete="off" spellCheck={false} aria-invalid={bad || undefined}
+        onKeyDown={e => { if (e.key === 'Enter') onEnter(); }} />
+      <button type="button" onClick={() => { set(paste); play('tick'); ref.current?.focus(); }}>Paste</button>
+    </label>
+  );
+}
+
+function Mail() {
+  const ob = useOb();
+  const after = useTimers();
+  const [st, setSt] = useState<'idle' | 'checking' | 'ok' | 'bad'>(ob.mail ? 'ok' : 'idle');
+  const [pw, setPw] = useState('');
+  const go = () => {
+    if (!pw || st === 'checking') return;
+    setSt('checking');
+    after(1200, () => {
+      if (ob.take('wrong-password') || pw.replace(/\s/g, '').length !== 16) { setSt('bad'); play('thup'); return; }
+      setSt('ok'); ob.setConn('mail', true); ob.place('wren');
+      after(420, () => play('done'));
+      after(2000, () => ob.go('calendar'));
+    });
+  };
+  return (
+    <Connect who="wren" g="mail" cls="ld-mail" st={st}
+      say={st === 'bad' ? 'Google said no to that.' : st === 'ok' ? 'Mail connected.' : 'Connect your mail.'}
+      sub={st === 'bad' ? 'Paste the 16 letters again.' : st === 'ok' ? 'Wren reads it. Nothing is sent without your yes.' : 'Wren reads it. Nothing is sent without your yes.'}
+      foot={st === 'ok' ? null : <>
+        <Field id="ob-pw" label="Gmail app password" value={pw} set={v => { setPw(v); if (st === 'bad') setSt('idle'); }} placeholder="App password" paste={GOOD_PW} bad={st === 'bad'} onEnter={go} />
+        <button className="ld-btn primary" disabled={!pw || st === 'checking'} onClick={go}>{st === 'checking' ? 'Connecting' : 'Connect'}</button>
+        <div className="ld-row"><How>Google makes a separate password just for Later: turn on 2-Step Verification, make an app password, paste it here. It is stored in your own account, and you can delete it in Google at any time.</How>
+          <button className="ld-btn quiet sm" onClick={() => ob.go('calendar')}>Skip</button></div>
+      </>} />
+  );
+}
 
 function Calendar() {
   const ob = useOb();
-  const alive = useAlive();
-  const [st, setSt] = useState<'idle' | 'checking' | 'ok'>(ob.cal ? 'ok' : 'idle');
+  const after = useTimers();
+  const [st, setSt] = useState<'idle' | 'checking' | 'ok' | 'bad'>(ob.cal ? 'ok' : 'idle');
   const [link, setLink] = useState('');
-  const crewRef = useRef<HTMLSpanElement>(null), cardRef = useRef<HTMLDivElement>(null);
-  const go = async () => { setSt('checking'); await sleep(1000); if (!alive.current) return; setSt('ok'); ob.setConn('cal', true); };
-  useLayoutEffect(() => {
-    if (st !== 'ok') return;
-    ob.place('scout', 'Calendar');
-    dealFrom(crewRef.current).then(() => { flashDone(cardRef.current); play('done'); });
-    const t = setTimeout(() => alive.current && ob.go('extras'), 1900);
-    return () => clearTimeout(t);
-  }, [st]); // eslint-disable-line react-hooks/exhaustive-deps
+  const go = () => {
+    if (!link || st === 'checking') return;
+    setSt('checking');
+    after(1000, () => {
+      setSt('ok'); ob.setConn('cal', true); ob.place('scout');
+      after(420, () => play('done'));
+      after(2000, () => ob.go('school'));
+    });
+  };
   return (
-    <Scene k={st === 'checking' ? 'thinking' : st === 'ok' ? 'done' : 'idle'} cls="ob-cal"
-      say={st === 'ok' ? 'Calendar added.' : 'Add your calendar.'} sub={st === 'ok' ? 'Scout reads it for meeting briefs.' : 'Paste its private link. Read only.'}
-      how="In Google Calendar, open Settings, choose your calendar and copy “Secret address in iCal format”."
+    <Connect who="scout" g="today" cls="ld-cal" st={st}
+      say={st === 'ok' ? 'Calendar added.' : 'Add your calendar.'} sub={st === 'ok' ? 'Scout reads it. It never changes it.' : 'Scout reads it from its private link.'}
       foot={st === 'ok' ? null : <>
-        <button className="btn primary block" disabled={!link || st === 'checking'} onClick={go}>{st === 'checking' ? 'Adding' : 'Add calendar'}</button>
-        <button className="btn block" onClick={() => ob.go('extras')}>Skip</button></>}>
-      <div ref={cardRef} className={`conn ${st}`}>
-        {st === 'ok'
-          ? <div className="conn-done"><span ref={crewRef}><Crew who="scout" size={52} /></span><Icon name="today" size={22} /></div>
-          : <label className="fld"><span className="sr">Calendar link</span><span className="fld-row">
-              <input id="ob-ical" className="code" value={link} onChange={e => setLink(e.target.value)} placeholder="https://calendar.google.com/…" autoComplete="off" spellCheck={false} />
-              <button className="btn sm" onClick={() => setLink('https://calendar.google.com/calendar/ical/example/basic.ics')}>Paste</button></span></label>}
-      </div>
-    </Scene>
+        <Field id="ob-ical" label="Private calendar link" value={link} set={setLink} placeholder="Private link" paste="https://calendar.google.com/calendar/ical/example/basic.ics" onEnter={go} />
+        <button className="ld-btn primary" disabled={!link || st === 'checking'} onClick={go}>{st === 'checking' ? 'Adding' : 'Add calendar'}</button>
+        <div className="ld-row"><How>In Google Calendar, open Settings, choose your calendar, and copy the secret address in iCal format.</How>
+          <button className="ld-btn quiet sm" onClick={() => ob.go('school')}>Skip</button></div>
+      </>} />
   );
 }
 
-/* ------------------------------------------------------------------ 7. Anything else: a plain list to tick */
-
-const SCHOOL = ['Procare', 'Brightwheel', 'ClassDojo', 'Seesaw', 'ParentSquare'];
-
-function Extras() {
+function School() {
   const ob = useOb();
-  const [picked, setPicked] = useState<string[]>(ob.byEmail ? [ob.byEmail] : []);
-  const had = useRef(picked.length > 0);
-  const listRef = useRef<HTMLUListElement>(null);
-  useLayoutEffect(() => {
-    if (picked.length && !had.current) { had.current = true; ob.place('juno', 'School'); }
-    if (picked.length) ob.setByEmail(picked[0]);
-  }, [picked]); // eslint-disable-line react-hooks/exhaustive-deps
+  const after = useTimers();
+  const [st, setSt] = useState<'idle' | 'ok'>(ob.school ? 'ok' : 'idle');
+  const yes = () => {
+    setSt('ok'); ob.setConn('school', true); ob.place('juno');
+    after(420, () => play('done'));
+    after(1800, () => ob.go('reading'));
+  };
   return (
-    <Scene k={picked.length ? 'done' : 'idle'} cls="ob-extras" say="Anything else?" sub="School and daycare apps come in by the emails they send you."
-      foot={<button className={`btn ${picked.length ? 'primary' : ''} block`} onClick={() => ob.go('reading')}>{picked.length ? 'Next' : 'Skip'}</button>}>
-      <ul className="ticks" ref={listRef}>
-        {SCHOOL.map(s => {
-          const on = picked.includes(s);
-          return (
-            <li key={s}><button aria-pressed={on} disabled={!ob.mail} onClick={() => { setPicked(p => on ? p.filter(x => x !== s) : [...p, s]); if (!on) play('tick', { step: picked.length * 2 }); }}>
-              <span className="box">{on && <Icon name="check" size={15} stroke={2.4} />}</span>{s}</button></li>
-          );
-        })}
-      </ul>
-      {!ob.mail && <p className="ob-fine">This works through your mail, so connect mail first.</p>}
-    </Scene>
+    <Connect who="juno" g="cap" sky="dawn" cls="ld-school" st={st === 'ok' ? 'ok' : 'idle'}
+      say={st === 'ok' ? 'Juno is watching for them.' : 'School apps too?'}
+      sub={!ob.mail ? 'They come in by email, so this needs your mail.' : st === 'ok' ? 'By the emails they send you.' : 'Juno reads the emails they send you.'}
+      foot={st === 'ok' ? null : <>
+        <button className="ld-btn primary" disabled={!ob.mail} onClick={yes}>Yes, watch for them</button>
+        <button className="ld-btn quiet sm" onClick={() => ob.go('reading')}>Not now</button>
+      </>} />
   );
 }
 
-/* ------------------------------------------------------------------ 8. Keep reads: the crew working, the meter, nothing else */
+/* ------------------------------------------------------------------ 12. Keep reads: the crew in orbit, the spend ring */
 
-const PASS_CAP = 1_000_000, PASS_USED = 420_000; // micro-USD
+const PASS_CAP = 1_000_000, PASS_USED = 420_000; // integer micro-USD, example data
 const PASS_MS = 9000;
-const PILE_G = ['house', 'cap', 'cake', 'receipt'] as const;
+const BITS: G[] = ['mail', 'today', 'bill', 'cap', 'receipt', 'house', 'cake', 'plane'];
+const LINES = ['Newest first.', 'Nothing is sent or deleted.', 'About a minute.'];
+const R = 120, CIRC = 2 * Math.PI * R;
 
 function Reading() {
   const ob = useOb();
-  const alive = useAlive();
+  const after = useTimers();
   const [t, setT0] = useState(0);
+  const [bits, setBits] = useState<{ id: number; g: G; x: number }[]>([]);
   const start = useRef(performance.now());
+  const n = useRef(0);
   const done = t >= 1;
+  const doneRef = useRef(done); doneRef.current = done;
   useEffect(() => {
     if (done) return;
-    const i = setInterval(() => setT0(Math.min(1, (performance.now() - start.current) / PASS_MS)), 120);
-    return () => clearInterval(i);
+    const i = setInterval(() => setT0(Math.min(1, (performance.now() - start.current) / PASS_MS)), 100);
+    const b = setInterval(() => {
+      if (reducedMotion()) return;
+      const id = n.current++;
+      setBits(v => [...v.slice(-7), { id, g: BITS[id % BITS.length], x: ((id * 73) % 260) - 130 }]);
+      if (id % 2 === 0) after(760, () => { if (!doneRef.current) play('tick', { step: (id / 2) % 7, vol: 0.4 }); });
+    }, 420);
+    return () => { clearInterval(i); clearInterval(b); };
   }, [done]);
   useEffect(() => { if (ob.take('learn-finish')) setT0(1); }, [ob.sim?.at]); // eslint-disable-line react-hooks/exhaustive-deps
-  const dealt = Math.round(t * 16);
-  const counts = PILE_G.map((_, j) => Math.floor((dealt + 3 - j) / 4));
-  const used = Math.round((PASS_USED * t) / 10_000) * 10_000;
-  const pileRef = useRef<HTMLDivElement>(null);
-  const last = useRef(0);
-  useLayoutEffect(() => {
-    if (dealt <= last.current) return;
-    for (let d = last.current; d < dealt; d++) {
-      const el = pileRef.current?.querySelectorAll<HTMLElement>('.rpile')[d % 4]?.querySelector<HTMLElement>('.rp-top');
-      dealFrom(el, { dur: 440, spin: -30, from: pileRef.current?.querySelector('.r-keep svg'), quiet: d % 2 === 1 });
-    }
-    last.current = dealt;
-  }, [dealt]);
   useEffect(() => {
     if (!done) return;
     play('done');
-    const t = setTimeout(() => alive.current && ob.go('found'), 1500);
-    return () => clearTimeout(t);
+    after(1700, () => ob.go('found'));
   }, [done]); // eslint-disable-line react-hooks/exhaustive-deps
+  const line = LINES[Math.min(LINES.length - 1, Math.floor(t * 3.2))];
+  const used = Math.round((PASS_USED * t) / 10_000) * 10_000;
+  const who = ob.placed.length ? CREW.filter(w => ob.placed.includes(w)) : CREW;
   return (
-    <Scene k={done ? 'done' : 'working'} crew={done ? 'done' : 'working'} cls="ob-reading"
-      say={done ? 'Done.' : 'Keep is reading.'} sub="Newest first. Nothing is sent or deleted."
-      foot={done ? null : <Proto onClick={() => setT0(1)}>Finish reading</Proto>}>
-      <div className="r-table" ref={pileRef}>
-        <span className="r-keep" aria-hidden="true"><Chief state={done ? 'done' : 'working'} size={88} /></span>
-        <div className="r-piles" aria-hidden="true">
-          {PILE_G.map((g, j) => (
-            <div key={g} className={`rpile ${counts[j] ? 'has' : ''}`} style={{ ['--n' as string]: Math.min(3, Math.max(0, counts[j] - 1)) } as CSSProperties}>
-              <span className="rp-edges"><i /><i /><i /></span>
-              <span className="rp-top"><Icon name={g} size={18} /></span>
-            </div>
+    <Scene sky="deep" cls={`ld-reading ${done ? 'done' : ''}`} say={done ? 'Done. Keep found things.' : 'Keep is reading.'} hz={70}
+      foot={<>
+        <p className="ld-cap" aria-live="polite" key={line}>{done ? 'Nothing was sent or deleted.' : line}</p>
+        <p className="ld-spend"><b className="num">{usd2(used)}</b> of a {usd2(PASS_CAP)} cap</p>
+        {!done && <Proto onClick={() => setT0(1)}>Finish reading</Proto>}
+      </>}>
+      <div className="ld-orbit-wrap">
+        <svg className="ld-ring" viewBox="-140 -140 280 280" aria-hidden="true">
+          <circle r={R} className="track" />
+          <circle r={R} className="used" style={{ strokeDasharray: `${CIRC * (done ? 1 : (used / PASS_CAP))} ${CIRC}` }} />
+        </svg>
+        <div className="ld-orbit" aria-hidden="true">
+          {who.map((w, i) => (
+            <span key={w} className="ld-orb" style={{ ['--a' as string]: `${(360 / who.length) * i + 30}deg` } as CSSProperties}>
+              <span className="ld-c" data-who={w}><Crew who={w} size={58} state={done ? 'done' : 'working'} /></span>
+            </span>
           ))}
         </div>
+        <span className="ld-k ld-k-center"><Chief state={done ? 'done' : 'working'} size={170} /></span>
+        {bits.map(b => <span key={b.id} className="ld-bit" style={{ ['--bx' as string]: `${b.x}px` } as CSSProperties}><Icon name={b.g} size={14} stroke={2} /></span>)}
       </div>
-      <div className="meter-row">
-        <div><b className="num">{usd(used)}</b> of {usd(PASS_CAP)}</div>
-        <div className="meter" role="progressbar" aria-label="First reading, spend against its cap" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round((used / PASS_CAP) * 100)}>
-          <i className="m-used" style={{ width: `${(used / PASS_CAP) * 100}%` }} />
-        </div>
-      </div>
+      <span className="sr" role="progressbar" aria-label="First reading, spend against its cap" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round((used / PASS_CAP) * 100)} />
     </Scene>
   );
 }
 
-/* ------------------------------------------------------------------ 9. What Keep found: Spaces to keep or flick away */
+/* ------------------------------------------------------------------ 13. What Keep found: dealt face down, turned one by one */
 
-const PROPOSED: { id: string; name: string; glyph: 'house' | 'cap' | 'cake' | 'receipt'; who: AgentId }[] = [
-  { id: 'house', name: 'House move', glyph: 'house', who: 'scout' },
-  { id: 'school', name: 'School', glyph: 'cap', who: 'juno' },
-  { id: 'party', name: 'A birthday', glyph: 'cake', who: 'wren' },
-  { id: 'tax', name: 'Taxes', glyph: 'receipt', who: 'ledger' },
+const PROPOSED: { id: string; name: string; g: G; who: AgentId }[] = [
+  { id: 'house', name: 'House move', g: 'house', who: 'scout' },
+  { id: 'school', name: 'School', g: 'cap', who: 'juno' },
+  { id: 'party', name: 'A birthday', g: 'cake', who: 'wren' },
+  { id: 'tax', name: 'Taxes', g: 'receipt', who: 'ledger' },
 ];
-const FACTS = [['You', 'Sam'], ['At home', 'Alex, and a child'], ['Moving', 'Exchange in November']];
+const FAN = [{ x: -134, r: -12, y: 210 }, { x: -45, r: -4, y: 226 }, { x: 45, r: 4, y: 226 }, { x: 134, r: 12, y: 210 }];
 
 function Found() {
   const ob = useOb();
-  const alive = useAlive();
+  const after = useTimers();
+  const still = reducedMotion();
+  const [dealt, setDealt] = useState(still ? 4 : 0);
+  const [turned, setTurned] = useState(still ? 4 : 0);
   const [gone, setGone] = useState<string[]>([]);
-  const [phase, setPhase] = useState<'check' | 'dealing' | 'dealt'>('check');
-  const [dealt, setDealt] = useState<string[]>([]);
-  const [facts, setFacts] = useState(false);
-  const deskRef = useRef<HTMLDivElement>(null);
+  const [ph, setPh] = useState<'show' | 'check' | 'keep'>(still ? 'check' : 'show');
+  useEffect(() => {
+    if (still) return;
+    PROPOSED.forEach((_, i) => after(300 + i * 200, () => { setDealt(i + 1); play('deal', { step: i * 2 }); }));
+    PROPOSED.forEach((_, i) => after(1500 + i * 520, () => { setTurned(i + 1); play('tick', { step: i * 3 }); }));
+    after(1500 + 4 * 520 + 200, () => { setPh('check'); play('done', { vol: 0.7 }); });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const kept = PROPOSED.filter(p => !gone.includes(p.id));
-  const deal = async () => {
-    setPhase('dealing');
-    for (const p of kept) { await sleep(reducedMotion() ? 150 : 380); if (!alive.current) return; setDealt(d => [...d, p.id]); }
-    await sleep(700); if (!alive.current) return;
-    play('done'); setPhase('dealt');
-    await sleep(1300); if (!alive.current) return;
-    ob.go('deck');
+  const flick = (id: string) => { setGone(g => [...g, id]); play('later', { vol: 0.6 }); };
+  const keep = () => {
+    setPh('keep'); play('deal');
+    kept.forEach(p => ob.place(p.who));
+    after(900, () => play('done'));
+    after(1600, () => ob.go('deck'));
   };
-  useLayoutEffect(() => {
-    const id = dealt[dealt.length - 1]; if (!id) return;
-    const el = deskRef.current?.querySelector<HTMLElement>(`[data-sp="${id}"] .sp-crew`);
-    dealFrom(el, { dur: 560, spin: -28, delay: 0 }).then(() => flashDone(el?.closest('.sp-face') as HTMLElement));
-  }, [dealt]);
-  /* flick a pile away */
-  const drag = useRef<{ id: string; x: number; p: number; on: boolean } | null>(null);
-  const down = (id: string) => (e: React.PointerEvent) => { if (phase !== 'check' || (e.target as HTMLElement).closest('button')) return; drag.current = { id, x: e.clientX, p: e.pointerId, on: false }; };
+  /* flick a card away: drag it up or to the side */
+  const drag = useRef<{ id: string; x: number; y: number; p: number; on: boolean } | null>(null);
+  const down = (id: string) => (e: React.PointerEvent) => { if (ph !== 'check' || (e.target as HTMLElement).closest('.ld-x')) return; drag.current = { id, x: e.clientX, y: e.clientY, p: e.pointerId, on: false }; };
   const move = (e: React.PointerEvent) => {
     const d = drag.current; if (!d || d.p !== e.pointerId) return;
-    const dx = e.clientX - d.x; if (!d.on && Math.abs(dx) < 6) return;
+    const dx = e.clientX - d.x, dy = e.clientY - d.y; if (!d.on && Math.hypot(dx, dy) < 6) return;
     const el = e.currentTarget as HTMLElement;
     if (!d.on) { d.on = true; el.setPointerCapture(e.pointerId); }
-    setT(el, { x: dx, r: dx / 30 }); el.style.opacity = String(1 - Math.min(0.6, Math.abs(dx) / 300));
+    el.style.translate = `${dx}px ${Math.min(dy, 30)}px`;
   };
   const up = (e: React.PointerEvent) => {
     const d = drag.current; drag.current = null; if (!d || !d.on) return;
-    const el = e.currentTarget as HTMLElement, dx = e.clientX - d.x;
-    if (Math.abs(dx) > 80) { el.style.transform = ''; el.style.opacity = ''; setGone(g => [...g, d.id]); play('later', { vol: 0.6 }); return; }
-    spring({ x: dx, r: dx / 30 }, { x: 0, r: 0 }, {}, { k: 520, c: 24 }, v => setT(el, v), () => { el.style.transform = ''; el.style.opacity = ''; });
+    const el = e.currentTarget as HTMLElement, dx = e.clientX - d.x, dy = e.clientY - d.y;
+    if (Math.abs(dx) > 70 || dy < -70) { el.style.translate = ''; flick(d.id); return; }
+    el.animate([{ translate: el.style.translate }, { translate: '0 0' }], { duration: 380, easing: 'cubic-bezier(.34,1.45,.64,1)' });
+    el.style.translate = '';
   };
   return (
-    <Scene k={phase === 'dealt' ? 'done' : phase === 'dealing' ? 'idle' : 'waiting'} out={phase === 'dealing'} cls="ob-found"
-      say={phase === 'check' ? `Keep found ${kept.length} Space${kept.length === 1 ? '' : 's'}.` : 'The crew are on them.'}
-      sub={phase === 'check' ? 'Keep the ones you want. Flick the rest away.' : undefined}
-      foot={phase === 'check' ? <>
-        <button className="btn primary block" disabled={!kept.length} onClick={deal}>Keep these</button>
-        <button className="btn quiet block sm" aria-expanded={facts} onClick={() => setFacts(v => !v)}>See what I gathered</button></> : null}>
-      <div className="sp-desk" ref={deskRef}>
-        {PROPOSED.map(p => gone.includes(p.id) ? (
-          <div key={p.id} className="sp-gone"><span>Not a Space</span><button onClick={() => setGone(g => g.filter(x => x !== p.id))}>Undo</button></div>
-        ) : (
-          <div key={p.id} data-sp={p.id} className="sp-stack" style={{ ['--n' as string]: 2 } as CSSProperties} onPointerDown={down(p.id)} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
-            <span className="sp-edges" aria-hidden="true"><i /><i /><i /></span>
-            <div className="sp-face">
-              <span className="glyph"><Icon name={p.glyph} size={16} /></span>
-              <b>{p.name}</b>
-              {dealt.includes(p.id) ? <span className="sp-crew"><Crew who={p.who} size={36} state={phase === 'dealt' ? 'working' : 'idle'} /></span>
-                : phase === 'check' ? <button className="sp-x" aria-label={`Not a Space: ${p.name}`} onClick={() => { setGone(g => [...g, p.id]); play('later', { vol: 0.6 }); }}><Icon name="close" size={14} /></button> : null}
-            </div>
-          </div>
-        ))}
+    <Scene sky="dawn" cls={`ld-found ph-${ph}`} hz={68}
+      say={ph === 'keep' ? 'The crew are on them.' : `Keep found ${kept.length} Space${kept.length === 1 ? '' : 's'}.`}
+      sub={ph === 'check' ? 'Flick away any you don’t want.' : undefined}
+      foot={ph === 'check' ? <button className="ld-btn primary" disabled={!kept.length} onClick={keep}>Keep {kept.length === PROPOSED.length ? 'all four' : kept.length === 1 ? 'this one' : 'these'}</button> : null}>
+      <div className="ld-above">
+        <K s={150} st={ph === 'keep' ? 'done' : turned < 4 ? 'working' : 'waiting'} out={dealt > 0 && ph !== 'keep'} />
       </div>
-      {facts && phase === 'check' && (
-        <dl className="ob-facts">
-          {FACTS.map(([k, v]) => <div key={k} className="fact"><dt>{k}</dt><dd><input id={`ob-fact-${k}`} defaultValue={v} aria-label={`Correct ${k}`} /></dd></div>)}
-        </dl>
-      )}
+      <div className="ld-fan">
+        {PROPOSED.map((p, i) => {
+          const f = FAN[i], off = gone.includes(p.id);
+          return (
+            <div key={p.id} className={`ld-sp ${i < dealt ? 'in' : ''} ${i < turned ? 'turned' : ''} ${off ? 'off' : ''}`}
+              style={{ ['--x' as string]: `${ph === 'keep' ? 0 : f.x}px`, ['--y' as string]: `${ph === 'keep' ? 120 : f.y}px`, ['--r' as string]: `${ph === 'keep' ? (i - 1.5) * 2 : f.r}deg`, ['--i' as string]: i } as CSSProperties}
+              onPointerDown={down(p.id)} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
+              <span className="face back" aria-hidden="true"><i /></span>
+              <span className="face front">
+                <span className="glyph"><Icon name={p.g} size={34} stroke={1.8} /></span>
+                <b>{p.name}</b>
+                <span className="ld-c" data-who={p.who}><Crew who={p.who} size={34} state={ph === 'keep' ? 'working' : 'idle'} /></span>
+                {ph === 'check' && <button className="ld-x" aria-label={`Not a Space: ${p.name}`} onClick={() => flick(p.id)}><Icon name="close" size={14} stroke={2.2} /></button>}
+              </span>
+            </div>
+          );
+        })}
+        {ph === 'check' && gone.length > 0 && <button className="ld-undo" onClick={() => setGone(g => g.slice(0, -1))}><Icon name="undo" size={15} /> Undo</button>}
+      </div>
     </Scene>
   );
 }
 
-/* ------------------------------------------------------------------ 10. Your first deck is dealt */
+/* ------------------------------------------------------------------ 14. Your first deck */
 
 function Deck() {
   const ob = useOb();
+  const after = useTimers();
   const box = useRef<HTMLDivElement>(null);
-  const [k, setK] = useState<MState>('idle');
+  const [k, setK] = useState<MState>('working');
   useLayoutEffect(() => {
-    const els = box.current?.querySelectorAll<HTMLElement>('.ho-card');
-    els && [...els].reverse().forEach((el, j) => dealFrom(el, { delay: 300 + j * 280, dur: 640, spin: -18 }));
-    const t = setTimeout(() => { setK('done'); play('done'); }, reducedMotion() ? 300 : 1400);
-    return () => clearTimeout(t);
-  }, []);
+    const els = box.current?.querySelectorAll<HTMLElement>('.ld-dc');
+    els && [...els].reverse().forEach((el, j) => { void fly(el, keepSvg(), { delay: 300 + j * 300, dur: 640, spin: -20 }); after(300 + j * 300, () => play('deal', { step: j * 2 })); });
+    after(1500, () => { setK('done'); play('done'); });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <Scene k={k} cls="ob-deck" say="Your first deck." sub="Three things. The rest can wait."
-      foot={<button className="btn primary block" onClick={() => ob.toApp('handover')}>Open Today</button>}>
-      <div className="ho-deck" ref={box} aria-hidden="true">
-        {(['mail', 'today', 'bill'] as const).map((g, j) => (
-          <div key={g} className="ho-card bezel" style={{ ['--j' as string]: j } as CSSProperties}><Icon name={g} size={30} stroke={1.6} /></div>
+    <Scene sky="dawn" cls="ld-deck" say="Your first deck." sub="One thing at a time. Routines start paused."
+      foot={<button className="ld-btn primary" onClick={() => ob.toApp('handover')}>Open Today</button>}>
+      <div className="ld-above"><K x={-104} s={160} st={k} /></div>
+      <div className="ld-stack" ref={box} aria-hidden="true">
+        {(['today', 'bill', 'mail'] as const).map((g, j) => (
+          <span key={g} className="ld-dc" style={{ ['--j' as string]: j } as CSSProperties}>{j === 2 && <><Icon name={g} size={52} stroke={1.7} /><i className="dot" /></>}</span>
         ))}
       </div>
     </Scene>
@@ -855,14 +807,15 @@ export function WelcomeBack() {
 /* ------------------------------------------------------------------ the front door */
 
 const VIEWS: Record<Step, () => JSX.Element> = {
-  title: Title, story: Story, doors: Doors, computer: Computer, mail: Mail, calendar: Calendar, extras: Extras, reading: Reading, found: Found, deck: Deck,
+  title: Title, pile: Pile, sort: Sort, needs: Needs, later: Later, yes: Yes,
+  doors: Doors, computer: Computer, mail: Mail, calendar: Calendar, school: School, reading: Reading, found: Found, deck: Deck,
 };
 
 export function Onboard() {
   const ob = useOb();
   const View = VIEWS[ob.step];
   return (
-    <div className={`onboard st-${ob.step}`}>
+    <div className={`onboard ld-door st-${ob.step}`}>
       <View key={`${ob.run}-${ob.step}`} />
     </div>
   );

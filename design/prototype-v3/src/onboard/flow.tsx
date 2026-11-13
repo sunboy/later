@@ -1,20 +1,29 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AgentId } from '../data';
 
 /** The front door. There is no Later account and no Later server: "sign in" is two doors, new or already set up,
-    and setting up happens on a computer. Every step here is example data; nothing is sent, paid or deleted. */
-export type Step = 'title' | 'story' | 'doors' | 'computer' | 'mail' | 'calendar' | 'extras' | 'reading' | 'found' | 'deck';
+    and setting up happens on a computer. Five short scenes teach one idea each, then set-up deals the crew one by one.
+    Every step here is example data; nothing is sent, paid or deleted. */
+export type Step =
+  | 'title' | 'pile' | 'sort' | 'needs' | 'later' | 'yes'
+  | 'doors' | 'computer' | 'mail' | 'calendar' | 'school' | 'reading' | 'found' | 'deck';
+
+export const STORY: Step[] = ['pile', 'sort', 'needs', 'later', 'yes'];
 
 export const STEPS: { id: Step; label: string; note: string }[] = [
-  { id: 'title', label: 'Title', note: 'tap to begin' },
-  { id: 'story', label: 'The story', note: 'five scenes, one idea each' },
+  { id: 'title', label: 'Title', note: 'Keep climbs out of the horizon; the tap starts the sound' },
+  { id: 'pile', label: 'A lot', note: 'life sends you a lot' },
+  { id: 'sort', label: 'The crew', note: 'tap Keep: the crew sort it' },
+  { id: 'needs', label: 'Needs you', note: 'only what needs you' },
+  { id: 'later', label: 'Later', note: 'flick it down; it comes back' },
+  { id: 'yes', label: 'Your yes', note: 'hold to say yes' },
   { id: 'doors', label: 'Two doors', note: 'your account, not ours' },
   { id: 'computer', label: 'Computer', note: 'install, then pair' },
   { id: 'mail', label: 'Mail', note: 'app password' },
-  { id: 'calendar', label: 'Calendar', note: 'one link' },
-  { id: 'extras', label: 'Anything else', note: 'by the emails they send' },
+  { id: 'calendar', label: 'Calendar', note: 'private link' },
+  { id: 'school', label: 'School apps', note: 'by the emails they send' },
   { id: 'reading', label: 'Keep reads', note: 'capped at $1.00' },
-  { id: 'found', label: 'What Keep found', note: 'keep or flick away' },
+  { id: 'found', label: 'What Keep found', note: 'turned one by one' },
   { id: 'deck', label: 'First deck', note: 'then Today' },
 ];
 
@@ -28,18 +37,17 @@ export const OB_SIM: { id: ObSim; step: Step; label: string; note: string }[] = 
   { id: 'learn-finish', step: 'reading', label: 'Finish reading', note: 'Skip to the end of the first pass.' },
 ];
 
-export interface Placed { who: AgentId; on: string }
-
 interface State {
   mode: 'onboard' | 'app';
   step: Step;
   path: 'new' | 'returning';
-  placed: Placed[]; // crew Keep has dealt so far: the hand that grows through set-up
-  mail: boolean; cal: boolean; byEmail: string | null;
+  placed: AgentId[]; // the crew Keep has dealt so far in set-up: the progress
+  mail: boolean; cal: boolean; school: boolean;
   welcome: number; // when the welcome-back moment was opened (0 = closed)
   sim: { id: ObSim; at: number } | null;
   arrived: number; // when the app was reached from the handover, so Today can deal its first card from Keep
   run: number; // bumps on replay so every step remounts fresh
+  jumped: boolean; // arrived by a jump from the chrome: a scene starts from its composed state, not mid-story
 }
 
 interface Api extends State {
@@ -47,9 +55,8 @@ interface Api extends State {
   /** from the prototype chrome: start the flow fresh at a step, with what it needs already in place */
   jump: (s: Step) => void;
   setPath: (p: State['path']) => void;
-  place: (who: AgentId, on: string) => void;
-  setConn: (k: 'mail' | 'cal', on: boolean) => void;
-  setByEmail: (v: string | null) => void;
+  place: (who: AgentId) => void;
+  setConn: (k: 'mail' | 'cal' | 'school', on: boolean) => void;
   toApp: (from?: 'handover' | 'skip' | 'pair') => void;
   replay: () => void;
   welcomeBack: () => void;
@@ -63,7 +70,7 @@ const Ctx = createContext<Api | null>(null);
 export const useOb = () => useContext(Ctx)!;
 
 const fresh = (run = 0): State => ({
-  mode: 'onboard', step: 'title', path: 'new', placed: [], mail: false, cal: false, byEmail: null, welcome: 0, sim: null, arrived: 0, run,
+  mode: 'onboard', step: 'title', path: 'new', placed: [], mail: false, cal: false, school: false, welcome: 0, sim: null, arrived: 0, run, jumped: false,
 });
 
 /** What each step needs to have happened already, so a jump from the chrome lands on a coherent screen. */
@@ -71,12 +78,12 @@ function seed(p: State, step: Step): State {
   const order = STEPS.map(s => s.id);
   const at = order.indexOf(step);
   const past = (s: Step) => at > order.indexOf(s);
-  const placed: Placed[] = [];
-  if (past('computer')) placed.push({ who: 'ledger', on: 'Spend' });
-  if (past('mail')) placed.push({ who: 'wren', on: 'Mail' });
-  if (past('calendar')) placed.push({ who: 'scout', on: 'Calendar' });
-  if (past('extras')) placed.push({ who: 'juno', on: 'School' });
-  return { ...p, step, path: 'new', placed, mail: past('mail'), cal: past('calendar'), byEmail: past('extras') ? 'Brightwheel' : null, sim: null };
+  const placed: AgentId[] = [];
+  if (past('computer')) placed.push('ledger');
+  if (past('mail')) placed.push('wren');
+  if (past('calendar')) placed.push('scout');
+  if (past('school')) placed.push('juno');
+  return { ...p, step, path: 'new', placed, mail: past('mail'), cal: past('calendar'), school: past('school'), sim: null, jumped: true };
 }
 
 export function ObProvider({ children }: { children: ReactNode }) {
@@ -88,16 +95,13 @@ export function ObProvider({ children }: { children: ReactNode }) {
     set(p => ({ ...p, sim: null }));
     return true;
   }, []);
-  // a step change from anywhere scrolls the phone's step back to its top
-  useEffect(() => { document.querySelector('.ob-scroll')?.scrollTo({ top: 0 }); }, [s.step]);
   const api = useMemo<Api>(() => ({
     ...s, take,
-    go: step => set(p => ({ ...p, step, sim: null })),
+    go: step => set(p => ({ ...p, step, sim: null, jumped: false })),
     jump: step => set(p => ({ ...seed(fresh(p.run + 1), step) })),
     setPath: path => set(p => ({ ...p, path })),
-    place: (who, on) => set(p => ({ ...p, placed: [...p.placed.filter(x => x.who !== who), { who, on }] })),
+    place: who => set(p => ({ ...p, placed: [...p.placed.filter(x => x !== who), who] })),
     setConn: (k, on) => set(p => ({ ...p, [k]: on })),
-    setByEmail: v => set(p => ({ ...p, byEmail: v })),
     toApp: from => set(p => ({ ...p, mode: 'app', welcome: 0, arrived: from === 'handover' ? Date.now() : 0 })),
     replay: () => set(p => fresh(p.run + 1)),
     welcomeBack: () => set(p => ({ ...p, mode: 'app', welcome: Date.now() })),
@@ -106,4 +110,3 @@ export function ObProvider({ children }: { children: ReactNode }) {
   }), [s, take]);
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
 }
-
