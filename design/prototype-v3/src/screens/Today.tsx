@@ -519,6 +519,8 @@ export function Today() {
         <p ref={live} className="sr" role="status" aria-live="polite" />
       </div>
 
+      {/* the page fades out under the drawer, so nothing (the edition's heading included) shows half-covered behind it */}
+      <div className={`dock-shade ${evening ? 'tall' : ''}`} aria-hidden="true" />
       {/* Later is a gesture, not a band: this small drawer is only what is resting and when it comes back */}
       <button className={`dock ${settle ? 'settle' : ''} ${evening ? 'tall' : ''}`} onClick={() => setLaterOpen(true)} aria-label={`Later: ${later.length} resting. Open the list`}>
         <span className="dock-row">

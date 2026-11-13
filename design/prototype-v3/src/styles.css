@@ -53,8 +53,8 @@
   --sw-pencil-a: #efd06a; --sw-pencil-b: #2b2d33; --sw-pencil-p: #cc3e26;
 
   /* type is two tokens; the prototype chrome swaps them (see src/type.ts) */
-  --f-display: 'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --f-text: 'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-display: 'Familjen Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-text: 'Hanken Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --f-sans: var(--f-text);
   --f-mono: 'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -1256,3 +1256,9 @@ h1, h2, h3, .dc-title, .snip-big, .scard .big, .scard h3, .ap-title, .ap-amount,
 .chip-sw.b { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 25%, transparent); }
 .deck.sm.st-rest .all { translate: 0 10.5px; }
 @keyframes d-sinkS { 50% { translate: 0 12px; } }
+
+/* ---- fix: on Today the Later drawer floated over the scrolling page, so the edition's heading showed cut off between
+   the drawer and the tab bar (worst in dark, where both are dark). The page now fades into paper under the drawer. ---- */
+.dock-shade { position: absolute; left: 0; right: 0; bottom: 82px; z-index: 24; height: 78px; pointer-events: none;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--paper) 0%, transparent), var(--paper) 26px); }
+.dock-shade.tall { height: 112px; }

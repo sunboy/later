@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { PAIRINGS, FROM_FILE, applyPairing } from './type';
+import { PAIRINGS, FROM_FILE, DEFAULT_PAIRING, applyPairing } from './type';
 import { AppProvider, useApp, useFlash, type Screen, type SimEvent } from './store';
 import { ChiefSheet } from './screens/Chief';
 import { Chief } from './Mascot';
@@ -9,8 +9,12 @@ import { Today } from './screens/Today';
 import { Templates } from './screens/Templates';
 import { Approve } from './screens/Approve';
 import { Icon } from './icons';
-import { Wordmark } from './Wordmark';
+import './brand';
 import { PALETTES, ThemeProvider, useTheme } from './theme';
+import { ObProvider, OB_SIM, STEPS, useOb, type Step } from './onboard/flow';
+import { Onboard, WelcomeBack } from './onboard/Onboard';
+import { reducedMotion } from './motion';
+import './onboard/onboard.css';
 
 const BASES: Screen[] = ['spaces', 'today', 'templates'];
 const SCREENS: { id: Screen | 'keep' | 'thread'; label: string; note: string }[] = [
@@ -54,11 +58,12 @@ function ChiefButton() {
 
 /** The type switcher: one control swaps the display and text tokens. */
 function TypeControl() {
-  const [id, setId] = useState(() => { try { return localStorage.getItem('later-type') ?? PAIRINGS[0].id; } catch { return PAIRINGS[0].id; } });
+  // the stored choice is keyed afresh, so viewers who had Mona Sans saved start on the founder's pairing
+  const [id, setId] = useState(() => { try { const v = localStorage.getItem('later-type-2'); return v && PAIRINGS.some(p => p.id === v) ? v : DEFAULT_PAIRING.id; } catch { return DEFAULT_PAIRING.id; } });
   useEffect(() => {
-    const p = PAIRINGS.find(x => x.id === id) ?? PAIRINGS[0];
+    const p = PAIRINGS.find(x => x.id === id) ?? DEFAULT_PAIRING;
     applyPairing(p);
-    try { localStorage.setItem('later-type', p.id); } catch { /* storage may be blocked */ }
+    try { localStorage.setItem('later-type-2', p.id); } catch { /* storage may be blocked */ }
     document.querySelectorAll('select.type-pick').forEach(s => { (s as HTMLSelectElement).value = p.id; });
     window.dispatchEvent(new CustomEvent('later-type', { detail: p.id }));
   }, [id]);
@@ -73,13 +78,48 @@ function TypeControl() {
   );
 }
 
+/** While the front door is showing, Simulate fires its events instead: errors and the computer finishing. */
+function ObSimPanel({ bar }: { bar: boolean }) {
+  const ob = useOb();
+  const jump = (step: Step) => ob.jump(step);
+  const here = OB_SIM.filter(e => e.step === ob.step);
+  const rest = OB_SIM.filter(e => e.step !== ob.step);
+  const fire = (id: (typeof OB_SIM)[number]) => { if (id.step !== ob.step) jump(id.step); ob.simulate(id.id); };
+  if (bar) return (
+    <div className="simbar" role="group" aria-label="Front door controls">
+      <label className="typesel"><span>Step</span>
+        <select className="step-pick" value={ob.step} onChange={e => jump(e.target.value as Step)} aria-label="Jump to a front door step">
+          {STEPS.map((s, i) => <option key={s.id} value={s.id}>{i + 1}. {s.label}</option>)}
+        </select>
+      </label>
+      <button onClick={() => ob.toApp('skip')}>Skip to the app</button>
+      <button className="reset" onClick={ob.replay}>Replay</button>
+      {[...here, ...rest].map(e => <button key={e.id} aria-pressed={undefined} className={e.step === ob.step ? '' : 'far'} onClick={() => fire(e)}>{e.label}</button>)}
+      <TypeControl />
+    </div>
+  );
+  return (
+    <div className="panel sim" role="group" aria-label="Simulate a front door event">
+      <h2>Simulate</h2>
+      {here.map(e => <button key={e.id} onClick={() => fire(e)}>{e.label}<small>{e.note}</small></button>)}
+      {here.length > 0 && <p className="sim-sep">Elsewhere in the front door</p>}
+      {rest.map(e => <button key={e.id} className="far" onClick={() => fire(e)}>{e.label}<small>{STEPS.find(x => x.id === e.step)!.label}: {e.note}</small></button>)}
+      <p className="sim-moved">Nothing in the front door is sent, paid or deleted. Routines arrive paused.</p>
+    </div>
+  );
+}
+
 function Sim({ bar = false }: { bar?: boolean }) {
   const app = useApp();
+  const ob = useOb();
+  if (ob.mode === 'onboard') return <ObSimPanel bar={bar} />;
   return (
     <div className={bar ? 'simbar' : 'panel sim'} role="group" aria-label="Simulate an event">
       {!bar && <h2>Simulate</h2>}
       {bar && <span className="simbar-l">Simulate</span>}
       {bar && <TypeControl />}
+      {bar && <button onClick={ob.replay}>Front door</button>}
+      {bar && <button onClick={ob.welcomeBack}>Welcome back</button>}
       {bar && <button className="sp30" aria-pressed={app.many} onClick={() => app.setMany(!app.many)}>30 Spaces</button>}
       {SIM.map(e => (
         <button key={e.id} className={e.id === 'reset' ? 'reset' : ''} onClick={() => app.simulate(e.id)} aria-pressed={e.id === 'evening' ? app.phase === 'evening' : undefined}>
@@ -92,13 +132,46 @@ function Sim({ bar = false }: { bar?: boolean }) {
   );
 }
 
-function Phone() {
+/** Arriving from the handover: a clean Today, and Keep in the tab bar deals the first card onto it. */
+function useArrival() {
+  const ob = useOb();
   const app = useApp();
+  useEffect(() => {
+    if (!ob.arrived) return;
+    app.simulate('reset'); app.go('today');
+    const t = setTimeout(() => {
+      const card = document.querySelector('.phone .dcard') as HTMLElement | null, c = document.querySelector('.chief-btn')?.getBoundingClientRect();
+      if (!card || !c || reducedMotion()) return;
+      const r = card.getBoundingClientRect();
+      card.animate([
+        { transform: `translate(${c.left + c.width / 2 - (r.left + r.width / 2)}px, ${c.top + c.height / 2 - (r.top + r.height / 2)}px) scale(.12) rotate(-14deg)`, opacity: 0.5 },
+        { transform: 'translateY(-8px) scale(1.02) rotate(.6deg)', opacity: 1, offset: 0.72 }, { transform: 'none', opacity: 1 },
+      ], { duration: 720, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'backwards' });
+    }, 60);
+    return () => clearTimeout(t);
+  }, [ob.arrived]); // eslint-disable-line react-hooks/exhaustive-deps
+}
+
+function Phone() {
+  const ob = useOb();
+  if (ob.mode === 'onboard') return (
+    <div className="phone ob-phone" data-screen={'ob-' + ob.step}>
+      <div className="statusbar" aria-hidden="true"><span className="num">09:41</span><span className="island" /><span style={{ fontSize: 13 }}>5G</span></div>
+      <Onboard />
+    </div>
+  );
+  return <AppPhone />;
+}
+
+function AppPhone() {
+  const app = useApp();
+  const ob = useOb();
+  useArrival();
   const base = useRef<Screen>('today');
   if (BASES.includes(app.screen)) base.current = app.screen;
   const b = base.current;
   return (
-    <div className="phone" data-screen={app.screen}>
+    <div className={`phone ${ob.arrived && Date.now() - ob.arrived < 1500 ? 'arriving' : ''}`} data-screen={app.screen}>
       <div className="statusbar" aria-hidden="true"><span className="num">09:41</span><span className="island" /><span style={{ fontSize: 13 }}>5G</span></div>
       {b === 'spaces' && <Spaces />}
       {b === 'today' && <Today />}
@@ -114,17 +187,53 @@ function Phone() {
       {app.screen === 'story' && <Story key={app.storySpace ?? 'house'} />}
       <ChiefSheet />
       {app.screen === 'approve' && <div className="screen" style={{ background: 'var(--paper)', zIndex: 45 }}><Approve /></div>}
+      <WelcomeBack />
     </div>
+  );
+}
+
+/** The front door in the chrome: jump to any step, skip to the app, replay, or reopen later in the day. */
+function FrontDoor({ compact = false }: { compact?: boolean }) {
+  const ob = useOb();
+  return (
+    <nav className="panel frontdoor" aria-label="Front door steps">
+      <h2>Front door</h2>
+      {!compact && <div className="fd-grid">
+        {STEPS.map((s, i) => (
+          <button key={s.id} title={s.note} aria-current={ob.mode === 'onboard' && ob.step === s.id ? 'step' : undefined} onClick={() => ob.jump(s.id)}>
+            <span className="num">{i + 1}</span>{s.label}
+          </button>
+        ))}
+      </div>}
+      <div className="fd-acts">
+        {compact && <select className="fd-pick" value="" onChange={e => e.target.value && ob.jump(e.target.value as Step)} aria-label="Jump to a front door step">
+          <option value="">Jump to a step</option>
+          {STEPS.map((s, i) => <option key={s.id} value={s.id}>{i + 1}. {s.label}</option>)}
+        </select>}
+        <button onClick={ob.replay}>Replay from the start</button>
+        {ob.mode === 'onboard' && <button onClick={() => ob.toApp('skip')}>Skip to the app</button>}
+        <button aria-pressed={!!ob.welcome} onClick={ob.welcomeBack}>Welcome back</button>
+      </div>
+    </nav>
   );
 }
 
 function Left() {
   const app = useApp();
+  const ob = useOb();
   const { palette } = useTheme();
   const p = PALETTES.find(x => x.id === palette)!;
+  if (ob.mode === 'onboard') return (
+    <aside className="stage-left" aria-label="About the front door">
+      <h1 className="mark-wm" aria-label="Later"><wm-horizon variant="lower" /></h1>
+      <p className="lede">The front door. No account and no Later server: you are new, or you pair this phone to the Later you already run. Set-up happens on a computer; the phone waits with Keep. Keep is the guide, the progress and the reward: the crew it deals are how far you have come.</p>
+      <FrontDoor />
+      <p className="fine">Example data. {p.name}. Nothing here sends, pays or deletes. Use Simulate for the errors.</p>
+    </aside>
+  );
   return (
     <aside className="stage-left" aria-label="About this direction">
-      <Wordmark size={46} />
+      <h1 className="mark-wm" aria-label="Later"><wm-horizon variant="lower" /></h1>
       <p className="lede">One loud thing at a time. Today is what needs you, one card at a time; the crew’s work is one quiet line under it; then the edition. Anything can be set aside with a time to come back. Spaces is the same work by place: a desk of stacks, largest where you are needed.</p>
       <ul className="legend">
         <li><span className="chip-sw a" /><span><b>Needs you.</b> An urgent card, a nearing deadline, a stack’s count, the hold.</span></li>
@@ -142,6 +251,7 @@ function Left() {
           }}>{s.label}<small>{s.note}</small></button>
         ))}
       </nav>
+      <FrontDoor compact />
       <p className="fine">Example data. {p.name}: {p.line}. Press Later on a card and try “In 15 seconds”. Tap a ring to play that Space, and tap Keep to talk.</p>
     </aside>
   );
@@ -187,14 +297,14 @@ function Right() {
 export function App() {
   return (
     <ThemeProvider>
-      <AppProvider>
+      <AppProvider><ObProvider>
         <main className="stage">
           <Sim bar />
           <Left />
           <Phone />
           <Right />
         </main>
-      </AppProvider>
+      </ObProvider></AppProvider>
     </ThemeProvider>
   );
 }
