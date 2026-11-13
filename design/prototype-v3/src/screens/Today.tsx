@@ -6,6 +6,8 @@ import { Rings } from '../Rings';
 import { useApp, useClock, useFlash } from '../store';
 import { reducedMotion, setT, spring, useFlip, usePrefersReducedMotion, wait } from '../motion';
 import { OutboxRow, PaySlip } from './Approve';
+import { play } from '../sound';
+import { useOb } from '../onboard/flow';
 
 type Undo = { card: DeckCard; how: 'done' | 'later'; line: string };
 type Size = 'hero' | 'regular' | 'compact';
@@ -13,12 +15,28 @@ type Size = 'hero' | 'regular' | 'compact';
 /** Fly an element in from the chief in the tab bar: how Keep deals a card. */
 function dealFromChief(el: HTMLElement, delay = 0, dur = 720) {
   const c = document.querySelector('.chief-btn')?.getBoundingClientRect(), r = el.getBoundingClientRect();
-  if (!c || reducedMotion()) return;
+  if (!c) return;
+  setTimeout(() => play('deal', { vol: 0.5 }), delay);
+  if (reducedMotion()) return;
   el.animate([
     { transform: `translate(${c.left + c.width / 2 - (r.left + r.width / 2)}px, ${c.top + c.height / 2 - (r.top + r.height / 2)}px) scale(.12) rotate(-14deg)`, opacity: 0.5 },
     { transform: 'translateY(-8px) scale(1.02) rotate(.6deg)', opacity: 1, offset: 0.72 },
     { transform: 'none', opacity: 1 },
   ], { duration: dur, delay, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'backwards' });
+}
+
+/** After set-up, the three starter routines are mentioned once, here, in one line. They arrive paused. */
+function RoutinesLine() {
+  const ob = useOb();
+  const [st, setSt] = useState<'ask' | 'on' | 'gone'>('ask');
+  if (!ob.arrived || st === 'gone') return null;
+  return (
+    <div className="rt-line" data-flip="routines">
+      <span>{st === 'on' ? 'Morning deck, inbox sort and meeting briefs are on.' : 'Three routines are ready, paused.'}</span>
+      {st === 'ask' ? <button className="btn sm" onClick={() => { setSt('on'); play('done', { vol: 0.5 }); }}>Switch on</button>
+        : <button className="btn quiet sm" onClick={() => setSt('gone')}>Done</button>}
+    </div>
+  );
 }
 
 /* ---------- Now: the deck. One decision at a time; size is a hint the client honours ---------- */
@@ -60,6 +78,7 @@ function Deck({ size, onLater }: { size: Size; onLater: (id: string, el: HTMLEle
     if (how === 'done' && top.send) { app.openApproval(top.send, 'today'); return; }
     if (how === 'later' && urgent) { setNudge(true); return; }
     setBusy(true);
+    play(how === 'done' ? 'done' : 'later', { vol: 0.5 });
     if (how === 'done') {
       el.classList.add('acted');
       await wait(520);
@@ -514,6 +533,7 @@ export function Today() {
           <div><h1>{evening ? 'This evening' : 'Today'}</h1><p>{line}</p></div>
           <span className="avatar-me" aria-label="Your profile, Sam Reid">SR</span>
         </div>
+        <RoutinesLine />
         <div data-flip="rings"><Rings /></div>
         {evening ? [edition, now, nextBand] : [now, nextBand, edition]}
         <p ref={live} className="sr" role="status" aria-live="polite" />

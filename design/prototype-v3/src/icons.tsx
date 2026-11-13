@@ -41,6 +41,10 @@ const P: Record<string, string> = {
   chat: 'M5 6.5h14v9.5h-7.5L7.5 19.5V16H5z',
   back: 'M14 6l-6 6 6 6',
   send: 'M12 19V6M6.5 11.5L12 6l5.5 5.5',
+  mail: 'M4 6.5h16v11H4zM4.6 7.2l7.4 5.8 7.4-5.8',
+  bill: 'M6.5 4h11v16H6.5zM9.5 8.5h5M9.5 12h5M12 14.5v3',
+  soundon: 'M4.5 9.5h3l4-3.5v12l-4-3.5h-3zM15 9a4 4 0 010 6M17.5 6.5a7.5 7.5 0 010 11',
+  soundoff: 'M4.5 9.5h3l4-3.5v12l-4-3.5h-3zM15.5 9.5l5 5M20.5 9.5l-5 5',
   undo: 'M9 8L5 12l4 4M5 12h9a5 5 0 010 10',
 };
 

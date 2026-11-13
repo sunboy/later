@@ -15,6 +15,8 @@ import { ObProvider, OB_SIM, STEPS, useOb, type Step } from './onboard/flow';
 import { Onboard, WelcomeBack } from './onboard/Onboard';
 import { reducedMotion } from './motion';
 import './onboard/onboard.css';
+import { SoundToggle } from './onboard/Onboard';
+import { play } from './sound';
 
 const BASES: Screen[] = ['spaces', 'today', 'templates'];
 const SCREENS: { id: Screen | 'keep' | 'thread'; label: string; note: string }[] = [
@@ -167,6 +169,16 @@ function AppPhone() {
   const app = useApp();
   const ob = useOb();
   useArrival();
+  // a card coming back from Later chimes; the app uses the same sounds as the front door, at half volume
+  const prevLater = useRef(app.later.map(l => l.id));
+  useEffect(() => {
+    const gone = prevLater.current.filter(id => !app.later.some(l => l.id === id));
+    if (gone.some(id => app.deck.some(c => c.id === id))) play('back', { vol: 0.5 });
+    prevLater.current = app.later.map(l => l.id);
+  }, [app.later]); // eslint-disable-line react-hooks/exhaustive-deps
+  // the notification ask waits for the first thing that needs your yes
+  const [ask, setAsk] = useState<'no' | 'ask' | 'done'>('no');
+  useEffect(() => { if (app.screen === 'approve' && ask === 'no') setAsk('ask'); }, [app.screen]); // eslint-disable-line react-hooks/exhaustive-deps
   const base = useRef<Screen>('today');
   if (BASES.includes(app.screen)) base.current = app.screen;
   const b = base.current;
@@ -187,6 +199,12 @@ function AppPhone() {
       {app.screen === 'story' && <Story key={app.storySpace ?? 'house'} />}
       <ChiefSheet />
       {app.screen === 'approve' && <div className="screen" style={{ background: 'var(--paper)', zIndex: 45 }}><Approve /></div>}
+      {app.screen === 'approve' && ask === 'ask' && (
+        <div className="notify-ask" role="dialog" aria-label="Notifications">
+          <p>Want a nudge on this phone when something needs your yes?</p>
+          <div><button className="btn primary sm" onClick={() => setAsk('done')}>Allow</button><button className="btn quiet sm" onClick={() => setAsk('done')}>Not now</button></div>
+        </div>
+      )}
       <WelcomeBack />
     </div>
   );
@@ -226,7 +244,7 @@ function Left() {
   if (ob.mode === 'onboard') return (
     <aside className="stage-left" aria-label="About the front door">
       <h1 className="mark-wm" aria-label="Later"><wm-horizon variant="lower" /></h1>
-      <p className="lede">The front door. No account and no Later server: you are new, or you pair this phone to the Later you already run. Set-up happens on a computer; the phone waits with Keep. Keep is the guide, the progress and the reward: the crew it deals are how far you have come.</p>
+      <p className="lede">The front door. A five-scene story teaches one idea each, then two doors and seven short set-up steps. Keep is the guide; the crew it deals show how far you have come. Sound is synthesised, quiet and switchable.</p>
       <FrontDoor />
       <p className="fine">Example data. {p.name}. Nothing here sends, pays or deletes. Use Simulate for the errors.</p>
     </aside>
@@ -281,6 +299,7 @@ function Right() {
             <button className="switch" role="switch" aria-checked={app.running} aria-label="Agents running" onClick={() => app.setRunning(!app.running)} />
           </label>
         </div>
+        <div className="chrome-row"><span className="chrome-l">Sound</span><SoundToggle /></div>
         <div className="chrome-row">
           <TypeControl />
           <label className="toggle">

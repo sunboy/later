@@ -3,34 +3,29 @@ import type { AgentId } from '../data';
 
 /** The front door. There is no Later account and no Later server: "sign in" is two doors, new or already set up,
     and setting up happens on a computer. Every step here is example data; nothing is sent, paid or deleted. */
-export type Step =
-  | 'title' | 'demo' | 'doors' | 'handoff' | 'pair' | 'ready' | 'connect' | 'extras'
-  | 'learn' | 'readback' | 'routines' | 'promises' | 'handover';
+export type Step = 'title' | 'story' | 'doors' | 'computer' | 'mail' | 'calendar' | 'extras' | 'reading' | 'found' | 'deck';
 
 export const STEPS: { id: Step; label: string; note: string }[] = [
-  { id: 'title', label: 'Title', note: 'the ball, then Keep' },
-  { id: 'demo', label: 'Try it', note: 'four cards, sample data' },
-  { id: 'doors', label: 'Two doors', note: 'new, or already set up' },
-  { id: 'handoff', label: 'Computer', note: 'the installer, waited on' },
-  { id: 'pair', label: 'Pair', note: 'scan the code' },
-  { id: 'ready', label: 'Your home', note: 'key, cap, self-test' },
-  { id: 'connect', label: 'Mail, calendar', note: 'app password, private link' },
-  { id: 'extras', label: 'Anything else', note: 'by email; Slack later' },
-  { id: 'learn', label: 'Reading', note: 'capped at $1.00' },
-  { id: 'readback', label: 'Read-back', note: 'correct it; deal the crew' },
-  { id: 'routines', label: 'Routines', note: 'arrive paused' },
-  { id: 'promises', label: 'Promises', note: 'try each one' },
-  { id: 'handover', label: 'First deck', note: 'then Today' },
+  { id: 'title', label: 'Title', note: 'tap to begin' },
+  { id: 'story', label: 'The story', note: 'five scenes, one idea each' },
+  { id: 'doors', label: 'Two doors', note: 'your account, not ours' },
+  { id: 'computer', label: 'Computer', note: 'install, then pair' },
+  { id: 'mail', label: 'Mail', note: 'app password' },
+  { id: 'calendar', label: 'Calendar', note: 'one link' },
+  { id: 'extras', label: 'Anything else', note: 'by the emails they send' },
+  { id: 'reading', label: 'Keep reads', note: 'capped at $1.00' },
+  { id: 'found', label: 'What Keep found', note: 'keep or flick away' },
+  { id: 'deck', label: 'First deck', note: 'then Today' },
 ];
 
 /** A prototype-only event the chrome can fire into the current step (an error, or the computer finishing). */
 export type ObSim = 'computer-done' | 'computer-quiet' | 'code-expired' | 'wrong-password' | 'learn-finish';
 export const OB_SIM: { id: ObSim; step: Step; label: string; note: string }[] = [
-  { id: 'computer-done', step: 'handoff', label: 'Computer finished', note: 'The installer is done and shows a code to scan.' },
-  { id: 'computer-quiet', step: 'handoff', label: 'Computer goes quiet', note: 'Nothing has come back for a while. Keep says so.' },
-  { id: 'code-expired', step: 'pair', label: 'Code expired', note: 'The next scan finds an old code.' },
-  { id: 'wrong-password', step: 'connect', label: 'Wrong app password', note: 'The next mail sign-in is turned down.' },
-  { id: 'learn-finish', step: 'learn', label: 'Finish reading', note: 'Skip to the end of the first pass.' },
+  { id: 'computer-done', step: 'computer', label: 'Home created', note: 'The installer has made your home and shows a code.' },
+  { id: 'computer-quiet', step: 'computer', label: 'Computer goes quiet', note: 'Nothing has come back for a while.' },
+  { id: 'code-expired', step: 'computer', label: 'Code expired', note: 'The next scan finds an old code.' },
+  { id: 'wrong-password', step: 'mail', label: 'Wrong app password', note: 'The next sign-in is turned down.' },
+  { id: 'learn-finish', step: 'reading', label: 'Finish reading', note: 'Skip to the end of the first pass.' },
 ];
 
 export interface Placed { who: AgentId; on: string }
@@ -77,10 +72,11 @@ function seed(p: State, step: Step): State {
   const at = order.indexOf(step);
   const past = (s: Step) => at > order.indexOf(s);
   const placed: Placed[] = [];
-  if (past('ready') || step === 'ready') placed.push({ who: 'ledger', on: 'Spend' });
-  if (past('connect')) placed.push({ who: 'wren', on: 'Mail' }, { who: 'scout', on: 'Calendar' });
-  if (past('extras')) placed.push({ who: 'juno', on: 'Brightwheel' });
-  return { ...p, step, path: 'new', placed: step === 'ready' ? [] : placed, mail: past('connect'), cal: past('connect'), byEmail: past('extras') ? 'Brightwheel' : null, sim: null };
+  if (past('computer')) placed.push({ who: 'ledger', on: 'Spend' });
+  if (past('mail')) placed.push({ who: 'wren', on: 'Mail' });
+  if (past('calendar')) placed.push({ who: 'scout', on: 'Calendar' });
+  if (past('extras')) placed.push({ who: 'juno', on: 'School' });
+  return { ...p, step, path: 'new', placed, mail: past('mail'), cal: past('calendar'), byEmail: past('extras') ? 'Brightwheel' : null, sim: null };
 }
 
 export function ObProvider({ children }: { children: ReactNode }) {
