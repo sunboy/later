@@ -8,10 +8,10 @@ export type Glyph =
 export type AgentId = 'wren' | 'scout' | 'juno' | 'ledger';
 export interface Agent { id: AgentId; name: string; job: string }
 export const AGENTS: Record<AgentId, Agent> = {
-  wren: { id: 'wren', name: 'Wren', job: 'Plans and invites' },
-  scout: { id: 'scout', name: 'Scout', job: 'Chases replies' },
+  wren: { id: 'wren', name: 'Wren', job: 'Answers your mail' },
+  scout: { id: 'scout', name: 'Scout', job: 'Books and chases' },
   juno: { id: 'juno', name: 'Juno', job: 'Finds and compares' },
-  ledger: { id: 'ledger', name: 'Ledger', job: 'Tracks every fee' },
+  ledger: { id: 'ledger', name: 'Ledger', job: 'Checks the money' },
 };
 
 /** Money is integer pence, never floats. */
@@ -67,11 +67,11 @@ export interface Send {
 }
 export const SENDS: Record<string, Send> = {
   dave: {
-    id: 'dave', spaceId: 'house', agent: 'scout', title: 'Reply to Dave about the loft',
+    id: 'dave', spaceId: 'house', agent: 'wren', title: 'Reply to Dave about the loft',
     to: 'Dave Ellis, Ellis Surveying', address: 'dave@ellissurveying.co.uk', from: 'sam.reid@gmail.com',
     subject: 'Re: Loft access on Tuesday',
     body: 'Hi Dave, Tuesday at 10 works. The hatch is in the back bedroom and I’ll leave the ladder out. Thanks, Sam',
-    source: 'drafted by Scout from Dave’s email at 07:40', hash: '4e1b 77c2 d093',
+    source: 'drafted by Wren from Dave’s email at 07:40', hash: '4e1b 77c2 d093',
     hold: 'Hold to send to Dave Ellis', short: 'Dave Ellis', sentLine: 'Sent to Dave Ellis',
   },
   ellie: {
@@ -82,11 +82,11 @@ export const SENDS: Record<string, Send> = {
     hold: 'Hold to text Ellie Reid', short: 'Ellie Reid', sentLine: 'Texted Ellie Reid',
   },
   launch: {
-    id: 'launch', spaceId: 'tally', agent: 'scout', title: 'Send the launch email',
+    id: 'launch', spaceId: 'tally', agent: 'wren', title: 'Send the launch email',
     to: '318 subscribers on the Tally list', address: 'list: tally-launch (318)', from: 'hello@tally.page',
     subject: 'Tally is out today',
     body: 'Tally is out today. It turns any form into a tally you can share. The first 100 of you get a year free with the code EARLY.',
-    source: 'the draft you wrote with Scout on Tuesday', hash: '2be8 f6d1 9a03',
+    source: 'the draft you wrote with Wren on Tuesday', hash: '2be8 f6d1 9a03',
     hold: 'Hold to send to 318 people', short: '318 subscribers', sentLine: 'Sent to 318 subscribers',
   },
 };
@@ -280,7 +280,7 @@ export interface DeckCard {
   backNote?: string;
 }
 export const DECK0: DeckCard[] = [
-  { id: 'd1', spaceId: 'house', agent: 'scout', kind: 'Needs a reply', title: 'Can Dave see the loft on Tuesday at 10?',
+  { id: 'd1', spaceId: 'house', agent: 'wren', kind: 'Needs a reply', title: 'Can Dave see the loft on Tuesday at 10?',
     quote: 'Hi Dave, Tuesday at 10 works. The hatch is in the back bedroom and I’ll leave the ladder out. Thanks, Sam',
     kv: [['To', 'Dave Ellis, Ellis Surveying']], act: 'Review and send', done: 'Sent to Dave.', send: 'dave' },
   { id: 'd-dep', spaceId: 'mum', agent: 'wren', kind: 'Ready to pay', title: 'Pay the venue deposit',
@@ -336,8 +336,8 @@ export const TEMPLATE = {
   next: 'Chases the conveyancer, surveyor and three removal firms, and tells you when each replies.',
   later: 'Keeps the meter readings and the change-of-address list for moving day.',
   agents: [
-    { name: 'Scout', who: 'scout' as AgentId, job: 'Chases replies' },
-    { name: 'Ledger', who: 'ledger' as AgentId, job: 'Tracks every fee' },
+    { name: 'Scout', who: 'scout' as AgentId, job: 'Books and chases' },
+    { name: 'Ledger', who: 'ledger' as AgentId, job: 'Checks the money' },
   ],
   reads: 'Gmail (read and draft), Calendar',
   cap: '$4.00 a month, on your key',
@@ -464,7 +464,7 @@ export const THREADS0: Record<string, Msg[]> = {
     { who: 'crew', text: 'Heathrow to Haneda is £612 return for 3 to 17 April, down £132. I am checking two more.' },
   ],
   tally: [
-    { who: 'log', text: 'Scout sent the press list 12 emails', at: 'Wed' },
+    { who: 'log', text: 'Wren sent the press list 12 emails', at: 'Wed' },
     { who: 'crew', text: 'Two replies are still out. The launch email is ready for you to send.', card: { kind: 'Approval', title: 'Send the launch email to 318 subscribers', state: 'Needs a press and hold' } },
   ],
   health: [{ who: 'log', text: 'Wren booked the dentist for 6 January', at: 'Mon' }],

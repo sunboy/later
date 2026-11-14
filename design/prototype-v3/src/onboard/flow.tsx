@@ -1,30 +1,30 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AgentId } from '../data';
+import { clearHanded, dueItems, loadGone, loadHome, loadItems, loadName, saveGone, saveHome, saveItems, saveName, type Item } from './handed';
+import { read } from './rules';
 
-/** The front door. There is no Later account and no Later server: "sign in" is two doors, new or already set up,
-    and setting up happens on a computer. Five short scenes teach one idea each, then set-up deals the crew one by one.
-    Every step here is example data; nothing is sent, paid or deleted. */
+/** The front door. Keep introduces itself, the user hands over something they have been putting off, and it goes
+    under the horizon with a real return time. There is no Later account and no Later server: setting up happens on a
+    computer, in the user's own account. Before that, the only "smart" part is simple rules on this phone. */
 export type Step =
-  | 'title' | 'pile' | 'sort' | 'needs' | 'later' | 'yes'
+  | 'title' | 'ask' | 'plan' | 'when' | 'more' | 'terms'
   | 'doors' | 'computer' | 'mail' | 'calendar' | 'school' | 'reading' | 'found' | 'deck';
 
-export const STORY: Step[] = ['pile', 'sort', 'needs', 'later', 'yes'];
-
 export const STEPS: { id: Step; label: string; note: string }[] = [
-  { id: 'title', label: 'Title', note: 'Keep climbs out of the horizon; the tap starts the sound' },
-  { id: 'pile', label: 'A lot', note: 'life sends you a lot' },
-  { id: 'sort', label: 'The crew', note: 'tap Keep: the crew sort it' },
-  { id: 'needs', label: 'Needs you', note: 'only what needs you' },
-  { id: 'later', label: 'Later', note: 'flick it down; it comes back' },
-  { id: 'yes', label: 'Your yes', note: 'hold to say yes' },
-  { id: 'doors', label: 'Two doors', note: 'your account, not ours' },
+  { id: 'title', label: 'Hello', note: 'Keep says who it is, and that it is an AI' },
+  { id: 'ask', label: 'Hand it over', note: 'what have you been putting off?' },
+  { id: 'plan', label: 'The plan', note: 'simple rules pick a crew member' },
+  { id: 'when', label: 'Back when', note: 'a real return time' },
+  { id: 'more', label: 'Anything else', note: 'up to four more' },
+  { id: 'terms', label: 'Your yes', note: 'the approval, on your own card' },
+  { id: 'doors', label: 'Two doors', note: 'a home of your own' },
   { id: 'computer', label: 'Computer', note: 'install, then pair' },
-  { id: 'mail', label: 'Mail', note: 'app password' },
-  { id: 'calendar', label: 'Calendar', note: 'private link' },
-  { id: 'school', label: 'School apps', note: 'by the emails they send' },
-  { id: 'reading', label: 'Keep reads', note: 'capped at $1.00' },
-  { id: 'found', label: 'What Keep found', note: 'turned one by one' },
-  { id: 'deck', label: 'First deck', note: 'then Today' },
+  { id: 'mail', label: 'Mail', note: 'Wren, by app password' },
+  { id: 'calendar', label: 'Calendar', note: 'Scout, by private link' },
+  { id: 'school', label: 'School apps', note: 'only if a card mentions school' },
+  { id: 'reading', label: 'Keep reads', note: 'finds narrated, capped' },
+  { id: 'found', label: 'What I found', note: 'Spaces with evidence' },
+  { id: 'deck', label: 'First deck', note: 'you said later; here it is' },
 ];
 
 /** A prototype-only event the chrome can fire into the current step (an error, or the computer finishing). */
@@ -41,28 +41,37 @@ interface State {
   mode: 'onboard' | 'app';
   step: Step;
   path: 'new' | 'returning';
-  placed: AgentId[]; // the crew Keep has dealt so far in set-up: the progress
+  placed: AgentId[]; // the crew dealt so far in set-up: the progress
+  name: string;
+  items: Item[]; // what the user handed over, in their words
+  gone: string[]; // Space ids flicked away in "What I found"
   mail: boolean; cal: boolean; school: boolean;
   welcome: number; // when the welcome-back moment was opened (0 = closed)
+  back: Item[]; // items brought back on this welcome-back
   sim: { id: ObSim; at: number } | null;
-  arrived: number; // when the app was reached from the handover, so Today can deal its first card from Keep
-  run: number; // bumps on replay so every step remounts fresh
-  jumped: boolean; // arrived by a jump from the chrome: a scene starts from its composed state, not mid-story
+  arrived: number;
+  run: number;
+  jumped: boolean;
 }
 
 interface Api extends State {
   go: (s: Step) => void;
-  /** from the prototype chrome: start the flow fresh at a step, with what it needs already in place */
   jump: (s: Step) => void;
   setPath: (p: State['path']) => void;
   place: (who: AgentId) => void;
+  setName: (n: string) => void;
+  addItem: (text: string) => Item;
+  updateItem: (id: string, patch: Partial<Item>) => void;
+  removeItem: (id: string) => void;
+  setGone: (ids: string[]) => void;
   setConn: (k: 'mail' | 'cal' | 'school', on: boolean) => void;
   toApp: (from?: 'handover' | 'skip' | 'pair') => void;
   replay: () => void;
   welcomeBack: () => void;
   closeWelcome: () => void;
+  /** chrome: jump ahead to when the cards are due, and let Keep bring them back */
+  timePasses: () => void;
   simulate: (id: ObSim) => void;
-  /** consume a pending sim event once, if it is for this id */
   take: (id: ObSim) => boolean;
 }
 
@@ -70,10 +79,18 @@ const Ctx = createContext<Api | null>(null);
 export const useOb = () => useContext(Ctx)!;
 
 const fresh = (run = 0): State => ({
-  mode: 'onboard', step: 'title', path: 'new', placed: [], mail: false, cal: false, school: false, welcome: 0, sim: null, arrived: 0, run, jumped: false,
+  mode: 'onboard', step: 'title', path: 'new', placed: [], name: '', items: [], gone: [], mail: false, cal: false, school: false,
+  welcome: 0, back: [], sim: null, arrived: 0, run, jumped: false,
 });
 
-/** What each step needs to have happened already, so a jump from the chrome lands on a coherent screen. */
+let n = 0;
+export const makeItem = (text: string): Item => {
+  const r = read(text);
+  return { id: `i${Date.now().toString(36)}${n++}`, text: text.trim(), kind: r.kind, who: r.who, plan: r.plan, found: r.found, back: 0 };
+};
+/** For a jump from the chrome past the ask: one example card, so the later steps have something of "yours". */
+const EXAMPLE = () => { const i = makeItem('Renew the car insurance'); i.back = Date.now() + 8 * 3_600_000; return i; };
+
 function seed(p: State, step: Step): State {
   const order = STEPS.map(s => s.id);
   const at = order.indexOf(step);
@@ -83,12 +100,23 @@ function seed(p: State, step: Step): State {
   if (past('mail')) placed.push('wren');
   if (past('calendar')) placed.push('scout');
   if (past('school')) placed.push('juno');
-  return { ...p, step, path: 'new', placed, mail: past('mail'), cal: past('calendar'), school: past('school'), sim: null, jumped: true };
+  const items = past('ask') ? (p.items.length ? p.items : [EXAMPLE()]) : [];
+  if (!past('when')) items.forEach(i => { i.back = 0; });
+  else items.forEach(i => { if (!i.back) i.back = Date.now() + 8 * 3_600_000; });
+  return { ...p, step, path: 'new', placed, items, mail: past('mail'), cal: past('calendar'), school: past('school'), sim: null, jumped: true };
 }
 
 export function ObProvider({ children }: { children: ReactNode }) {
-  const [s, set] = useState<State>(() => fresh());
+  const [s, set] = useState<State>(() => {
+    const st = { ...fresh(), name: loadName(), items: loadItems(), gone: loadGone(), mail: loadHome() };
+    // coming back after a card's time: Keep brings it up on the welcome-back screen
+    const due = dueItems(Date.now());
+    return due.length ? { ...st, mode: 'app', welcome: Date.now(), back: due } : st;
+  });
   const ref = useRef(s); ref.current = s;
+  useEffect(() => { saveItems(s.items); }, [s.items]);
+  useEffect(() => { saveName(s.name); }, [s.name]);
+  useEffect(() => { saveGone(s.gone); }, [s.gone]);
   const take = useCallback((id: ObSim) => {
     const cur = ref.current.sim;
     if (!cur || cur.id !== id) return false;
@@ -98,14 +126,24 @@ export function ObProvider({ children }: { children: ReactNode }) {
   const api = useMemo<Api>(() => ({
     ...s, take,
     go: step => set(p => ({ ...p, step, sim: null, jumped: false })),
-    jump: step => set(p => ({ ...seed(fresh(p.run + 1), step) })),
+    jump: step => set(p => ({ ...seed({ ...fresh(p.run + 1), name: p.name, items: p.items.map(i => ({ ...i })), gone: [] }, step) })),
     setPath: path => set(p => ({ ...p, path })),
     place: who => set(p => ({ ...p, placed: [...p.placed.filter(x => x !== who), who] })),
-    setConn: (k, on) => set(p => ({ ...p, [k]: on })),
+    setName: name => set(p => ({ ...p, name: name.trim().slice(0, 24) })),
+    addItem: text => { const it = makeItem(text); set(p => ({ ...p, items: [...p.items, it].slice(0, 5) })); return it; },
+    updateItem: (id, patch) => set(p => ({ ...p, items: p.items.map(i => i.id === id ? { ...i, ...patch, ...(patch.text != null ? (() => { const r = makeItem(patch.text!); return { kind: r.kind, who: r.who, plan: r.plan, found: r.found }; })() : {}) } : i) })),
+    removeItem: id => set(p => ({ ...p, items: p.items.filter(i => i.id !== id) })),
+    setGone: gone => set(p => ({ ...p, gone })),
+    setConn: (k, on) => { if (k === 'mail') saveHome(on); set(p => ({ ...p, [k]: on })); },
     toApp: from => set(p => ({ ...p, mode: 'app', welcome: 0, arrived: from === 'handover' ? Date.now() : 0 })),
-    replay: () => set(p => fresh(p.run + 1)),
-    welcomeBack: () => set(p => ({ ...p, mode: 'app', welcome: Date.now() })),
-    closeWelcome: () => set(p => ({ ...p, welcome: 0 })),
+    replay: () => { clearHanded(); set(p => fresh(p.run + 1)); },
+    welcomeBack: () => set(p => ({ ...p, mode: 'app', welcome: Date.now(), back: p.items.filter(i => i.back > 0 && i.back <= Date.now() && !i.shown) })),
+    closeWelcome: () => set(p => ({ ...p, welcome: 0, items: p.items.map(i => p.back.some(b => b.id === i.id) ? { ...i, shown: true } : i), back: [] })),
+    timePasses: () => set(p => {
+      const now = Date.now();
+      const items = p.items.map(i => i.back > 0 && !i.shown ? { ...i, back: Math.min(i.back, now - 1000) } : i);
+      return { ...p, items, mode: 'app', welcome: now, back: items.filter(i => i.back > 0 && i.back <= now && !i.shown) };
+    }),
     simulate: id => set(p => ({ ...p, sim: { id, at: Date.now() } })),
   }), [s, take]);
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;

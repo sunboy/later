@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { goneSpaces } from '../onboard/handed';
 import { AGENTS, ALL_SPACES, SPACES, SPACE_META, type AgentId, type Space, type StoryCard } from '../data';
 import { Icon } from '../icons';
 import { Crew, type MState } from '../Mascot';
@@ -18,7 +19,8 @@ interface Row { s: Space; mode: Mode; queue: StoryCard[]; who: AgentId | null; j
 
 function useDesk() {
   const app = useApp();
-  const list = app.many ? ALL_SPACES : SPACES;
+  const gone = goneSpaces();
+  const list = (app.many ? ALL_SPACES : SPACES).filter(x => !gone.has(x.id));
   const rows: Row[] = list.map(s => {
     const queue = (app.stories[s.id] ?? []).filter(c => c.state === 'new');
     const who = app.staff[s.id];

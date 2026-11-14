@@ -1,3 +1,4 @@
+import { goneSpaces, loadItems } from './onboard/handed';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   BILLS, DECK0, FINISHED, LATER0, NEXT0, NOTE, RAMBLE, RECEIPTS, RETURNS, SENDS, STORIES, THREADS0, URGENT, SPACES, ALL_SPACES, MORE_STORIES, GARDEN_CARDS, AGENTS, space,
@@ -73,9 +74,21 @@ interface Api extends State {
 const Ctx = createContext<Api | null>(null);
 export const useApp = () => useContext(Ctx)!;
 
+/** What the user handed over in the front door: their first card leads the deck; Spaces they flicked away stay gone. */
+function fromFrontDoor(): { deck: DeckCard[]; keep: (x: { spaceId: string }) => boolean } {
+  const gone = goneSpaces();
+  const keep = (x: { spaceId: string }) => !gone.has(x.spaceId);
+  const first = loadItems()[0];
+  const own: DeckCard[] = first ? [{
+    id: 'u-' + first.id, spaceId: 'inbox', agent: first.who ?? 'juno', kind: 'You said later', title: first.text,
+    kv: first.plan.map((step, i) => [first.who ? (i < 2 ? 'Done' : 'Next') : ['Asks you', 'Done', 'Then'][i], step] as [string, string]), act: 'Got it', done: 'Kept in Inbox.',
+  }] : [];
+  return { deck: [...own, ...DECK0.filter(keep)], keep };
+}
+
 const initial = (screen: Screen = 'today', many = false): State => ({
   screen, storySpace: null, storyFrom: null, many, approval: null,
-  deck: DECK0, handled: 0, next: NEXT0, finished: [], leaving: [], outbox: [], later: LATER0, stories: structuredClone({ ...MORE_STORIES, ...STORIES }),
+  deck: fromFrontDoor().deck, handled: 0, next: NEXT0.filter(fromFrontDoor().keep), finished: [], leaving: [], outbox: [], later: LATER0.filter(fromFrontDoor().keep), stories: structuredClone({ ...MORE_STORIES, ...STORIES }),
   staff: Object.fromEntries(ALL_SPACES.map(s => [s.id, s.id === 'read' ? null : s.agent])),
   threads: structuredClone(THREADS0), proposals: {}, chief: { open: false, thread: null, busy: false }, rec: null,
   phase: 'day', running: true, paid: [], stack: null, flash: null, event: null,

@@ -96,6 +96,7 @@ function ObSimPanel({ bar }: { bar: boolean }) {
       </label>
       <button onClick={() => ob.toApp('skip')}>Skip to the app</button>
       <button className="reset" onClick={ob.replay}>Replay</button>
+      <button onClick={ob.timePasses} title="Jump ahead to when your cards are due">Time passes</button>
       {[...here, ...rest].map(e => <button key={e.id} aria-pressed={undefined} className={e.step === ob.step ? '' : 'far'} onClick={() => fire(e)}>{e.label}</button>)}
       <TypeControl />
     </div>
@@ -122,6 +123,7 @@ function Sim({ bar = false }: { bar?: boolean }) {
       {bar && <TypeControl />}
       {bar && <button onClick={ob.replay}>Front door</button>}
       {bar && <button onClick={ob.welcomeBack}>Welcome back</button>}
+      {bar && <button onClick={ob.timePasses}>Time passes</button>}
       {bar && <button className="sp30" aria-pressed={app.many} onClick={() => app.setMany(!app.many)}>30 Spaces</button>}
       {SIM.map(e => (
         <button key={e.id} className={e.id === 'reset' ? 'reset' : ''} onClick={() => app.simulate(e.id)} aria-pressed={e.id === 'evening' ? app.phase === 'evening' : undefined}>
@@ -231,6 +233,7 @@ function FrontDoor({ compact = false }: { compact?: boolean }) {
         <button onClick={ob.replay}>Replay from the start</button>
         {ob.mode === 'onboard' && <button onClick={() => ob.toApp('skip')}>Skip to the app</button>}
         <button aria-pressed={!!ob.welcome} onClick={ob.welcomeBack}>Welcome back</button>
+        <button onClick={ob.timePasses} title="Jump ahead to when your cards are due">Time passes</button>
       </div>
     </nav>
   );
@@ -244,9 +247,9 @@ function Left() {
   if (ob.mode === 'onboard') return (
     <aside className="stage-left" aria-label="About the front door">
       <h1 className="mark-wm" aria-label="Later"><wm-horizon variant="lower" /></h1>
-      <p className="lede">The front door, as scenes on one horizon: above the line is now, below it is later. Five short scenes teach one idea each by doing it, then two doors and set-up, where Keep deals the crew one by one. Sound is synthesised, starts with the first tap, and is switchable.</p>
+      <p className="lede">Say later. It comes back ready. Keep says who it is, you hand it something you have been putting off, and it goes under the horizon with a real return time. Before set-up the only smart part is simple rules on the phone. Time passes brings your cards back.</p>
       <FrontDoor />
-      <p className="fine">Example data. {p.name}. Nothing here sends, pays or deletes. Use Simulate for the errors.</p>
+      <p className="fine">Your cards are yours and stay in this browser. What Wren and Scout find after connecting, the Spaces, and the first deck’s results are example data. {p.name}. Nothing here sends, pays or deletes. Use Simulate for the errors.</p>
     </aside>
   );
   return (

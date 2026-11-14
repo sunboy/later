@@ -247,32 +247,63 @@ The caller's hypothesis is right, and it is slightly worse than "sparse":
 
 What is worth keeping: the facts (two doors, set-up on the computer, app password, private calendar link, by the emails they send, a capped first pass, routines paused), the Deck mascots and their states, the Web Audio synth, and the chrome API.
 
-## 7. Storyboard
+## 7. Storyboard (second pass: "Say later. It comes back ready.")
 
-The world: one horizon, the brand's own line. Above it is now; below it is later. Keep stands on the horizon. Things that can wait sink below the line and rise back. Each concept beat has its own sky within Harbour: clay for the pile that needs you, navy for the crew, deep night for later, a citrus glow for yes. Designed dark first; light keeps the same composition on pale skies with ink characters.
+The first pass (horizon scenes acting out six ideas on blank cards) was judged lifeless: a stranger read it as "a cute inbox sorter with a snooze". The premise work in `premise/` replaced the content and kept the craft. Full reasoning: `premise/cold-read.md`, `premise/openings-teardown.md`, `premise/premise-and-script.md`, `premise/interaction-concepts.md`.
 
-Composition, 390 × 844: the sentence sits in the upper sky, centred, 32 to 36 px. Keep stands on the horizon at about 58% of the height, 200 to 230 px tall (a quarter of the height, over half the width). The crew are cards of their own cut, each with its own colour from the palette family (Wren clay, Scout citrus, Juno periwinkle, Ledger sand) and dark eyes, so they read apart at any size. The ground below the horizon carries the controls. A sound switch sits top right on every scene; concept beats show five small card pips as progress, set-up shows the crew standing on the horizon as they are dealt.
+**Premise.** Everyone says "I'll do it later" and it rarely happens. Later is a personal AI agent that makes "later" a promise kept: you hand it a thing, it comes back at the time you chose, with the legwork done and waiting for your yes.
 
-| # | Screen | One idea | The sentence | Composition | What Keep does | The user's action | Sound | Reference pattern |
-|---|---|---|---|---|---|---|---|---|
-| 1 | Title | Later is a place things go and come back from | Later | Night sky, glowing horizon line, wordmark above | Climbs up out of the horizon, blinks, fans | Tap anywhere (a small volume glyph under the hint) | The tap unlocks audio; a rise as Keep hops | Bites spl_p17z9 to spl_vbbbu, Tolan spl_lmvme |
-| 2 | The pile | Life sends you a lot | Life sends you a lot. | Clay dusk sky; a dozen glyph cards fall onto Keep | Braces (anticipation), gets buried and knocked askew (action), peeks out (reaction) | Tap to continue | A tick as each card lands, rising in pitch, then a thump | Not Boring spl_akip4, Superlist onb_yu6xt |
-| 3 | The crew | Keep and the crew sort it | Keep and the crew sort it. | Navy sky; four crew cards along the horizon; the pile above Keep | Shuffles (thinking), deals four crew out of the fan, then the pile flies to them in four stacks; snaps wide open (done) | Tap Keep | A deal per crew card, a stepped deal per card sorted, then done | Pingo spl_5b9s2, Finch onb_ac3iv (tap the character) |
-| 4 | Only what needs you | You see only what needs you | Only what needs you. | The stacks sink below the horizon; one clay card rises, large, centre | Leans and looks at the card (waiting) | Tap the card: it turns over to citrus | A sink, a rise, then done | Nebula oth_4492b, Spark onb_9wm27 |
-| 5 | Later | Not now? It goes to later and comes back | Not now? Flick it down. | Night falls as the card sinks under the horizon; a moon arc; then the card rises again at dawn | Sinks to half height (rest), then pops back up | Flick the card down (or tap Later) | The later swoop, then the back chime as it returns | Headspace spl_n4l67 (rise and sink), Herbi onb_itm2s |
-| 6 | Your yes | Nothing leaves without your yes | Nothing leaves without your yes. | Navy sky with a citrus glow on the horizon; a send card held in front of Keep | Listens with its dog-ear up, then snaps open as the card flies | Press and hold the yes button; afterwards the line says it was only practice and nothing was sent | A rising hum while held, done as it leaves | Opal onb_im9zk (hold back, then release), Duolingo onb_nsrjz |
-| 7 | Doors | It runs in your own account | Yours. In your own account. | Day sky; Keep and the four crew together on the horizon | Waves the dog-ear (idle), crew hop in turn | Set up mine, or I already have Later; Look around first | A small rise on press | Duolingo spl_7vdk2, Gizmo spl_zm1gj |
-| 8 | Computer | Set-up happens on your computer, then this phone pairs | Set it up on a computer. | A big laptop on the horizon with the address and code on its screen; Keep peeks over the lid; a dotted path from laptop to phone | Peeks and thinks while waiting; listens while scanning; done when paired | Waits (Simulate), Scan, Carry on | Rise when the code appears; a tick per dot; done when paired | PDF Expert oth_4zdfv, Alfred onb_y6l4y, Copilot onb_ygga6 |
-| 9 | Paired (the last phase of the computer screen) | The key and the cap live on the computer | Paired. | Ledger is dealt onto the horizon beside Keep holding a coin card | Deals Ledger | Carry on | Deal, done | Bites onb_222qc |
-| 10 | Mail | Wren reads your mail; nothing is sent without you | Connect your mail. | Wren large beside Keep, holding an envelope card; the field sits on the ground | Deals Wren in; Wren holds out the envelope; on success Wren hops | Paste the app password, Connect, or Skip | Deal, a tick on paste, done | Wysa onb_av3fb (character over the field), Copilot onb_b2r8h |
-| 11 | Calendar | Scout reads your calendar by its private link | Add your calendar. | Scout large holding a calendar card | Deals Scout | Paste the link, Add, or Skip | Deal, done | Jamie onb_k7qrg, Timepage onb_0zqwe |
-| 12 | School | Other apps come in by the emails they send | School apps too? | Juno large holding a mortarboard card | Deals Juno | Yes, or Not now | Deal, done | Spark onb_bdyn8 (agree in one tap) |
-| 13 | Reading | The first pass is small and capped | Keep is reading. | Keep centre in the sky; the crew orbit it; cards stream up from the horizon into Keep and out to the crew; a ring around Keep fills as spend against the cap | Working: squared up, eyes scanning | Watch (Simulate finish) | Soft ticks as cards land, done at the end | Tolan onb_no9p9, Bites onb_brutz, Not Boring onb_1kbx2 |
-| 14 | What Keep found | Keep proposes Spaces; you keep or flick them away | Keep found 4 Spaces. | Four cards dealt face down in a fan; they turn one by one to show a glyph, a name and the crew who will hold it | Deals, then looks at each as it turns | Flick away the ones you do not want; Keep these | A tick per turn, rising; the later swoop on a flick; done | Opal onb_0m8b4, Nebula oth_4492b, Astroscope oth_d3j87 |
-| 15 | First deck | One thing at a time, routines paused | Your first deck. | Keep deals three cards into a stack on the ground | Deals, then done | Open Today | Three deals, done | Pingo oth_nxgmu |
+**Rules for this pass.**
+- Keep speaks in the first person from the first screen, in speech bubbles, in the voice of `premise-and-script.md` section 2 (plain, exact, brief, owning, dry).
+- The user's own words are on screen within twenty seconds. Every interaction acts on something of theirs.
+- Doing verbs: find, compare, draft, chase, book. No sample emails before set-up.
+- Before set-up there is no model. Anything "smart" is simple rules on the phone, and Keep says so.
+- Each scene has its own composition and colour.
+- The crew have fixed jobs everywhere, intro and app alike: Wren answers mail, Scout books and chases, Juno finds and compares, Ledger checks the money.
 
-Taps from the first screen to the first deck on the happy path: 16 (title, five concept gestures, a door, three on the computer, two each for mail and calendar, one for school, one to keep the Spaces). The concept beats can be skipped from the top bar, which takes it to 10.
+### The intro
 
-As built, the computer step carries its phases (waiting, code, scanning, expired, paired) on one screen, so the prototype has 14 steps for these 15 rows.
+| # | Scene | Keep says (exact words) | The user does | What they get back | Composition and sound |
+|---|---|---|---|---|---|
+| 1 | Title | (wordmark) Later. Say later. It comes back ready. | Taps (sound starts) | Keep climbs out of the horizon | Night sky; rise on the tap |
+| 1b | Hello | I'm Keep. I'm an AI. / I hold on to things until they're due. My crew does the legwork. / What should I call you? | Types a name, or skips | Keep uses the name from now on | Speech bubble over a large Keep; a soft tick per word as it types on |
+| 2 | Ask | (Nice to meet you, Sam.) What have you been putting off? | Types or dictates one thing; or taps one of three suggestions: Renew the car insurance, Reply to the school about the trip, Book the dentist | Their words written on a big blank card | Warm clay dusk; the card is the hero, Keep holds out its hand at the side |
+| 2b | Hand over | Got it. That's off your mind and on mine. | Flicks the card up to Keep (or taps Hand it over) | Keep catches it and its fan thickens | Whoosh, then a thup as Keep catches |
+| 3 | The plan | Ledger checks the money. This one's for Ledger. / (unclassified) I can't tell what kind of job this is yet. I'll keep it and ask you one question later. | Reads; taps Next | The crew member is dealt and holds the card; three legwork steps write on, labelled Plan; any date, person or amount found is shown back as a chip; a caption says: Simple rules on this phone for now. The legwork starts once I have a home. | Navy; the crew member is large beside the card; a tick per line written |
+| 4 | When | When do you want it back? | Picks Tonight 19:00, Tomorrow 08:30, Saturday 10:00, or a time | The card sinks under the horizon with its time on it. Keep: Later. And I mean it. Caption: Until I have a home, it comes back when you next open me. | Dusk turning to night as it sinks; the later swoop |
+| 5 | More | Anything else on your mind? | Adds up to four more in one line each, or That's all for now | Each line becomes a card, is dealt to a crew member and sinks with a time; Keep counts: 3 things off your mind. | Dawn; Keep's fan thickens per card; the count is large |
+| 6 | Terms | I'll get things wrong sometimes. So nothing is sent, paid or deleted without your yes. | Holds the practice button on the approval form for their own first card | The form: When the legwork is ready, a yes looks like this. Then: Only practice. Nothing was sent. A Carry on button appears; nothing advances on its own | Citrus glow; hum while held |
+| 7 | Doors | To do the legwork, I need a home. Yours, not ours. / About ten minutes on a computer: your Cloudflare account and your Anthropic key, billed to you up to a cap you set. | Set up my home / I already have Later / Look around first | Their cards wait under the horizon, each with its return time | Day; the ground holds their cards |
 
-Reduced motion: every beat is built so its last frame tells the story on its own (the pile on Keep, the crew with their stacks, the single clay card, the card half below the horizon with its return time, the sent card with a tick), and the gestures are also plain buttons.
+About 80 of Keep's words, plus the user's. Shortest path, as built: the title tap, a tap past Keep's second line, Skip the name, a suggestion, Hand it over, Next, a time, Carry on, That's all for now, the hold, Carry on: 11 taps and about 40 seconds to the doors, most of it Keep speaking and the cards moving.
+
+### Set-up: every step names what it gives back
+
+| Step | Keep or the crew say | What comes back |
+|---|---|---|
+| Computer | Set me up on a computer. / Open later.sh/go there and type this code. Your 3 things are safe on this phone. | Paired. Your 3 things are moving in. The dotted path lights card by card. Your key is capped at $60 a month. |
+| Mail (Wren) | Can Wren read your mail? / To find what's open and draft replies, starting with "reply to the school". Nothing is sent or deleted without you; remove the app password to stop. | Wren shows two finds (example data, marked in the chrome) |
+| Calendar (Scout) | Can Scout see your calendar? / To find free times and spot clashes, starting with "book the dentist". Read only; delete the private link to stop. | You're free Saturday morning. |
+| School apps (Juno) | Only if a card mentions school or nursery: Juno can read the school's emails too. | Juno is watching for them. |
+| Reading | I'm reading your recent mail, newest first. | Finds narrated as they land: Found a renewal date. Found who Priya is. The cap is small: $0.42 of $1.00. |
+| What I found | Here's what I found. | Spaces with evidence and a first job each (example data); an editable list headed Here's what you told me. A Space you flick away stays gone in the app. |
+| First deck | You said later. Here it is. | Their own first card is dealt first, its plan marked done and in progress (an example result), then two more. |
+
+**Welcome back.** On the next open after a return time, or when Time passes is pressed in the chrome, Keep brings the card up: You said later. Here it is.
+
+**Errors kept:** the computer goes quiet, the code expires, the wrong app password.
+
+**Fixed from the cold read:** a card that is drawn is always live (tapping it does what the button does); the practice yes never skips its confirmation; a flicked-away Space stays gone in the app; mail is Wren's in the intro and in the app.
+
+### Cold read of the second pass
+
+Read as a stranger, at 390 in Harbour dark, on the typed path ("Call Priya about Saturday").
+
+- **After 20 seconds** (title, then Keep's three lines): "An AI called Keep that holds on to the things I keep putting off until they're due, and has a crew that does the legwork for them."
+- **After the intro** (to the doors): "I told it to call Priya about Saturday. It gave that to Wren, who answers my mail, with a plan: find my messages with Priya, draft the message, hold it for my yes. It comes back tonight at 19:00. It won't send, pay or delete anything without my yes. To actually start, it needs a home in my own account."
+- **Verdict:** a personal AI agent that takes things off my plate and brings them back with the legwork done, waiting for my yes. "Done" is deliberately "ready for your yes".
+
+What still reads weakly:
+- Before set-up nothing real happens. The plan is honest but static, and the payoff (the first deck) uses example legwork.
+- Mail and calendar still ask for an app password and a private link. The words around them are now human; the steps themselves are not.
+- The reading, the Spaces and the finds are example data. The chrome says so, the phone does not, as briefed.

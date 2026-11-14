@@ -1,3 +1,4 @@
+import { goneSpaces } from './onboard/handed';
 import { SPACES, space, type StoryCard } from './data';
 import { Icon } from './icons';
 import { useApp, useFlash } from './store';
@@ -23,7 +24,8 @@ export function RingSvg({ cards }: { cards: StoryCard[] }) {
 
 export function Rings() {
   const { stories, openStory } = useApp();
-  const ordered = [...SPACES].sort((a, b) => {
+  const gone = goneSpaces();
+  const ordered = SPACES.filter(x => !gone.has(x.id)).sort((a, b) => {
     const wa = (stories[a.id] ?? []).filter(c => c.state === 'new').length;
     const wb = (stories[b.id] ?? []).filter(c => c.state === 'new').length;
     return (wb > 0 ? 1 : 0) - (wa > 0 ? 1 : 0);

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { goneSpaces } from '../onboard/handed';
 import { AGENTS, NOTE, RAMBLE, SPACES, space, type Msg } from '../data';
 import { Icon } from '../icons';
 import { Chief, Crew } from '../Mascot';
@@ -146,7 +147,8 @@ export function ChiefSheet() {
 
   // the needs-you dot: a Space with an unseen card that asks for you, or a card in Now
   const needs = (id: string) => (app.stories[id] ?? []).some(c => c.state === 'new' && (c.send || c.bill || c.kind === 'Needs a reply' || c.kind === 'Decision')) || app.deck.some(c => c.spaceId === id && (c.send || c.bill || c.emphasis));
-  const ordered = [...SPACES].sort((a, b) => Number(needs(b.id)) - Number(needs(a.id)));
+  const gone = goneSpaces();
+  const ordered = SPACES.filter(x => !gone.has(x.id)).sort((a, b) => Number(needs(b.id)) - Number(needs(a.id)));
 
   if (app.rec || !t) return (
     <div className={`keep ${app.rec ? 'is-rec' : ''}`} role="dialog" aria-modal="true" aria-label="Keep" onKeyDown={e => e.key === 'Escape' && app.closeChief()}>
