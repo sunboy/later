@@ -1,0 +1,74 @@
+<title>Later: the Keep</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400..700&family=Hanken+Grotesk:wght@400..800&display=swap">
+<style>
+/*STYLE*/
+</style>
+<div class="page">
+  <aside class="note">
+    <h1>Arriving at the Keep</h1>
+    <p>A proof of the world for Later's first run: three beats of the arrival, built as cut paper at real depths. Tap or swipe the phone to move on, drag it to look around, and tap a building in the last beat to look inside.</p>
+    <p>Dark is a deep dawn and is the default. Light is a pale morning. Stills shows what people who prefer reduced motion see.</p>
+    <div class="keys">
+      <button type="button" id="k-replay">Replay</button>
+      <button type="button" id="k-theme">Light</button>
+      <button type="button" id="k-still" aria-pressed="false">Stills</button>
+    </div>
+  </aside>
+  <div class="frame"><div class="frame-in">
+    <div class="device" id="device">
+      <div class="scene" id="scene" aria-hidden="true">
+        <svg id="defs" width="0" height="0" style="position:absolute"></svg>
+        <div class="cam" id="cam"></div>
+        <div class="veil" id="veil"></div>
+      </div>
+      <div class="ui">
+        <div class="top">
+          <button class="ic snd" id="snd" type="button" aria-pressed="true" aria-label="Sound">
+            <svg class="on" viewBox="0 0 20 20"><path d="M3.5 7.5h3l4-3.5v12l-4-3.5h-3z"/><path d="M13.5 7.2a4 4 0 0 1 0 5.6M15.6 5a7 7 0 0 1 0 10"/></svg>
+            <svg class="off" viewBox="0 0 20 20"><path d="M3.5 7.5h3l4-3.5v12l-4-3.5h-3z"/><path d="M14 8l4 4M18 8l-4 4"/></svg>
+            <span class="hint" id="snd-hint">Sound on</span>
+          </button>
+          <button class="ic" id="replay" type="button" aria-label="Replay from the start">
+            <svg viewBox="0 0 20 20"><path d="M4 10a6 6 0 1 0 2-4.5"/><path d="M4 3.5V7h3.5"/></svg>
+          </button>
+          <button class="ic" id="theme" type="button" aria-label="Switch to light">
+            <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4"/></svg>
+          </button>
+          <span class="sp"></span>
+          <button class="ic txt" id="skip" type="button">Skip</button>
+        </div>
+        <section class="band" id="band" aria-live="polite">
+          <svg class="edge" viewBox="0 0 390 30" preserveAspectRatio="none" aria-hidden="true">
+            <path class="e0" d="M0 16C40 12 70 18 110 14S190 11 230 15S320 18 390 13V30H0Z"/>
+            <path class="e2" d="M0 17C40 13 70 19 110 15S190 12 230 16S320 19 390 14V30H0Z"/>
+            <path class="e1" d="M0 18.5C40 14.5 70 20.5 110 16.5S190 13.5 230 17.5S320 20.5 390 15.5V30H0Z"/>
+          </svg>
+          <div class="body"></div>
+          <div class="in">
+            <h2 id="hl"></h2>
+            <p id="ln"></p>
+            <span></span>
+            <div class="row">
+              <div class="lamps" aria-hidden="true"><i></i><i></i><i></i></div>
+              <span class="sr" id="step-sr"></span>
+              <button class="next" id="next" type="button"><span id="next-t">Next</span><svg viewBox="0 0 20 20"><path d="M7.5 4.5L13 10l-5.5 5.5"/></svg></button>
+            </div>
+          </div>
+        </section>
+        <section class="inside" id="inside" aria-label="Inside the place">
+          <div class="sheet">
+            <div class="bar"><b id="in-name">House move</b><button type="button" id="in-close">Step back out</button></div>
+            <div id="in-tile"></div>
+            <div class="example">An example card. Yours come from your own mail and plans.</div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div></div>
+</div>
+<script type="module">
+/*SCRIPT*/
+</script>
