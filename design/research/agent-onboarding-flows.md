@@ -156,3 +156,16 @@ Agents skip the **make-first ritual**, the **in-story permission ask**, the **de
 - Wabi: https://techcrunch.com/2026/09/29/ai-powered-app-maker-wabi-pivots-to-a-messaging-experience/
 - Acorns: https://goodux.appcues.com/blog/acorns-seamless-account-setup
 - Appllama library: Tolan 6477549878, Finch 1528595748, Duolingo 570060128, Wabi 6747768928, Copilot 1447330651, Monarch 1459319842, Claude 6473753684, Grok 6670324846, Meta AI 1558240027.
+
+## Addendum: Fo by Wajo (wajo.ai), read directly on 15 Nov 2026
+
+The founder supplied the address, so this replaces the uncertain entry above. Source: the site's own home page, read and screenshotted; the app's in-product onboarding was not seen.
+
+- **Pitch, first screen:** "Fo, get sh*t done. Built on trust." Supporting line: Fo calls, emails and coordinates with people to get everyday to-dos done, with human help when the task needs it. One button: Get started. Page title: the AI assistant that calls, books and pays.
+- **Mascot:** Fo is two black dots and a small smile, nothing more: a face without a body, placed above the headline and again lower down with a hand-drawn waving hand. It is a mark that can sit anywhere.
+- **Look:** white ground, black type, black hand-drawn line doodles (a doctor, a delivery scooter, a barber's comb and scissors, an envelope) overlapping real photographs of people and errands, plus four small flat colour squares (green, orange, pink, yellow) scattered like confetti. Two neutrals, photography for warmth, tiny spots of colour for pop.
+- **How it explains what it does:** by showing finished jobs, not features. A "Fo working now" ticker: ordered lunch, booked your haircut, dentist appointment confirmed. A list of things people actually say, grouped by area of life (scheduling, home, life admin, work, gifting, group ordering): "Book me a dentist for Thursday afternoon", "Fight the parking ticket on my windshield", "Cancel my gym membership".
+- **How it shows work happening:** small step-by-step stories for one request each: understanding the task, searching, found 3 options, taking action ("Fo calling…"), success ("Haircut booked", time and place). A flight change and a flower order are told the same way, ending in a concrete result card.
+- **Trust, stated as three plain reasons:** your data stays private; it talks to people, not just to you; it brings in a human when needed. Then specifics: single-use payment cards, emails sent from Fo's own address and never as you, sign-ins without seeing your password, and it checks with you before it spends.
+- **What Later can take from it:** say what the agent does with verbs and finished examples; let people recognise their own errands in a list of things they would say; tell one task as a short sequence that ends in a result; state trust as a few concrete mechanisms; a mascot can be extremely simple if it is used consistently.
+- **Where Later differs:** Fo is a single chat-style agent that acts in the world (calls, pays, human assistants). Later's difference is organisation and the visual layer: Spaces, cards, a daily deck, a crew.
