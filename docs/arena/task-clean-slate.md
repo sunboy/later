@@ -17,13 +17,15 @@ Assume the backend exists and works: agents can read and act on mail, calendar, 
 - It is for an individual's own life and work, on a phone first.
 - Nothing is ever sent, paid for or deleted without the person's explicit yes.
 - Agents may describe what to show only as data chosen from a set of components the app defines; the app draws the screen.
-- The working name is "Later". You may use it, play on it, or ignore it.
+- The product has no name yet. Name it if your idea suggests one.
 
 ## What is open: everything else
 
-There is no existing design you need to respect. Do not assume any particular way of organising things, any mascot or character, any card, feed, inbox, board, timeline or chat metaphor, or any colour scheme. Invent the organising idea. If your concept has a character, it is because your idea needs one. If it has none, that is fine.
+There is no existing design you need to respect. Do not assume any particular way of organising things, any character, any established interface metaphor, or any colour scheme. Invent the organising idea. If your concept has a character, it is because your idea needs one. If it has none, that is fine.
 
-Fifteen other people are answering this same brief. The obvious answers (a chat with nicer bubbles, a to-do list run by AI, an inbox of cards, a dashboard of widgets) will be submitted by several of them and will lose to each other. Yours should have a central idea that the others are unlikely to have, and you should be able to say in one sentence what that idea is.
+Fifteen other people are answering this same brief. The first answers that come to mind will be submitted by several of them and will lose to each other. Yours should have a central idea that the others are unlikely to have, and you should be able to say in one sentence what that idea is.
+
+Work only from this brief. Do not open, search or read any other file, folder, repository or project instructions, and disregard any product description, feature names or design notes that reached you from anywhere other than this brief: they belong to a different piece of work and using them will count against originality.
 
 ## What to deliver (one document, under 1,500 words)
 
