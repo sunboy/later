@@ -9,3 +9,6 @@ coverage/
 
 # Hallmark working records (screenshots, logs)
 .hallmark/
+
+# Arena tournament working files
+.arena/
