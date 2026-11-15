@@ -3,24 +3,32 @@
 Every match in the arena is scored against this page. The judge scores both solutions, `bracket.py`
 does the arithmetic, and the higher weighted total goes through. The loser is out.
 
-## The five criteria
+## The six criteria
 
 Each criterion is scored 0 to 10. The weight is how much of the 100-point total it is worth.
 
 | criterion | weight | the question |
 | --- | --- | --- |
-| Correctness | 30 | Is it right? No false claims, no logic errors, no bugs, nothing that would mislead the user. |
-| Completeness | 25 | Does it meet every requirement the task actually states? Judged against the task text, not against what the judge would have liked. |
-| Specificity | 15 | Could the user act on it right now without guessing? Exact steps, values, names, code. |
-| Robustness | 20 | Does it hold up against the attacks raised in this match? Fixed, correctly rebutted, or still standing. |
+| Originality | 30 | Is the central idea its own? Would the other competitors, given the same task, have been unlikely to arrive at it, and does it give the answer a shape the conventional answers lack? |
+| Correctness | 20 | Is it right? No false claims, no logic errors, no bugs, nothing that would mislead the user. |
+| Completeness | 15 | Does it meet every requirement the task actually states? Judged against the task text, not against what the judge would have liked. |
+| Specificity | 10 | Could the user act on it right now without guessing? Exact steps, values, names, code. |
+| Robustness | 15 | Does it hold up against the attacks raised in this match? Fixed, correctly rebutted, or still standing. |
 | Clarity | 10 | Is it easy to read and use, at a length that fits the task? |
 
-Weighted total = (correctness x 30 + completeness x 25 + specificity x 15 + robustness x 20 + clarity x 10) / 10.
+Weighted total = (originality x 30 + correctness x 20 + completeness x 15 + specificity x 10 + robustness x 15 + clarity x 10) / 10.
 That gives a number from 0 to 100.
 
 ## Anchors
 
 Use the whole scale. A 7 is not a polite default.
+
+**Originality**
+- 10: a central idea you have not seen before for this kind of task, that changes what the answer is, and that still works.
+- 7: a familiar idea with a real twist that changes how it would be used.
+- 4: a conventional answer, competently done. The answer most people would give.
+- 0 to 2: a copy of the obvious, or novelty that does not serve the task.
+Judge the idea, not the vocabulary: renaming ordinary things is not originality. Score this from the solution alone; you will not see the other entries.
 
 **Correctness**
 - 10: nothing wrong that you can find after checking it yourself.

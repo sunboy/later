@@ -52,10 +52,11 @@ CALLS_PER_MATCH = 5        # 2 attacks, 2 defenses, 1 judge
 
 # Mirrors the table in rubric.md. tests/test_bracket.py checks they agree.
 WEIGHTS = (
-    ("correctness", 30),
-    ("completeness", 25),
-    ("specificity", 15),
-    ("robustness", 20),
+    ("originality", 30),
+    ("correctness", 20),
+    ("completeness", 15),
+    ("specificity", 10),
+    ("robustness", 15),
     ("clarity", 10),
 )
 

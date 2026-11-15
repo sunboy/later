@@ -317,8 +317,8 @@ Write this JSON, and nothing else, to {{out}}:
 {
   "match": "{{match}}",
   "scores": {
-    "{{first}}": {"correctness": 0, "completeness": 0, "specificity": 0, "robustness": 0, "clarity": 0, "fatal": false},
-    "{{second}}": {"correctness": 0, "completeness": 0, "specificity": 0, "robustness": 0, "clarity": 0, "fatal": false}
+    "{{first}}": {"originality": 0, "correctness": 0, "completeness": 0, "specificity": 0, "robustness": 0, "clarity": 0, "fatal": false},
+    "{{second}}": {"originality": 0, "correctness": 0, "completeness": 0, "specificity": 0, "robustness": 0, "clarity": 0, "fatal": false}
   },
   "winner": "{{first}} or {{second}}",
   "reason": "one sentence: the decisive difference",
@@ -357,8 +357,8 @@ How to judge:
 Write this JSON, and nothing else, to {{out}}:
 {
   "scores": {
-    "X": {"correctness": 0, "completeness": 0, "specificity": 0, "robustness": 0, "clarity": 0, "fatal": false},
-    "Y": {"correctness": 0, "completeness": 0, "specificity": 0, "robustness": 0, "clarity": 0, "fatal": false}
+    "X": {"originality": 0, "correctness": 0, "completeness": 0, "specificity": 0, "robustness": 0, "clarity": 0, "fatal": false},
+    "Y": {"originality": 0, "correctness": 0, "completeness": 0, "specificity": 0, "robustness": 0, "clarity": 0, "fatal": false}
   },
   "winner": "X or Y",
   "reason": "one sentence: the decisive difference",
